@@ -28,10 +28,14 @@ This document is written for **everyone on the team** — product, design, ops, 
 15. [Background jobs (cron)](#background-jobs-cron)
 16. [Data model](#data-model)
 17. [What is live vs demo data?](#what-is-live-vs-demo-data)
-18. [Deployment](#deployment)
-19. [Testing & quality checks](#testing--quality-checks)
-20. [Troubleshooting](#troubleshooting)
-21. [Useful links](#useful-links)
+18. [Release checklist (before production)](#release-checklist-before-production)
+19. [Deployment](#deployment)
+20. [After deploying to production](#after-deploying-to-production)
+21. [Keeping README & docs up to date](#keeping-readme--docs-up-to-date)
+22. [Testing & quality checks](#testing--quality-checks)
+23. [Appearance (dark / light mode)](#appearance-dark--light-mode)
+24. [Troubleshooting](#troubleshooting)
+25. [Useful links](#useful-links)
 
 ---
 
@@ -232,7 +236,9 @@ kingof/
 | `/[locale]/[category]` | Category leaderboard (e.g. `/en/ai`) |
 | `/[locale]/product/[slug]` | Product detail page |
 | `/[locale]/categories` | All categories |
-| `/[locale]/discover` | Random pick + hidden gems (60s pacing) |
+| `/[locale]/discover` | Random pick + hidden gems |
+| `/[locale]/products` | All products (paginated, sorted by bid) |
+| `/[locale]/new` | Products listed in the last 5 minutes |
 | `/[locale]/most-clicked` | Top clicked products |
 | `/[locale]/by-country` | Clicks by country |
 | `/[locale]/how-it-works` | Explainer |
@@ -300,21 +306,34 @@ npm run dev:fresh   # clears .next cache and restarts
 
 Copy `.env.local.example` → `.env.local`.
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `DATABASE_URL` | **Yes** | Postgres connection string, e.g. `postgresql://localhost:5432/kingof` |
-| `STRIPE_SECRET_KEY` | For payments | Stripe **test** secret key (`sk_test_…`) |
-| `STRIPE_WEBHOOK_SECRET` | For payments | From Stripe CLI or dashboard (`whsec_…`) |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | For payments | Stripe publishable key (`pk_test_…`) |
-| `NEXT_PUBLIC_SITE_URL` | Recommended | `http://localhost:3000` locally |
-| `RESEND_API_KEY` | For email | Use `re_test_…` in dev |
-| `IP_HASH_SALT` | Recommended | Random string for hashing click IPs |
-| `CRON_SECRET` | Recommended | Bearer token for cron routes |
-| `SLACK_WEBHOOK_URL` | Optional | Production incident alerts |
-| `NEXT_PUBLIC_SENTRY_DSN` | Optional | Error tracking |
-| `SENTRY_ORG` / `SENTRY_PROJECT` / `SENTRY_AUTH_TOKEN` | Optional | Source map upload in CI |
-| `GOOGLE_SITE_VERIFICATION` | Optional | Search Console |
-| `BING_SITE_VERIFICATION` | Optional | Bing Webmaster |
+| Variable | Required | Local dev | Production |
+|----------|----------|-----------|------------|
+| `DATABASE_URL` | **Yes** | `postgresql://localhost:5432/kingof` | Vercel Postgres / Neon / RDS connection string |
+| `STRIPE_SECRET_KEY` | For payments | `sk_test_…` | `sk_live_…` (live mode) |
+| `STRIPE_WEBHOOK_SECRET` | For payments | From Stripe CLI (`whsec_…`) | From Stripe dashboard → live webhook endpoint |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | For payments | `pk_test_…` | `pk_live_…` |
+| `NEXT_PUBLIC_SITE_URL` | **Yes in prod** | `http://localhost:3000` | `https://kingof.lol` (no trailing slash) |
+| `RESEND_API_KEY` | For email | `re_test_…` | `re_…` (live key; domain verified in Resend) |
+| `IP_HASH_SALT` | **Yes in prod** | Any dev string | Long random secret (never reuse dev value) |
+| `CRON_SECRET` | **Yes in prod** | Any dev string | Long random secret; Vercel cron uses this |
+| `SLACK_WEBHOOK_URL` | Optional | Omit locally | Slack incoming webhook for cron/payment alerts |
+| `NEXT_PUBLIC_SENTRY_DSN` | Optional | Omit locally | Sentry project DSN |
+| `SENTRY_ORG` / `SENTRY_PROJECT` / `SENTRY_AUTH_TOKEN` | Optional | Omit locally | CI/Vercel build — uploads source maps |
+| `GOOGLE_SITE_VERIFICATION` | Optional | Omit locally | Meta tag content from Search Console |
+| `BING_SITE_VERIFICATION` | Optional | Omit locally | Meta tag content from Bing Webmaster |
+
+**Never commit** `.env.local` or production secrets. Templates live in `.env.local.example` and `.env.example`.
+
+### Production vs local — quick rules
+
+| Setting | Local | Production |
+|---------|-------|------------|
+| Stripe keys | Test mode (`sk_test_`, `pk_test_`) | Live mode (`sk_live_`, `pk_live_`) |
+| `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` | `https://kingof.lol` |
+| Resend | Test API key | Live key + verified sending domain |
+| `db:seed` | OK for local sample data | **Do not run** on production DB |
+| Console logs | Visible in terminal | Stripped from client bundles (`removeConsole` in prod build) |
+| Geo / by-country | No country detection on localhost | Uses `x-vercel-ip-country` on Vercel |
 
 ---
 
@@ -451,6 +470,7 @@ stripe listen --forward-to localhost:3000/api/webhooks/stripe
 
 | Method | Path | Purpose |
 |--------|------|---------|
+| `GET` | `/api/products/list` | Paginated product list (`sort=bid\|new`) |
 | `GET` | `/api/activity` | Trending + latest activity (JSON) |
 | `GET` | `/api/categories` | Category list |
 | `POST` | `/api/submit` | Create product + Stripe session |
@@ -510,17 +530,106 @@ If the database has products, you see real data. Demo names (NeuralForge, PayFlo
 
 ---
 
+## Release checklist (before production)
+
+Run this **before every production deploy** (or before merging to the branch Vercel deploys from).
+
+### 1. Code quality (local)
+
+```bash
+npm run verify
+```
+
+This runs, in order: Prettier → ESLint → TypeScript → Vitest → i18n validation → production build.
+
+Fix anything that fails. Do not deploy with a red `verify`.
+
+### 2. Environment variables (Vercel dashboard)
+
+In **Vercel → Project → Settings → Environment Variables**, confirm **Production** has:
+
+| Variable | Must be set? | Production value |
+|----------|--------------|------------------|
+| `DATABASE_URL` | Yes | Production Postgres URL |
+| `NEXT_PUBLIC_SITE_URL` | Yes | `https://kingof.lol` |
+| `STRIPE_SECRET_KEY` | Yes (if taking payments) | `sk_live_…` |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Yes | `pk_live_…` |
+| `STRIPE_WEBHOOK_SECRET` | Yes | Live webhook signing secret |
+| `RESEND_API_KEY` | Yes (if sending email) | Live Resend key |
+| `IP_HASH_SALT` | Yes | Unique production secret |
+| `CRON_SECRET` | Yes | Unique production secret |
+| `NEXT_PUBLIC_SENTRY_DSN` | Recommended | Sentry DSN |
+| `SLACK_WEBHOOK_URL` | Recommended | For payment/cron failure alerts |
+
+Use **Preview** env for staging if you have a preview deployment — never point preview at the production database.
+
+### 3. Database (first deploy or after schema changes)
+
+Against the **production** `DATABASE_URL` (from your machine or CI, not from Vercel logs):
+
+```bash
+# First time or after pulling schema changes
+DATABASE_URL="postgresql://..." npm run db:push
+# OR, if you use generated migrations:
+DATABASE_URL="postgresql://..." npm run db:migrate
+```
+
+**Never** run `npm run db:seed` against production — that inserts demo products.
+
+### 4. Stripe (live mode)
+
+1. [Stripe Dashboard → Developers → Webhooks](https://dashboard.stripe.com/webhooks) → **Add endpoint**
+2. URL: `https://kingof.lol/api/webhooks/stripe`
+3. Events: at minimum `checkout.session.completed`
+4. Copy the **Signing secret** → `STRIPE_WEBHOOK_SECRET` in Vercel
+5. Confirm live API keys are in Vercel (not test keys)
+
+### 5. Resend (email)
+
+1. Verify your sending domain in [Resend](https://resend.com/domains)
+2. Set live `RESEND_API_KEY` in Vercel
+3. Test after deploy: submit a product and confirm the management-link email arrives
+
+### 6. Cron
+
+`vercel.json` already defines three cron jobs. On Vercel Pro+, they run automatically. Ensure `CRON_SECRET` is set — routes reject unauthorized calls when it is present.
+
+### 7. README & docs sanity check
+
+Before shipping, confirm docs still match the app:
+
+- [ ] **README.md** — routes table matches `src/app/[locale]/` (new pages like `/products`, `/new`?)
+- [ ] **Environment variables** — any new `process.env.*` added to code is listed in README + `.env.example`
+- [ ] **API routes** — new routes under `src/app/api/` documented in [API routes](#api-routes)
+- [ ] **i18n** — new user-facing strings added to all 10 locales (`npm run validate:i18n`)
+- [ ] **Cron** — new jobs added to `vercel.json` and README cron table
+
+See [Keeping README & docs up to date](#keeping-readme--docs-up-to-date) for the full doc-update workflow.
+
+---
+
 ## Deployment
 
-Built for **Vercel** — the code assumes it: `vercel.json` defines cron schedules, the `www` → apex redirect, and security headers; cron routes expect Vercel's own `Authorization: Bearer` cron pattern.
+Built for **Vercel** — the code assumes it: `vercel.json` defines cron schedules, the `www` → apex redirect, and security headers; cron routes expect Vercel's `Authorization: Bearer` cron pattern.
 
-1. Connect the Git repo to Vercel.
-2. Set all [environment variables](#environment-variables) in the Vercel project.
-3. Run `npm run db:push` or `db:migrate` against production DB before first deploy.
-4. Configure Stripe webhook endpoint: `https://kingof.lol/api/webhooks/stripe`
-5. Cron jobs run automatically via `vercel.json`.
+### Deploy steps
+
+1. Complete the [Release checklist](#release-checklist-before-production) above.
+2. Connect the Git repo to Vercel (or push to the production branch).
+3. Set all production [environment variables](#environment-variables) in Vercel **before** the first deploy.
+4. Run `db:push` or `db:migrate` against the production database.
+5. Deploy (automatic on push, or manual redeploy in Vercel).
+6. Run the [After deploying](#after-deploying-to-production) smoke tests.
 
 `www.kingof.lol` redirects to `kingof.lol` (configured in `vercel.json`).
+
+### What Vercel sets automatically
+
+You do **not** need to configure these manually on Vercel:
+
+- `NODE_ENV=production` — enables production build (console stripped from client bundles)
+- `x-vercel-ip-country` — used for by-country leaderboards and click geo
+- Cron `Authorization` header — Vercel sends `Bearer {CRON_SECRET}` when `CRON_SECRET` is set
 
 ### Alternative: Netlify
 
@@ -533,15 +642,120 @@ Netlify works too, but `vercel.json` does nothing there — it's Vercel-only con
 
 ---
 
+## After deploying to production
+
+Run this smoke test **immediately after** a production deploy (or after changing env vars / Stripe / DB).
+
+### Automated
+
+```bash
+# From your machine — should return 200
+curl -s -o /dev/null -w "%{http_code}" https://kingof.lol/en
+curl -s -o /dev/null -w "%{http_code}" https://kingof.lol/en/submit
+curl -s -o /dev/null -w "%{http_code}" https://kingof.lol/en/products
+```
+
+### Manual checklist
+
+| Check | How | Expected |
+|-------|-----|----------|
+| Homepage loads | Open `https://kingof.lol/en` | King, categories, activity visible |
+| Locales | Spot-check `/de`, `/ja` | Translated UI, no `MISSING_MESSAGE` |
+| Submit flow | `/en/submit` → paste URL → free list | Success; management email received |
+| Paid bid | Submit with $5+ bid | Redirects to Stripe **live** Checkout |
+| Stripe webhook | Complete a live/test payment | Product rank updates; bid `confirmed` in DB |
+| Product page | Click through from leaderboard | `/en/product/{slug}` loads |
+| Click tracking | Click a product outbound link | Row in `clicks` table; geo on Vercel |
+| By country | `/en/by-country` | Country picker works; data after real clicks |
+| Cron | Vercel → Cron logs (next hour) | `snapshots`, `random-picks` succeed |
+| Errors | Sentry dashboard | No spike in new errors |
+| SEO | `https://kingof.lol/sitemap.xml` | Lists main routes |
+| Security | Browser devtools console | No app secrets or debug logs leaked |
+
+### If something fails after deploy
+
+1. **Vercel → Deployments → Logs** — build or runtime errors
+2. **Stripe → Webhooks** — delivery failures for `/api/webhooks/stripe`
+3. **Resend → Logs** — email bounces or API errors
+4. **Sentry** — stack traces (if DSN configured)
+5. Roll back deployment in Vercel if critical; fix forward on a new deploy
+
+---
+
+## Keeping README & docs up to date
+
+There is only one project README (`README.md`). Update it **in the same PR** when you change behavior that operators or new teammates need to know.
+
+### When to update README
+
+| You changed… | Update in README |
+|--------------|------------------|
+| New page under `src/app/[locale]/` | [Main pages](#main-pages) table |
+| New API route | [API routes](#api-routes) table |
+| New env var in code | [Environment variables](#environment-variables) + `.env.example` |
+| New cron job | [Background jobs](#background-jobs-cron) + `vercel.json` |
+| New npm script | [Scripts & npm commands](#scripts--npm-commands) |
+| New locale or i18n workflow | [Internationalization](#internationalization-i18n) |
+| Deploy / hosting steps | [Release checklist](#release-checklist-before-production) or [Deployment](#deployment) |
+| Payment or email flow | [Payments & webhooks](#payments--webhooks-stripe) |
+
+### How to verify docs are current (before merge)
+
+```bash
+# 1. Full quality gate
+npm run verify
+
+# 2. i18n keys match across all locales
+npm run validate:i18n
+
+# 3. Env template matches code — search for new env usage:
+rg "process\.env\." src --no-heading | sort -u
+# Compare output to README env table and .env.example
+
+# 4. Routes — list app pages and compare to README "Main pages"
+find src/app/\[locale\] -name page.tsx | sort
+
+# 5. API routes — list and compare to README "API routes"
+find src/app/api -name route.ts | sort
+```
+
+### PR checklist (copy into description)
+
+```markdown
+- [ ] `npm run verify` passes
+- [ ] README updated (routes / env / API / deploy) if behavior changed
+- [ ] `.env.example` updated if new env vars added
+- [ ] All 10 locales updated (`npm run validate:i18n`)
+- [ ] Production env vars noted for ops (if new secrets)
+```
+
+### Who updates what
+
+| Audience | Document |
+|----------|----------|
+| Engineers | `README.md`, `.env.example`, code comments for non-obvious logic |
+| Operators / deploy | [Release checklist](#release-checklist-before-production), Vercel env dashboard |
+| Product / copy | `src/i18n/locales/en/app.json` (+ propagate to other locales) |
+| Legal / rules | `/en/rules` content in locale files |
+
+---
+
 ## Testing & quality checks
 
 ```bash
 npm run test              # Vitest — lib, metadata, SEO, clicks, email
 npm run validate:i18n     # All 10 locales complete
-npm run verify            # Full pre-merge pipeline
+npm run verify            # Full pre-merge / pre-deploy pipeline
 ```
 
-Before opening a PR, run `npm run verify` locally.
+| When | Command |
+|------|---------|
+| Every PR | `npm run verify` |
+| Quick iteration | `npm run typecheck` + `npm run test` |
+| Copy changes only | `npm run validate:i18n` |
+| Before production deploy | Full [Release checklist](#release-checklist-before-production) |
+
+Before opening a PR, run `npm run verify` locally. Before deploying to production, run `verify` on the commit you are about to ship.
 
 ---
 
@@ -566,6 +780,9 @@ Before opening a PR, run `npm run verify` locally.
 | Bid shows wrong dollar amount | Remember DB stores **cents**; divide by 100 |
 | Activity not updating live | Polls every **45s** — not WebSockets; refresh or wait |
 | i18n validation fails | Add missing keys to all locale files or run fill script |
+| Submit shows success but 404 on product | API may have failed — check Stripe/DB; paid listings stay `pending` until webhook |
+| By country empty locally | Normal — needs Vercel geo headers + real clicks with `country_code` |
+| Console logs in production | Client `console.*` is stripped in prod builds; use Sentry for errors |
 
 ---
 
