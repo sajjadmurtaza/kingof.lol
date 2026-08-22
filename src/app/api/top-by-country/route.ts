@@ -4,19 +4,17 @@ import {
   getCountryMeta,
   getAllCountries,
 } from "@/domains/leaderboard/queries";
+import { getRequestCountryCode } from "@/lib/request-country";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const country = searchParams.get("country")?.toUpperCase();
 
   if (!country) {
-    const detected =
-      request.headers.get("x-vercel-ip-country") ||
-      request.headers.get("cf-ipcountry") ||
-      null;
+    const detected = getRequestCountryCode(request);
 
     return NextResponse.json({
-      detectedCountry: detected?.toUpperCase() ?? null,
+      detectedCountry: detected,
       countries: getAllCountries(),
     });
   }

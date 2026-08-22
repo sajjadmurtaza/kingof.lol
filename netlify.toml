@@ -1,0 +1,21 @@
+# Netlify — staging / backup deploy alongside Vercel (production: kingof.lol on Vercel).
+# Connect the same Git repo at https://app.netlify.com — env vars must be set in Netlify UI.
+
+[build]
+  command = "npm run build"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[[redirects]]
+  from = "https://www.kingof.lol/*"
+  to = "https://kingof.lol/:splat"
+  status = 301
+  force = true
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"

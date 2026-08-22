@@ -38,6 +38,8 @@
     "stripe": "^22.5.0"
   },
   "devDependencies": {
+    "@netlify/functions": "^6.0.0",
+    "@netlify/plugin-nextjs": "^5.15.13",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^26.2.0",
     "@types/pg": "^8.23.1",

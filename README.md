@@ -222,7 +222,9 @@ kingof/
 │   ├── fill-locale-gaps.mjs
 │   └── patch-rules-legal.mjs
 ├── drizzle.config.ts
-├── vercel.json                # Cron schedules, redirects, security headers
+├── vercel.json                # Cron schedules, redirects, security headers (Vercel)
+├── netlify.toml               # Netlify build + redirects + headers
+├── netlify/functions/         # Scheduled cron pings (Netlify)
 ├── .env.local.example         # Copy to .env.local
 └── package.json
 ```
@@ -333,7 +335,7 @@ Copy `.env.local.example` → `.env.local`.
 | Resend | Test API key | Live key + verified sending domain |
 | `db:seed` | OK for local sample data | **Do not run** on production DB |
 | Console logs | Visible in terminal | Stripped from client bundles (`removeConsole` in prod build) |
-| Geo / by-country | No country detection on localhost | Uses `x-vercel-ip-country` on Vercel |
+| Geo / by-country | No country detection on localhost | Vercel: `x-vercel-ip-country`; Netlify: `x-country` |
 
 ---
 
@@ -631,14 +633,41 @@ You do **not** need to configure these manually on Vercel:
 - `x-vercel-ip-country` — used for by-country leaderboards and click geo
 - Cron `Authorization` header — Vercel sends `Bearer {CRON_SECRET}` when `CRON_SECRET` is set
 
-### Alternative: Netlify
+### Alternative: Netlify (dual deploy)
 
-Netlify works too, but `vercel.json` does nothing there — it's Vercel-only config. Before deploying to Netlify:
+You can deploy the **same Git repo** to both Vercel and [Netlify](https://app.netlify.com/) on every push. Use **one platform for production** (`kingof.lol` on Vercel) and Netlify for staging/backup on a Netlify URL.
 
-- **Cron:** Netlify has no equivalent of `vercel.json`'s cron block read automatically. Either use Netlify Scheduled Functions, or ping the three `/api/cron/*` routes hourly/daily from an external scheduler (cron-job.org, a GitHub Actions workflow) with the `Authorization: Bearer {CRON_SECRET}` header.
-- **`www` redirect / security headers:** add a `netlify.toml` (or `_redirects`/`_headers` file) — the ones in `vercel.json` are ignored.
-- **Env vars:** Netlify never reads `.env.local` — every variable in [Environment variables](#environment-variables) has to be re-entered in Site settings → Environment variables.
-- **If the deployed site 404s on every path** (including static assets under `/_next/static/...`), the Next.js Runtime plugin most likely isn't wired up — check Site settings → Build & deploy for the build command/publish directory and confirm `@netlify/plugin-nextjs` is active, and check the deploy log for a build-time failure (commonly a missing required env var).
+#### What's included in the repo
+
+| File | Purpose |
+|------|---------|
+| `netlify.toml` | Build command, `@netlify/plugin-nextjs`, `www` redirect, security headers |
+| `netlify/functions/cron-*.mts` | Scheduled jobs that ping `/api/cron/*` (same schedule as `vercel.json`) |
+
+#### Netlify setup (first time)
+
+1. Go to [app.netlify.com](https://app.netlify.com/) → **Add new site** → **Import from Git**
+2. Select the same repo and branch as Vercel
+3. Netlify reads `netlify.toml` automatically — no manual build settings needed
+4. **Site settings → Environment variables** — copy every var from [Environment variables](#environment-variables) (Netlify does not read `.env.local`)
+5. Deploy — your site will be at `https://<name>.netlify.app`
+6. **Do not** point `kingof.lol` DNS at Netlify unless you are migrating off Vercel
+
+#### Dual-deploy rules
+
+| | Vercel (production) | Netlify (staging) |
+|--|---------------------|-------------------|
+| Domain | `kingof.lol` | `*.netlify.app` or staging subdomain |
+| Stripe | Live keys + webhook → `kingof.lol/api/webhooks/stripe` | Test keys, or a **second** webhook for the Netlify URL |
+| Database | Production Postgres | Staging DB recommended (or same DB only if you accept shared data) |
+| Cron | `vercel.json` (automatic) | `netlify/functions/cron-*.mts` (automatic when `CRON_SECRET` is set) |
+| Geo / by-country | `x-vercel-ip-country` | `x-country` (supported in code) |
+
+#### If Netlify build fails
+
+- Confirm `@netlify/plugin-nextjs` is in `package.json` (installed as devDependency)
+- Check deploy log for missing env vars (especially `DATABASE_URL`)
+- If every path 404s, ensure the Next.js runtime plugin is active in **Site configuration → Build & deploy**
 
 ---
 

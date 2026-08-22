@@ -4,6 +4,7 @@ import * as Sentry from "@sentry/nextjs";
 import { getDb } from "@/db";
 import { clicks, products } from "@/db/schema";
 import { getClientIp, hashIp, isBot, isRateLimited } from "@/domains/clicks/tracking";
+import { getRequestCountryCode } from "@/lib/request-country";
 
 export async function GET(
   request: Request,
@@ -35,7 +36,7 @@ export async function GET(
     return NextResponse.json({ error: "Product not found" }, { status: 404 });
   }
 
-  const countryCode = request.headers.get("x-vercel-ip-country") || null;
+  const countryCode = getRequestCountryCode(request);
 
   try {
     await db.insert(clicks).values({

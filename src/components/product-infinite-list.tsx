@@ -9,6 +9,12 @@ import type {
 import { ProductLeaderboardRow } from "@/components/product-leaderboard-row";
 
 const DEFAULT_PAGE_SIZE = 10;
+const SCROLL_ROOT_MARGIN_PX = 120;
+
+function isNearViewport(node: HTMLElement): boolean {
+  const rect = node.getBoundingClientRect();
+  return rect.top <= window.innerHeight + SCROLL_ROOT_MARGIN_PX;
+}
 
 export function ProductInfiniteList({
   initial,
@@ -33,18 +39,21 @@ export function ProductInfiniteList({
   const [hasMore, setHasMore] = useState(initial.hasMore);
   const [total, setTotal] = useState(initial.total);
   const [loading, setLoading] = useState(false);
+
   const loadingRef = useRef(false);
+  const pageRef = useRef(initial.page);
+  const hasMoreRef = useRef(initial.hasMore);
   const sentinelRef = useRef<HTMLDivElement>(null);
-  /** Prevents auto-load on mount when the sentinel is already in view. */
-  const sentinelLeftViewRef = useRef(false);
+  /** Blocks auto-load on mount when the sentinel is already on screen. */
+  const autoLoadEnabledRef = useRef(false);
 
   const loadMore = useCallback(async () => {
-    if (loadingRef.current || !hasMore) return;
+    if (loadingRef.current || !hasMoreRef.current) return;
 
     loadingRef.current = true;
     setLoading(true);
 
-    const nextPage = page + 1;
+    const nextPage = pageRef.current + 1;
     const params = new URLSearchParams({
       sort,
       page: String(nextPage),
@@ -64,6 +73,8 @@ export function ProductInfiniteList({
         const fresh = data.products.filter((p) => !seen.has(p.id));
         return [...prev, ...fresh];
       });
+      pageRef.current = data.page;
+      hasMoreRef.current = data.hasMore;
       setPage(data.page);
       setHasMore(data.hasMore);
       setTotal(data.total);
@@ -71,7 +82,40 @@ export function ProductInfiniteList({
       loadingRef.current = false;
       setLoading(false);
     }
-  }, [hasMore, page, resolvedPageSize, sort, newWithinMinutes]);
+  }, [sort, resolvedPageSize, newWithinMinutes]);
+
+  const maybeAutoLoad = useCallback(() => {
+    if (!autoLoadEnabledRef.current || !hasMoreRef.current || loadingRef.current) return;
+
+    const node = sentinelRef.current;
+    if (node && isNearViewport(node)) {
+      void loadMore();
+    }
+  }, [loadMore]);
+
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (node && !isNearViewport(node)) {
+      autoLoadEnabledRef.current = true;
+    }
+  }, []);
+
+  useEffect(() => {
+    const engage = () => {
+      autoLoadEnabledRef.current = true;
+      maybeAutoLoad();
+    };
+
+    window.addEventListener("scroll", engage, { passive: true });
+    window.addEventListener("wheel", engage, { passive: true });
+    window.addEventListener("touchmove", engage, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", engage);
+      window.removeEventListener("wheel", engage);
+      window.removeEventListener("touchmove", engage);
+    };
+  }, [maybeAutoLoad]);
 
   useEffect(() => {
     const node = sentinelRef.current;
@@ -79,24 +123,16 @@ export function ProductInfiniteList({
 
     const observer = new IntersectionObserver(
       (entries) => {
-        const entry = entries[0];
-        if (!entry) return;
-
-        if (!entry.isIntersecting) {
-          sentinelLeftViewRef.current = true;
-          return;
-        }
-
-        if (sentinelLeftViewRef.current) {
-          void loadMore();
+        if (entries[0]?.isIntersecting) {
+          maybeAutoLoad();
         }
       },
-      { rootMargin: "120px" },
+      { rootMargin: `${SCROLL_ROOT_MARGIN_PX}px` },
     );
 
     observer.observe(node);
     return () => observer.disconnect();
-  }, [hasMore, loadMore]);
+  }, [hasMore, maybeAutoLoad]);
 
   if (products.length === 0) {
     return (
@@ -133,9 +169,7 @@ export function ProductInfiniteList({
         <p className="text-center text-xs text-text-dim sm:text-left">
           {loading
             ? t("loadingMore")
-            : hasMore
-              ? t("rangeCount", { start: 1, end: rangeEnd, total })
-              : t("rangeCount", { start: 1, end: rangeEnd, total })}
+            : t("rangeCount", { start: 1, end: rangeEnd, total })}
         </p>
 
         {hasMore && (
