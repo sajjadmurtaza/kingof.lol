@@ -64,6 +64,15 @@ describe("resolveSubmitOutcome", () => {
     ).toEqual({ type: "error", message: "This product is already listed" });
   });
 
+  it("prefers Stripe reason on failed API response", () => {
+    expect(
+      resolveSubmitOutcome(
+        { ok: false, data: { error: "Payment setup failed", reason: "Invalid API Key provided" } },
+        { bidCents: 2500, productName: "KINGOF", fallbackError: fallback },
+      ),
+    ).toEqual({ type: "error", message: "Invalid API Key provided" });
+  });
+
   it("returns error on 500 without message", () => {
     expect(
       resolveSubmitOutcome(

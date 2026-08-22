@@ -5,11 +5,11 @@ import * as Sentry from "@sentry/nextjs";
 import { getDb } from "@/db";
 import { products, categories, bids } from "@/db/schema";
 import { normalizeUrl } from "@/lib/url";
-import { createBidCheckoutSession } from "@/domains/payments/stripe";
+import { createBidCheckoutSession, formatStripeError } from "@/domains/payments/stripe";
 import { sendManagementLinkEmail } from "@/domains/email/resend";
 import { getProductRanks } from "@/domains/leaderboard/queries";
 import { notifySlack } from "@/lib/slack";
-import { SITE_URL } from "@/lib/site-url";
+import { getSiteUrl } from "@/lib/site-url";
 
 export async function POST(request: Request) {
   try {
@@ -129,7 +129,7 @@ export async function POST(request: Request) {
         sendManagementLinkEmail({
           to: email,
           productName: name,
-          manageUrl: `${SITE_URL}/manage/${rawToken}`,
+          manageUrl: `${getSiteUrl()}/manage/${rawToken}`,
         }).catch((err) => {
           Sentry.captureException(err, {
             tags: { route: "api/submit", failure: "email_send_failed" },
@@ -155,13 +155,16 @@ export async function POST(request: Request) {
           });
         }
 
-        const stripeMessage = err instanceof Error ? err.message : "Unknown Stripe error";
+        const stripeMessage = formatStripeError(err);
         Sentry.captureException(err, {
           tags: { route: "api/submit", failure: "stripe_checkout_failed" },
-          extra: { productId: product.id, slug, stripeMessage },
+          extra: { productId: product.id, slug, stripeMessage, siteUrl: getSiteUrl() },
         });
         notifySlack(`🔴 Stripe checkout failed for "${name}" (${slug}): ${stripeMessage}`);
-        return NextResponse.json({ error: "Payment setup failed" }, { status: 500 });
+        return NextResponse.json(
+          { error: "Payment setup failed", reason: stripeMessage },
+          { status: 500 },
+        );
       }
     }
 
@@ -169,7 +172,7 @@ export async function POST(request: Request) {
     sendManagementLinkEmail({
       to: email,
       productName: name,
-      manageUrl: `${SITE_URL}/manage/${rawToken}`,
+      manageUrl: `${getSiteUrl()}/manage/${rawToken}`,
     }).catch((err) => {
       Sentry.captureException(err, { tags: { route: "api/submit", failure: "email_send_failed" } });
     });
@@ -179,7 +182,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       slug,
-      manageUrl: `${SITE_URL}/manage/${rawToken}`,
+      manageUrl: `${getSiteUrl()}/manage/${rawToken}`,
       ...(ranks ?? {}),
     });
   } catch (err) {

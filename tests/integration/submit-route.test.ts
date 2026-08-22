@@ -8,9 +8,13 @@ vi.mock("@/db", () => ({
   getDb: () => mock.db,
 }));
 
-vi.mock("@/domains/payments/stripe", () => ({
-  createBidCheckoutSession: vi.fn(),
-}));
+vi.mock("@/domains/payments/stripe", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/domains/payments/stripe")>();
+  return {
+    ...actual,
+    createBidCheckoutSession: vi.fn(),
+  };
+});
 
 vi.mock("@/domains/email/resend", () => ({
   sendManagementLinkEmail: vi.fn().mockResolvedValue(undefined),
@@ -140,7 +144,10 @@ describe("POST /api/submit", () => {
     );
 
     expect(res.status).toBe(500);
-    await expect(res.json()).resolves.toMatchObject({ error: "Payment setup failed" });
+    await expect(res.json()).resolves.toMatchObject({
+      error: "Payment setup failed",
+      reason: "Stripe down",
+    });
     expect(mock.db.delete).toHaveBeenCalledTimes(2);
   });
 

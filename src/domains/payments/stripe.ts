@@ -1,18 +1,33 @@
 import Stripe from "stripe";
-import { SITE_URL } from "@/lib/site-url";
+import { getSiteUrl } from "@/lib/site-url";
 
 let _stripe: Stripe | null = null;
 
+function readStripeSecretKey(): string {
+  const raw = process.env.STRIPE_SECRET_KEY?.trim();
+  if (!raw) throw new Error("STRIPE_SECRET_KEY not set");
+  const key = raw.replace(/^['"]|['"]$/g, "");
+  if (!key.startsWith("sk_")) {
+    throw new Error("STRIPE_SECRET_KEY must start with sk_ (secret key, not pk_)");
+  }
+  return key;
+}
+
 export function getStripe(): Stripe {
   if (!_stripe) {
-    const key = process.env.STRIPE_SECRET_KEY;
-    if (!key) throw new Error("STRIPE_SECRET_KEY not set");
-    if (!key.startsWith("sk_")) {
-      throw new Error("STRIPE_SECRET_KEY is invalid");
-    }
-    _stripe = new Stripe(key);
+    _stripe = new Stripe(readStripeSecretKey());
   }
   return _stripe;
+}
+
+export function formatStripeError(err: unknown): string {
+  if (err instanceof Stripe.errors.StripeError) {
+    return err.message;
+  }
+  if (err instanceof Error) {
+    return err.message;
+  }
+  return "Unknown Stripe error";
 }
 
 export async function createBidCheckoutSession({
@@ -35,6 +50,7 @@ export async function createBidCheckoutSession({
   locale?: string;
 }): Promise<string> {
   const stripe = getStripe();
+  const siteUrl = getSiteUrl();
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
@@ -59,8 +75,8 @@ export async function createBidCheckoutSession({
       bidId,
       bidAmount: bidAmountCents.toString(),
     },
-    success_url: `${SITE_URL}/manage/${manageToken}?bid=success`,
-    cancel_url: `${SITE_URL}/${locale}/product/${productSlug}`,
+    success_url: `${siteUrl}/manage/${manageToken}?bid=success`,
+    cancel_url: `${siteUrl}/${locale}/product/${productSlug}`,
   });
 
   if (!session.url) {

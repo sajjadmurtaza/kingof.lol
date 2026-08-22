@@ -25,7 +25,7 @@ describe("stripe payments", () => {
   it("throws when STRIPE_SECRET_KEY is invalid", async () => {
     process.env.STRIPE_SECRET_KEY = "not-a-stripe-key";
     const { getStripe } = await import("./stripe");
-    expect(() => getStripe()).toThrow("STRIPE_SECRET_KEY is invalid");
+    expect(() => getStripe()).toThrow("STRIPE_SECRET_KEY must start with sk_");
   });
 
   it("reuses stripe client singleton", async () => {

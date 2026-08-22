@@ -177,6 +177,7 @@ export function SubmissionFlow({
       });
 
       const data = (await res.json().catch(() => ({}))) as {
+        reason?: string;
         error?: string;
         slug?: string;
         checkoutUrl?: string;
