@@ -4,14 +4,6 @@
     { "path": "/api/cron/random-picks", "schedule": "0 1 * * *" },
     { "path": "/api/cron/hidden-gems", "schedule": "0 6 * * *" }
   ],
-  "redirects": [
-    {
-      "source": "/:path(.*)",
-      "has": [{ "type": "host", "value": "www.kingof.lol" }],
-      "destination": "https://kingof.lol/:path",
-      "permanent": true
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)",

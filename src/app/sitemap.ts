@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
 import { SUPPORTED_LOCALES } from "@/i18n/config";
-
-const SITE_URL = "https://kingof.lol";
+import { SITE_URL } from "@/lib/site-url";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages = [
@@ -22,17 +21,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let productSlugs: string[] = [];
 
   try {
-    const { getAllCategories, getTopProducts } = await import(
-      "@/domains/leaderboard/queries"
-    );
-    const [cats, products] = await Promise.all([
-      getAllCategories(),
-      getTopProducts(1000),
-    ]);
+    const { getAllCategories, getTopProducts } = await import("@/domains/leaderboard/queries");
+    const [cats, products] = await Promise.all([getAllCategories(), getTopProducts(1000)]);
     categorySlugs = cats.map((c) => c.slug);
-    productSlugs = products
-      .filter((p) => p.status === "approved")
-      .map((p) => p.slug);
+    productSlugs = products.filter((p) => p.status === "approved").map((p) => p.slug);
   } catch {
     // DB unavailable during build
   }

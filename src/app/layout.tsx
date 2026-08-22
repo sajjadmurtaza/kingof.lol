@@ -20,7 +20,7 @@ const display = Plus_Jakarta_Sans({
   display: "swap",
 });
 
-const SITE_URL = "https://kingof.lol";
+import { SITE_URL } from "@/lib/site-url";
 
 const verification: Record<string, string> = {};
 if (process.env.GOOGLE_SITE_VERIFICATION) {

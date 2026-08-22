@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES, htmlLang } from "@/i18n/config";
-
-const SITE_URL = "https://kingof.lol";
+import { SITE_URL } from "@/lib/site-url";
 
 /**
  * hreflangPath is the path WITHOUT a locale prefix (e.g. "/categories", "" for home).
@@ -94,7 +93,9 @@ export type JsonLdBreadcrumb = {
   }[];
 };
 
-export function websiteJsonLd(description = "Product leaderboard and discovery platform. Products compete for the crown."): JsonLdWebSite {
+export function websiteJsonLd(
+  description = "Product leaderboard and discovery platform. Products compete for the crown.",
+): JsonLdWebSite {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",

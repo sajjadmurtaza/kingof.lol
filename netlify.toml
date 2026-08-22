@@ -15,8 +15,8 @@
   status = 302
 
 [[redirects]]
-  from = "https://www.kingof.lol/*"
-  to = "https://kingof.lol/:splat"
+  from = "https://kingof.lol/*"
+  to = "https://www.kingof.lol/:splat"
   status = 301
   force = true
 

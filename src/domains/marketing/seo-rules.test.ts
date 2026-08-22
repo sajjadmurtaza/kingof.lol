@@ -35,8 +35,8 @@ describe.skipIf(!hasBuild)("SEO rules — built HTML verification", () => {
       expect(html).toMatch(/name="description"\s+content="[^"]+"/);
     });
 
-    it("has canonical URL pointing to kingof.lol", () => {
-      expect(html).toMatch(/rel="canonical"\s+href="https:\/\/kingof\.lol/);
+    it("has canonical URL pointing to www.kingof.lol", () => {
+      expect(html).toMatch(/rel="canonical"\s+href="https:\/\/www\.kingof\.lol/);
     });
 
     it("has Open Graph tags", () => {
@@ -101,7 +101,7 @@ describe.skipIf(!hasBuild)("SEO rules — built HTML verification", () => {
     });
 
     it("has canonical pointing to categories", () => {
-      expect(html).toContain('href="https://kingof.lol/en/categories"');
+      expect(html).toContain('href="https://www.kingof.lol/en/categories"');
     });
   });
 
@@ -117,11 +117,11 @@ describe.skipIf(!hasBuild)("SEO rules — built HTML verification", () => {
     });
 
     it("has correct canonical URL", () => {
-      expect(html).toContain('href="https://kingof.lol/en/submit"');
+      expect(html).toContain('href="https://www.kingof.lol/en/submit"');
     });
 
     it("has OG URL pointing to submit page", () => {
-      expect(html).toMatch(/og:url.*https:\/\/kingof\.lol\/en\/submit/);
+      expect(html).toMatch(/og:url.*https:\/\/www\.kingof\.lol\/en\/submit/);
     });
   });
 
@@ -175,11 +175,11 @@ describe.skipIf(!hasBuild)("robots.txt verification", () => {
   });
 
   it.skipIf(!hasRobots)("references sitemap", () => {
-    expect(content).toContain("Sitemap: https://kingof.lol/sitemap.xml");
+    expect(content).toContain("Sitemap: https://www.kingof.lol/sitemap.xml");
   });
 
   it.skipIf(!hasRobots)("references canonical host", () => {
-    expect(content).toContain("https://kingof.lol");
+    expect(content).toContain("https://www.kingof.lol");
   });
 });
 
@@ -194,15 +194,15 @@ describe.skipIf(!hasBuild)("sitemap.xml verification", () => {
   });
 
   it.skipIf(!hasSitemap)("contains homepage", () => {
-    expect(content).toContain("https://kingof.lol/en");
+    expect(content).toContain("https://www.kingof.lol/en");
   });
 
   it.skipIf(!hasSitemap)("contains categories page", () => {
-    expect(content).toContain("https://kingof.lol/en/categories");
+    expect(content).toContain("https://www.kingof.lol/en/categories");
   });
 
   it.skipIf(!hasSitemap)("contains outbid-alternative", () => {
-    expect(content).toContain("https://kingof.lol/en/outbid-alternative");
+    expect(content).toContain("https://www.kingof.lol/en/outbid-alternative");
   });
 
   it.skipIf(!hasSitemap)("does NOT contain /manage/", () => {
@@ -213,12 +213,12 @@ describe.skipIf(!hasBuild)("sitemap.xml verification", () => {
     expect(content).not.toContain("/api/");
   });
 
-  it.skipIf(!hasSitemap)("uses kingof.lol domain for all <loc> entries", () => {
+  it.skipIf(!hasSitemap)("uses www.kingof.lol domain for all <loc> entries", () => {
     const locs = content.match(/<loc>([^<]+)<\/loc>/g) ?? [];
     expect(locs.length).toBeGreaterThan(0);
     for (const loc of locs) {
       const url = loc.replace(/<\/?loc>/g, "");
-      expect(url).toMatch(/^https:\/\/kingof\.lol/);
+      expect(url).toMatch(/^https:\/\/www\.kingof\.lol/);
     }
   });
 
