@@ -32,8 +32,21 @@ vi.mock("@sentry/nextjs", () => ({
   captureException: vi.fn(),
 }));
 
+vi.mock("@/domains/submissions/free-listing-limit", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/domains/submissions/free-listing-limit")>();
+  return {
+    ...actual,
+    hasFreeListingFromIp: vi.fn(actual.hasFreeListingFromIp),
+    recordFreeListingClaim: vi.fn(actual.recordFreeListingClaim),
+  };
+});
+
 import { createBidCheckoutSession } from "@/domains/payments/stripe";
 import { getProductRanks } from "@/domains/leaderboard/queries";
+import {
+  hasFreeListingFromIp,
+  recordFreeListingClaim,
+} from "@/domains/submissions/free-listing-limit";
 import { POST as submitPost } from "@/app/api/submit/route";
 
 function submitBody(overrides: Record<string, unknown> = {}) {
@@ -50,7 +63,7 @@ function submitBody(overrides: Record<string, unknown> = {}) {
 }
 
 describe("POST /api/submit", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     mock.reset();
     vi.clearAllMocks();
     vi.mocked(getProductRanks).mockResolvedValue({
@@ -59,6 +72,12 @@ describe("POST /api/submit", () => {
       categoryName: "SaaS",
       categoryEmoji: "☁️",
     });
+
+    const actual = await vi.importActual<typeof import("@/domains/submissions/free-listing-limit")>(
+      "@/domains/submissions/free-listing-limit",
+    );
+    vi.mocked(hasFreeListingFromIp).mockImplementation(actual.hasFreeListingFromIp);
+    vi.mocked(recordFreeListingClaim).mockImplementation(actual.recordFreeListingClaim);
   });
 
   it("creates a free listing and returns real ranks (not hardcoded UI placeholders)", async () => {
@@ -83,6 +102,71 @@ describe("POST /api/submit", () => {
       categoryRank: 7,
       categoryName: "SaaS",
     });
+    expect(recordFreeListingClaim).not.toHaveBeenCalled();
+  });
+
+  it("records a free listing claim in production after a successful submit", async () => {
+    const originalEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
+    vi.mocked(hasFreeListingFromIp).mockResolvedValue(false);
+
+    mock.enqueue([]);
+    mock.enqueue([{ id: sampleCategory.id }]);
+    mock.enqueue([]);
+    mock.enqueue([{ id: "prod-new", slug: "launch-app" }]);
+
+    const res = await submitPost(
+      new Request("https://kingof.lol/api/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-forwarded-for": "203.0.113.77",
+        },
+        body: JSON.stringify(
+          submitBody({
+            bid: 0,
+            name: "Launch App",
+            url: "https://launch-app.example",
+          }),
+        ),
+      }),
+    );
+
+    process.env.NODE_ENV = originalEnv;
+
+    expect(res.status).toBe(200);
+    expect(recordFreeListingClaim).toHaveBeenCalledWith(expect.any(String), "prod-new");
+  });
+
+  it("returns 500 when the free listing claim table is missing in production", async () => {
+    const originalEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
+    vi.mocked(hasFreeListingFromIp).mockRejectedValue(
+      Object.assign(new Error('relation "free_listing_claims" does not exist'), {
+        code: "42P01",
+      }),
+    );
+
+    mock.enqueue([]);
+    mock.enqueue([{ id: sampleCategory.id }]);
+
+    const res = await submitPost(
+      new Request("https://kingof.lol/api/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-forwarded-for": "203.0.113.88",
+        },
+        body: JSON.stringify(
+          submitBody({ bid: 0, url: "https://missing-table.example", name: "Missing Table" }),
+        ),
+      }),
+    );
+
+    process.env.NODE_ENV = originalEnv;
+
+    expect(res.status).toBe(500);
+    await expect(res.json()).resolves.toMatchObject({ error: "Internal error" });
   });
 
   it("rejects a second free listing from the same IP in production", async () => {

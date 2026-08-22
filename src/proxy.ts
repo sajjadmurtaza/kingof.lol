@@ -1,8 +1,10 @@
 import createMiddleware from "next-intl/middleware";
 import { routing } from "./i18n/routing";
+import { LOCALE_MIDDLEWARE_MATCHER } from "./proxy-matcher";
 
 export default createMiddleware(routing);
 
 export const config = {
-  matcher: "/((?!api|manage|payment|trpc|_next|_vercel|.*\\..*).*)",
+  // Keep metadata routes, APIs, and static files out of locale prefixing.
+  matcher: LOCALE_MIDDLEWARE_MATCHER,
 };
