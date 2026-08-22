@@ -35,7 +35,8 @@ export function ProductInfiniteList({
   const [loading, setLoading] = useState(false);
   const loadingRef = useRef(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
-  const scrollReadyRef = useRef(false);
+  /** Prevents auto-load on mount when the sentinel is already in view. */
+  const sentinelLeftViewRef = useRef(false);
 
   const loadMore = useCallback(async () => {
     if (loadingRef.current || !hasMore) return;
@@ -73,28 +74,20 @@ export function ProductInfiniteList({
   }, [hasMore, page, resolvedPageSize, sort, newWithinMinutes]);
 
   useEffect(() => {
-    const markScrolled = () => {
-      scrollReadyRef.current = true;
-    };
-
-    window.addEventListener("scroll", markScrolled, { passive: true });
-    window.addEventListener("wheel", markScrolled, { passive: true });
-    window.addEventListener("touchmove", markScrolled, { passive: true });
-
-    return () => {
-      window.removeEventListener("scroll", markScrolled);
-      window.removeEventListener("wheel", markScrolled);
-      window.removeEventListener("touchmove", markScrolled);
-    };
-  }, []);
-
-  useEffect(() => {
     const node = sentinelRef.current;
     if (!node || !hasMore) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0]?.isIntersecting && scrollReadyRef.current) {
+        const entry = entries[0];
+        if (!entry) return;
+
+        if (!entry.isIntersecting) {
+          sentinelLeftViewRef.current = true;
+          return;
+        }
+
+        if (sentinelLeftViewRef.current) {
           void loadMore();
         }
       },
