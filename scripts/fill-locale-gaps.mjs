@@ -609,38 +609,169 @@ const ui = {
 
 const notFound = {
   zh: { title: "页面不存在", body: "在 KINGOF 上找不到这个页面。", cta: "返回 KINGOF" },
-  es: { title: "Esta página no existe", body: "No encontramos esa página en KINGOF.", cta: "Volver a KINGOF" },
-  ar: { title: "هذه الصفحة غير موجودة", body: "لم نتمكن من العثور على هذه الصفحة في KINGOF.", cta: "العودة إلى KINGOF" },
-  hi: { title: "यह पेज मौजूद नहीं है", body: "हमें KINGOF पर यह पेज नहीं मिला।", cta: "KINGOF पर वापस जाएँ" },
-  fr: { title: "Cette page n'existe pas", body: "Nous n'avons pas trouvé cette page sur KINGOF.", cta: "Retour à KINGOF" },
-  de: { title: "Diese Seite gibt es nicht", body: "Diese Seite wurde auf KINGOF nicht gefunden.", cta: "Zurück zu KINGOF" },
-  ja: { title: "ページが見つかりません", body: "KINGOFでこのページは見つかりませんでした。", cta: "KINGOFに戻る" },
-  ko: { title: "페이지를 찾을 수 없습니다", body: "KINGOF에서 해당 페이지를 찾을 수 없습니다.", cta: "KINGOF로 돌아가기" },
-  pt: { title: "Esta página não existe", body: "Não encontramos essa página no KINGOF.", cta: "Voltar ao KINGOF" },
+  es: {
+    title: "Esta página no existe",
+    body: "No encontramos esa página en KINGOF.",
+    cta: "Volver a KINGOF",
+  },
+  ar: {
+    title: "هذه الصفحة غير موجودة",
+    body: "لم نتمكن من العثور على هذه الصفحة في KINGOF.",
+    cta: "العودة إلى KINGOF",
+  },
+  hi: {
+    title: "यह पेज मौजूद नहीं है",
+    body: "हमें KINGOF पर यह पेज नहीं मिला।",
+    cta: "KINGOF पर वापस जाएँ",
+  },
+  fr: {
+    title: "Cette page n'existe pas",
+    body: "Nous n'avons pas trouvé cette page sur KINGOF.",
+    cta: "Retour à KINGOF",
+  },
+  de: {
+    title: "Diese Seite gibt es nicht",
+    body: "Diese Seite wurde auf KINGOF nicht gefunden.",
+    cta: "Zurück zu KINGOF",
+  },
+  ja: {
+    title: "ページが見つかりません",
+    body: "KINGOFでこのページは見つかりませんでした。",
+    cta: "KINGOFに戻る",
+  },
+  ko: {
+    title: "페이지를 찾을 수 없습니다",
+    body: "KINGOF에서 해당 페이지를 찾을 수 없습니다.",
+    cta: "KINGOF로 돌아가기",
+  },
+  pt: {
+    title: "Esta página não existe",
+    body: "Não encontramos essa página no KINGOF.",
+    cta: "Voltar ao KINGOF",
+  },
 };
 
 const manageExtra = {
-  zh: { loading: "加载中…", invalidLinkTitle: "链接无效", invalidLinkDesc: "此管理链接无效或已过期。", notFoundError: "未找到产品或管理链接无效。", rankLabel: "排名", clicksLabel: "点击" },
-  es: { loading: "Cargando…", invalidLinkTitle: "Enlace no válido", invalidLinkDesc: "Este enlace de gestión no es válido o ha expirado.", notFoundError: "Producto no encontrado o enlace de gestión no válido.", rankLabel: "Posición", clicksLabel: "Clics" },
-  ar: { loading: "جارٍ التحميل…", invalidLinkTitle: "رابط غير صالح", invalidLinkDesc: "رابط الإدارة هذا غير صالح أو منتهي الصلاحية.", notFoundError: "المنتج غير موجود أو رابط الإدارة غير صالح.", rankLabel: "الترتيب", clicksLabel: "النقرات" },
-  hi: { loading: "लोड हो रहा है…", invalidLinkTitle: "अमान्य लिंक", invalidLinkDesc: "यह प्रबंधन लिंक अमान्य है या समाप्त हो गया है।", notFoundError: "प्रोडक्ट नहीं मिला या प्रबंधन लिंक अमान्य है।", rankLabel: "रैंक", clicksLabel: "क्लिक" },
-  fr: { loading: "Chargement…", invalidLinkTitle: "Lien invalide", invalidLinkDesc: "Ce lien de gestion n'est pas valide ou a expiré.", notFoundError: "Produit introuvable ou lien de gestion invalide.", rankLabel: "Rang", clicksLabel: "Clics" },
-  de: { loading: "Laden…", invalidLinkTitle: "Ungültiger Link", invalidLinkDesc: "Dieser Verwaltungslink ist ungültig oder abgelaufen.", notFoundError: "Produkt nicht gefunden oder Verwaltungslink ungültig.", rankLabel: "Rang", clicksLabel: "Klicks" },
-  ja: { loading: "読み込み中…", invalidLinkTitle: "無効なリンク", invalidLinkDesc: "この管理リンクは無効か期限切れです。", notFoundError: "製品が見つからないか、管理リンクが無効です。", rankLabel: "順位", clicksLabel: "クリック" },
-  ko: { loading: "로딩 중…", invalidLinkTitle: "잘못된 링크", invalidLinkDesc: "이 관리 링크가 유효하지 않거나 만료되었습니다.", notFoundError: "제품을 찾을 수 없거나 관리 링크가 유효하지 않습니다.", rankLabel: "순위", clicksLabel: "클릭" },
-  pt: { loading: "Carregando…", invalidLinkTitle: "Link inválido", invalidLinkDesc: "Este link de gestão não é válido ou expirou.", notFoundError: "Produto não encontrado ou link de gestão inválido.", rankLabel: "Posição", clicksLabel: "Cliques" },
+  zh: {
+    loading: "加载中…",
+    invalidLinkTitle: "链接无效",
+    invalidLinkDesc: "此管理链接无效或已过期。",
+    notFoundError: "未找到产品或管理链接无效。",
+    rankLabel: "排名",
+    clicksLabel: "点击",
+  },
+  es: {
+    loading: "Cargando…",
+    invalidLinkTitle: "Enlace no válido",
+    invalidLinkDesc: "Este enlace de gestión no es válido o ha expirado.",
+    notFoundError: "Producto no encontrado o enlace de gestión no válido.",
+    rankLabel: "Posición",
+    clicksLabel: "Clics",
+  },
+  ar: {
+    loading: "جارٍ التحميل…",
+    invalidLinkTitle: "رابط غير صالح",
+    invalidLinkDesc: "رابط الإدارة هذا غير صالح أو منتهي الصلاحية.",
+    notFoundError: "المنتج غير موجود أو رابط الإدارة غير صالح.",
+    rankLabel: "الترتيب",
+    clicksLabel: "النقرات",
+  },
+  hi: {
+    loading: "लोड हो रहा है…",
+    invalidLinkTitle: "अमान्य लिंक",
+    invalidLinkDesc: "यह प्रबंधन लिंक अमान्य है या समाप्त हो गया है।",
+    notFoundError: "प्रोडक्ट नहीं मिला या प्रबंधन लिंक अमान्य है।",
+    rankLabel: "रैंक",
+    clicksLabel: "क्लिक",
+  },
+  fr: {
+    loading: "Chargement…",
+    invalidLinkTitle: "Lien invalide",
+    invalidLinkDesc: "Ce lien de gestion n'est pas valide ou a expiré.",
+    notFoundError: "Produit introuvable ou lien de gestion invalide.",
+    rankLabel: "Rang",
+    clicksLabel: "Clics",
+  },
+  de: {
+    loading: "Laden…",
+    invalidLinkTitle: "Ungültiger Link",
+    invalidLinkDesc: "Dieser Verwaltungslink ist ungültig oder abgelaufen.",
+    notFoundError: "Produkt nicht gefunden oder Verwaltungslink ungültig.",
+    rankLabel: "Rang",
+    clicksLabel: "Klicks",
+  },
+  ja: {
+    loading: "読み込み中…",
+    invalidLinkTitle: "無効なリンク",
+    invalidLinkDesc: "この管理リンクは無効か期限切れです。",
+    notFoundError: "製品が見つからないか、管理リンクが無効です。",
+    rankLabel: "順位",
+    clicksLabel: "クリック",
+  },
+  ko: {
+    loading: "로딩 중…",
+    invalidLinkTitle: "잘못된 링크",
+    invalidLinkDesc: "이 관리 링크가 유효하지 않거나 만료되었습니다.",
+    notFoundError: "제품을 찾을 수 없거나 관리 링크가 유효하지 않습니다.",
+    rankLabel: "순위",
+    clicksLabel: "클릭",
+  },
+  pt: {
+    loading: "Carregando…",
+    invalidLinkTitle: "Link inválido",
+    invalidLinkDesc: "Este link de gestão não é válido ou expirou.",
+    notFoundError: "Produto não encontrado ou link de gestão inválido.",
+    rankLabel: "Posição",
+    clicksLabel: "Cliques",
+  },
 };
 
 const categoriesExtra = {
-  zh: { noProductsYet: "还没有产品", noKingYet: "还没有王者 — 来做第一个", emptyCategoryCta: "来做第一个 →" },
-  es: { noProductsYet: "Aún no hay productos", noKingYet: "Aún no hay rey — sé el primero", emptyCategoryCta: "Sé el primero →" },
-  ar: { noProductsYet: "لا توجد منتجات بعد", noKingYet: "لا يوجد ملك بعد — كن الأول", emptyCategoryCta: "كن الأول →" },
-  hi: { noProductsYet: "अभी कोई प्रोडक्ट नहीं", noKingYet: "अभी कोई राजा नहीं — पहले बनें", emptyCategoryCta: "पहले बनें →" },
-  fr: { noProductsYet: "Pas encore de produits", noKingYet: "Pas encore de roi — soyez le premier", emptyCategoryCta: "Soyez le premier →" },
-  de: { noProductsYet: "Noch keine Produkte", noKingYet: "Noch kein König — sei der Erste", emptyCategoryCta: "Sei der Erste →" },
-  ja: { noProductsYet: "まだ製品がありません", noKingYet: "まだキングがいません — 最初の参加者に", emptyCategoryCta: "最初の参加者になる →" },
-  ko: { noProductsYet: "아직 제품 없음", noKingYet: "아직 킹 없음 — 첫 번째가 되세요", emptyCategoryCta: "첫 번째가 되기 →" },
-  pt: { noProductsYet: "Ainda sem produtos", noKingYet: "Ainda sem rei — seja o primeiro", emptyCategoryCta: "Seja o primeiro →" },
+  zh: {
+    noProductsYet: "还没有产品",
+    noKingYet: "还没有王者 — 来做第一个",
+    emptyCategoryCta: "来做第一个 →",
+  },
+  es: {
+    noProductsYet: "Aún no hay productos",
+    noKingYet: "Aún no hay rey — sé el primero",
+    emptyCategoryCta: "Sé el primero →",
+  },
+  ar: {
+    noProductsYet: "لا توجد منتجات بعد",
+    noKingYet: "لا يوجد ملك بعد — كن الأول",
+    emptyCategoryCta: "كن الأول →",
+  },
+  hi: {
+    noProductsYet: "अभी कोई प्रोडक्ट नहीं",
+    noKingYet: "अभी कोई राजा नहीं — पहले बनें",
+    emptyCategoryCta: "पहले बनें →",
+  },
+  fr: {
+    noProductsYet: "Pas encore de produits",
+    noKingYet: "Pas encore de roi — soyez le premier",
+    emptyCategoryCta: "Soyez le premier →",
+  },
+  de: {
+    noProductsYet: "Noch keine Produkte",
+    noKingYet: "Noch kein König — sei der Erste",
+    emptyCategoryCta: "Sei der Erste →",
+  },
+  ja: {
+    noProductsYet: "まだ製品がありません",
+    noKingYet: "まだキングがいません — 最初の参加者に",
+    emptyCategoryCta: "最初の参加者になる →",
+  },
+  ko: {
+    noProductsYet: "아직 제품 없음",
+    noKingYet: "아직 킹 없음 — 첫 번째가 되세요",
+    emptyCategoryCta: "첫 번째가 되기 →",
+  },
+  pt: {
+    noProductsYet: "Ainda sem produtos",
+    noKingYet: "Ainda sem rei — seja o primeiro",
+    emptyCategoryCta: "Seja o primeiro →",
+  },
 };
 
 const metaExtra = {
@@ -662,21 +793,25 @@ const metaExtra = {
     productNotFoundTitle: "Producto no encontrado",
     productNotFoundDesc: "Este producto no está en KINGOF o el enlace puede ser incorrecto.",
     byCountryTitle: "Productos destacados por país — KINGOF",
-    byCountryDesc: "Mira qué está en tendencia donde estás. Productos más clicados por país, con datos reales de visitantes.",
+    byCountryDesc:
+      "Mira qué está en tendencia donde estás. Productos más clicados por país, con datos reales de visitantes.",
     productTitle: "{name} — #{rank} {category}",
     productDescWithTagline: "{tagline} — Clasificado #{rank} en {category} en KINGOF.",
     productDesc: "{name} está en el puesto #{rank} en {category} en KINGOF.",
     manageTitle: "Gestiona tu producto — KINGOF",
     manageDesc: "Actualiza tu ficha y sube tu puja en KINGOF.",
-    websiteDesc: "Plataforma de ranking y descubrimiento de productos. Los productos compiten por la corona.",
+    websiteDesc:
+      "Plataforma de ranking y descubrimiento de productos. Los productos compiten por la corona.",
     rootTitle: "KINGOF — Los productos compiten por la corona",
-    rootDesc: "Descubre y compite con productos en KINGOF. Explora los mejores productos, líderes por categoría, herramientas en tendencia y startups emergentes.",
+    rootDesc:
+      "Descubre y compite con productos en KINGOF. Explora los mejores productos, líderes por categoría, herramientas en tendencia y startups emergentes.",
   },
   ar: {
     productNotFoundTitle: "المنتج غير موجود",
     productNotFoundDesc: "هذا المنتج غير موجود على KINGOF، أو قد يكون الرابط خاطئاً.",
     byCountryTitle: "أفضل المنتجات حسب البلد — KINGOF",
-    byCountryDesc: "شاهد ما هو رائج في منطقتك. أفضل المنتجات نقراً حسب البلد، محدّثة من بيانات الزوار الحقيقية.",
+    byCountryDesc:
+      "شاهد ما هو رائج في منطقتك. أفضل المنتجات نقراً حسب البلد، محدّثة من بيانات الزوار الحقيقية.",
     productTitle: "{name} — #{rank} {category}",
     productDescWithTagline: "{tagline} — في المركز #{rank} ضمن {category} على KINGOF.",
     productDesc: "{name} في المركز #{rank} ضمن {category} على KINGOF.",
@@ -684,41 +819,49 @@ const metaExtra = {
     manageDesc: "حدّث قائمتك وارفع مزايدتك على KINGOF.",
     websiteDesc: "منصة ترتيب واكتشاف المنتجات. المنتجات تتنافس على التاج.",
     rootTitle: "KINGOF — المنتجات تتنافس على التاج",
-    rootDesc: "اكتشف وتنافس مع المنتجات على KINGOF. استكشف أفضل المنتجات وقادة الفئات والأدوات الرائجة والشركات الناشئة.",
+    rootDesc:
+      "اكتشف وتنافس مع المنتجات على KINGOF. استكشف أفضل المنتجات وقادة الفئات والأدوات الرائجة والشركات الناشئة.",
   },
   hi: {
     productNotFoundTitle: "प्रोडक्ट नहीं मिला",
     productNotFoundDesc: "यह प्रोडक्ट KINGOF पर नहीं है, या लिंक गलत हो सकता है।",
     byCountryTitle: "देश के अनुसार शीर्ष प्रोडक्ट — KINGOF",
-    byCountryDesc: "देखें आपके क्षेत्र में क्या ट्रेंड में है। देश के अनुसार सबसे ज़्यादा क्लिक, असली विज़िटर डेटा से अपडेट।",
+    byCountryDesc:
+      "देखें आपके क्षेत्र में क्या ट्रेंड में है। देश के अनुसार सबसे ज़्यादा क्लिक, असली विज़िटर डेटा से अपडेट।",
     productTitle: "{name} — #{rank} {category}",
     productDescWithTagline: "{tagline} — KINGOF पर {category} में #{rank} रैंक।",
     productDesc: "{name} KINGOF पर {category} में #{rank} रैंक पर है।",
     manageTitle: "अपना प्रोडक्ट प्रबंधित करें — KINGOF",
     manageDesc: "KINGOF पर अपनी लिस्टिंग अपडेट करें और बोली बढ़ाएँ।",
-    websiteDesc: "प्रोडक्ट लीडरबोर्ड और डिस्कवरी प्लेटफ़ॉर्म। प्रोडक्ट मुकुट के लिए प्रतिस्पर्धा करते हैं।",
+    websiteDesc:
+      "प्रोडक्ट लीडरबोर्ड और डिस्कवरी प्लेटफ़ॉर्म। प्रोडक्ट मुकुट के लिए प्रतिस्पर्धा करते हैं।",
     rootTitle: "KINGOF — प्रोडक्ट मुकुट के लिए प्रतिस्पर्धा करते हैं",
-    rootDesc: "KINGOF पर प्रोडक्ट खोजें और प्रतिस्पर्धा करें। शीर्ष प्रोडक्ट, श्रेणी नेता, ट्रेंडिंग टूल और उभरते स्टार्टअप देखें।",
+    rootDesc:
+      "KINGOF पर प्रोडक्ट खोजें और प्रतिस्पर्धा करें। शीर्ष प्रोडक्ट, श्रेणी नेता, ट्रेंडिंग टूल और उभरते स्टार्टअप देखें।",
   },
   fr: {
     productNotFoundTitle: "Produit introuvable",
     productNotFoundDesc: "Ce produit n'est pas sur KINGOF, ou le lien est peut-être incorrect.",
     byCountryTitle: "Meilleurs produits par pays — KINGOF",
-    byCountryDesc: "Voyez ce qui est tendance chez vous. Produits les plus cliqués par pays, mis à jour avec de vraies données visiteurs.",
+    byCountryDesc:
+      "Voyez ce qui est tendance chez vous. Produits les plus cliqués par pays, mis à jour avec de vraies données visiteurs.",
     productTitle: "{name} — #{rank} {category}",
     productDescWithTagline: "{tagline} — Classé #{rank} en {category} sur KINGOF.",
     productDesc: "{name} est classé #{rank} en {category} sur KINGOF.",
     manageTitle: "Gérer votre produit — KINGOF",
     manageDesc: "Mettez à jour votre fiche et augmentez votre enchère sur KINGOF.",
-    websiteDesc: "Plateforme de classement et de découverte de produits. Les produits se disputent la couronne.",
+    websiteDesc:
+      "Plateforme de classement et de découverte de produits. Les produits se disputent la couronne.",
     rootTitle: "KINGOF — Les produits se disputent la couronne",
-    rootDesc: "Découvrez et rivalisez avec des produits sur KINGOF. Explorez les meilleurs produits, les leaders par catégorie, les outils tendance et les startups émergentes.",
+    rootDesc:
+      "Découvrez et rivalisez avec des produits sur KINGOF. Explorez les meilleurs produits, les leaders par catégorie, les outils tendance et les startups émergentes.",
   },
   de: {
     productNotFoundTitle: "Produkt nicht gefunden",
     productNotFoundDesc: "Dieses Produkt ist nicht auf KINGOF, oder der Link ist falsch.",
     byCountryTitle: "Top-Produkte nach Land — KINGOF",
-    byCountryDesc: "Sieh, was bei dir im Trend liegt. Meistgeklickte Produkte nach Land, aktualisiert aus echten Besucherdaten.",
+    byCountryDesc:
+      "Sieh, was bei dir im Trend liegt. Meistgeklickte Produkte nach Land, aktualisiert aus echten Besucherdaten.",
     productTitle: "{name} — #{rank} {category}",
     productDescWithTagline: "{tagline} — Platz #{rank} in {category} auf KINGOF.",
     productDesc: "{name} ist auf Platz #{rank} in {category} auf KINGOF.",
@@ -726,13 +869,15 @@ const metaExtra = {
     manageDesc: "Aktualisiere dein Listing und erhöhe dein Gebot auf KINGOF.",
     websiteDesc: "Produkt-Ranking und Entdeckungsplattform. Produkte kämpfen um die Krone.",
     rootTitle: "KINGOF — Produkte kämpfen um die Krone",
-    rootDesc: "Entdecke und konkurriere mit Produkten auf KINGOF. Erkunde Top-Produkte, Kategorie-Könige, Trend-Tools und aufstrebende Startups.",
+    rootDesc:
+      "Entdecke und konkurriere mit Produkten auf KINGOF. Erkunde Top-Produkte, Kategorie-Könige, Trend-Tools und aufstrebende Startups.",
   },
   ja: {
     productNotFoundTitle: "製品が見つかりません",
     productNotFoundDesc: "この製品はKINGOFにないか、リンクが間違っている可能性があります。",
     byCountryTitle: "国別トップ製品 — KINGOF",
-    byCountryDesc: "あなたの地域で話題のものをチェック。国別のクリック数ランキングを、実際の訪問者データで更新。",
+    byCountryDesc:
+      "あなたの地域で話題のものをチェック。国別のクリック数ランキングを、実際の訪問者データで更新。",
     productTitle: "{name} — {category} #{rank}位",
     productDescWithTagline: "{tagline} — KINGOFの{category}で#{rank}位。",
     productDesc: "{name}はKINGOFの{category}で#{rank}位です。",
@@ -740,13 +885,15 @@ const metaExtra = {
     manageDesc: "KINGOFでリスティングを更新し、入札額を上げましょう。",
     websiteDesc: "プロダクトランキング＆発見プラットフォーム。製品が王冠を争う。",
     rootTitle: "KINGOF — 製品が王冠を争う",
-    rootDesc: "KINGOFで製品を発見し、競い合おう。トップ製品、カテゴリキング、トレンドツール、新興スタートアップを探索。",
+    rootDesc:
+      "KINGOFで製品を発見し、競い合おう。トップ製品、カテゴリキング、トレンドツール、新興スタートアップを探索。",
   },
   ko: {
     productNotFoundTitle: "제품을 찾을 수 없습니다",
     productNotFoundDesc: "이 제품은 KINGOF에 없거나 링크가 잘못되었을 수 있습니다.",
     byCountryTitle: "국가별 인기 제품 — KINGOF",
-    byCountryDesc: "내 지역에서 뜨는 제품을 확인하세요. 실제 방문자 데이터로 업데이트되는 국가별 클릭 순위.",
+    byCountryDesc:
+      "내 지역에서 뜨는 제품을 확인하세요. 실제 방문자 데이터로 업데이트되는 국가별 클릭 순위.",
     productTitle: "{name} — {category} #{rank}위",
     productDescWithTagline: "{tagline} — KINGOF {category}에서 #{rank}위.",
     productDesc: "{name}은(는) KINGOF {category}에서 #{rank}위입니다.",
@@ -754,13 +901,15 @@ const metaExtra = {
     manageDesc: "KINGOF에서 리스팅을 업데이트하고 입찰가를 올리세요.",
     websiteDesc: "제품 리더보드 및 발견 플랫폼. 제품들이 왕관을 두고 경쟁합니다.",
     rootTitle: "KINGOF — 제품이 왕관을 두고 경쟁합니다",
-    rootDesc: "KINGOF에서 제품을 발견하고 경쟁하세요. 인기 제품, 카테고리 킹, 트렌드 도구, 신흥 스타트업을 탐색하세요.",
+    rootDesc:
+      "KINGOF에서 제품을 발견하고 경쟁하세요. 인기 제품, 카테고리 킹, 트렌드 도구, 신흥 스타트업을 탐색하세요.",
   },
   pt: {
     productNotFoundTitle: "Produto não encontrado",
     productNotFoundDesc: "Este produto não está no KINGOF ou o link pode estar errado.",
     byCountryTitle: "Principais produtos por país — KINGOF",
-    byCountryDesc: "Veja o que está em alta na sua região. Produtos mais clicados por país, atualizados com dados reais de visitantes.",
+    byCountryDesc:
+      "Veja o que está em alta na sua região. Produtos mais clicados por país, atualizados com dados reais de visitantes.",
     productTitle: "{name} — #{rank} {category}",
     productDescWithTagline: "{tagline} — Classificado em #{rank} em {category} no KINGOF.",
     productDesc: "{name} está em #{rank} em {category} no KINGOF.",
@@ -768,7 +917,8 @@ const metaExtra = {
     manageDesc: "Atualize seu anúncio e aumente seu lance no KINGOF.",
     websiteDesc: "Plataforma de ranking e descoberta de produtos. Produtos competem pela coroa.",
     rootTitle: "KINGOF — Produtos competem pela coroa",
-    rootDesc: "Descubra e compita com produtos no KINGOF. Explore os melhores produtos, líderes por categoria, ferramentas em alta e startups emergentes.",
+    rootDesc:
+      "Descubra e compita com produtos no KINGOF. Explore os melhores produtos, líderes por categoria, ferramentas em alta e startups emergentes.",
   },
 };
 

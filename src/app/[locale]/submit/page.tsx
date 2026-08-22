@@ -23,9 +23,7 @@ export default function SubmitPage() {
 
         <SubmissionFlow locale={locale} autoFocus onPhaseChange={setFlowPhase} />
 
-        {showHeader ? (
-          <p className="mt-4 text-center text-sm text-text-dim">{t("hint")}</p>
-        ) : null}
+        {showHeader ? <p className="mt-4 text-center text-sm text-text-dim">{t("hint")}</p> : null}
       </div>
     </div>
   );

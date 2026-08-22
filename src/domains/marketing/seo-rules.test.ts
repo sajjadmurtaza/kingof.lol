@@ -11,6 +11,24 @@ function readBuiltPage(path: string): string {
   return readFileSync(file, "utf-8");
 }
 
+/** Origin baked into the build (localhost in dev, kingof.lol in production). */
+function getBuiltSiteOrigin(): string {
+  const sitemapPath = resolve(BUILD_DIR, "sitemap.xml.body");
+  if (existsSync(sitemapPath)) {
+    const loc = readFileSync(sitemapPath, "utf-8").match(/<loc>(https?:\/\/[^/]+)/)?.[1];
+    if (loc) return loc;
+  }
+
+  const canonical = readBuiltPage("en.html").match(
+    /rel="canonical"\s+href="(https?:\/\/[^/]+)/,
+  )?.[1];
+  if (canonical) return canonical;
+
+  return "https://kingof.lol";
+}
+
+const siteOrigin = getBuiltSiteOrigin();
+
 describe.skipIf(!hasBuild)("SEO rules — built HTML verification", () => {
   describe("Homepage (/en)", () => {
     const html = readBuiltPage("en.html");
@@ -35,8 +53,10 @@ describe.skipIf(!hasBuild)("SEO rules — built HTML verification", () => {
       expect(html).toMatch(/name="description"\s+content="[^"]+"/);
     });
 
-    it("has canonical URL pointing to kingof.lol", () => {
-      expect(html).toMatch(/rel="canonical"\s+href="https:\/\/kingof\.lol/);
+    it("has canonical URL using the built site origin", () => {
+      expect(html).toMatch(
+        new RegExp(`rel="canonical"\\s+href="${siteOrigin.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`),
+      );
     });
 
     it("has Open Graph tags", () => {
@@ -101,7 +121,7 @@ describe.skipIf(!hasBuild)("SEO rules — built HTML verification", () => {
     });
 
     it("has canonical pointing to categories", () => {
-      expect(html).toContain('href="https://kingof.lol/en/categories"');
+      expect(html).toContain(`href="${siteOrigin}/en/categories"`);
     });
   });
 
@@ -117,11 +137,13 @@ describe.skipIf(!hasBuild)("SEO rules — built HTML verification", () => {
     });
 
     it("has correct canonical URL", () => {
-      expect(html).toContain('href="https://kingof.lol/en/submit"');
+      expect(html).toContain(`href="${siteOrigin}/en/submit"`);
     });
 
     it("has OG URL pointing to submit page", () => {
-      expect(html).toMatch(/og:url.*https:\/\/kingof\.lol\/en\/submit/);
+      expect(html).toMatch(
+        new RegExp(`og:url.*${siteOrigin.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/en/submit`),
+      );
     });
   });
 
@@ -175,11 +197,11 @@ describe.skipIf(!hasBuild)("robots.txt verification", () => {
   });
 
   it.skipIf(!hasRobots)("references sitemap", () => {
-    expect(content).toContain("Sitemap: https://kingof.lol/sitemap.xml");
+    expect(content).toContain(`Sitemap: ${siteOrigin}/sitemap.xml`);
   });
 
   it.skipIf(!hasRobots)("references canonical host", () => {
-    expect(content).toContain("https://kingof.lol");
+    expect(content).toContain(siteOrigin);
   });
 });
 
@@ -194,15 +216,15 @@ describe.skipIf(!hasBuild)("sitemap.xml verification", () => {
   });
 
   it.skipIf(!hasSitemap)("contains homepage", () => {
-    expect(content).toContain("https://kingof.lol/en");
+    expect(content).toContain(`${siteOrigin}/en`);
   });
 
   it.skipIf(!hasSitemap)("contains categories page", () => {
-    expect(content).toContain("https://kingof.lol/en/categories");
+    expect(content).toContain(`${siteOrigin}/en/categories`);
   });
 
   it.skipIf(!hasSitemap)("contains outbid-alternative", () => {
-    expect(content).toContain("https://kingof.lol/en/outbid-alternative");
+    expect(content).toContain(`${siteOrigin}/en/outbid-alternative`);
   });
 
   it.skipIf(!hasSitemap)("does NOT contain /manage/", () => {
@@ -213,12 +235,12 @@ describe.skipIf(!hasBuild)("sitemap.xml verification", () => {
     expect(content).not.toContain("/api/");
   });
 
-  it.skipIf(!hasSitemap)("uses kingof.lol domain for all <loc> entries", () => {
+  it.skipIf(!hasSitemap)("uses one consistent origin for all <loc> entries", () => {
     const locs = content.match(/<loc>([^<]+)<\/loc>/g) ?? [];
     expect(locs.length).toBeGreaterThan(0);
     for (const loc of locs) {
       const url = loc.replace(/<\/?loc>/g, "");
-      expect(url).toMatch(/^https:\/\/kingof\.lol/);
+      expect(url.startsWith(siteOrigin)).toBe(true);
     }
   });
 

@@ -260,7 +260,12 @@ export function SubmissionFlow({
   }
 
   // URL input + inline preview/loading/existing/fallback
-  const showUrlSection = phase === "idle" || phase === "loading" || phase === "preview" || phase === "existing" || phase === "fallback";
+  const showUrlSection =
+    phase === "idle" ||
+    phase === "loading" ||
+    phase === "preview" ||
+    phase === "existing" ||
+    phase === "fallback";
 
   if (!showUrlSection) return null;
 

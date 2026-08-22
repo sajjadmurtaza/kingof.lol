@@ -6,10 +6,7 @@ import { logger } from "@/lib/logger";
 import { products, bids } from "@/db/schema";
 import { createBidCheckoutSession } from "@/domains/payments/stripe";
 
-export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ token: string }> },
-) {
+export async function POST(request: Request, { params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const tokenHash = createHash("sha256").update(token).digest("hex");
 

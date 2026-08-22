@@ -42,12 +42,7 @@ export async function POST(request: Request) {
         const catProducts = await db
           .select({ id: products.id, totalBid: products.totalBid })
           .from(products)
-          .where(
-            and(
-              eq(products.categoryId, cat.id),
-              eq(products.status, "approved"),
-            ),
-          )
+          .where(and(eq(products.categoryId, cat.id), eq(products.status, "approved")))
           .orderBy(desc(products.totalBid));
 
         categoryRank = catProducts.filter((p) => p.totalBid >= bidCents).length + 1;
@@ -83,9 +78,7 @@ export async function POST(request: Request) {
       categoryName,
       categoryEmoji,
       totalProducts: allSorted.length,
-      milestones: milestones
-        .filter((m) => m.bid > bidCents)
-        .sort((a, b) => a.bid - b.bid),
+      milestones: milestones.filter((m) => m.bid > bidCents).sort((a, b) => a.bid - b.bid),
     });
   } catch {
     return NextResponse.json({ error: "Internal error" }, { status: 500 });

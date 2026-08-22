@@ -51,9 +51,7 @@ export function TopPeriodLeaders({
             locale={locale}
             className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-hover sm:px-5"
           >
-            <span
-              className={`w-7 shrink-0 text-sm font-bold tabular-nums ${rankAccent(index)}`}
-            >
+            <span className={`w-7 shrink-0 text-sm font-bold tabular-nums ${rankAccent(index)}`}>
               {String(index + 1).padStart(2, "0")}
             </span>
             <ProductLogo

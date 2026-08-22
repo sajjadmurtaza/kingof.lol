@@ -40,10 +40,7 @@ export async function getActiveRandomPicks(limit = 3, categoryId?: string) {
   const db = getDb();
   const now = new Date();
 
-  const conditions = [
-    gte(randomPicks.expiresAt, now),
-    eq(products.status, "approved"),
-  ];
+  const conditions = [gte(randomPicks.expiresAt, now), eq(products.status, "approved")];
 
   if (categoryId) {
     conditions.push(eq(randomPicks.categoryId, categoryId));

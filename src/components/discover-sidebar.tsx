@@ -3,10 +3,7 @@
 import { HiddenGemCard, type HiddenGemProduct } from "@/components/hidden-gem-card";
 import { TopPeriodLeaders } from "@/components/top-period-leaders";
 import type { PeriodTopProduct } from "@/domains/leaderboard/queries";
-import {
-  DISCOVER_PAGE_COOLDOWN_MS,
-  DISCOVER_PAGE_PICK_MS,
-} from "@/lib/discovery-pacing";
+import { DISCOVER_PAGE_COOLDOWN_MS, DISCOVER_PAGE_PICK_MS } from "@/lib/discovery-pacing";
 
 export function DiscoverSidebar({
   weekTop,
@@ -31,9 +28,7 @@ export function DiscoverSidebar({
 
   return (
     <div className="space-y-6 lg:sticky lg:top-24">
-      {weekTop.length > 0 && (
-        <TopPeriodLeaders period="week" products={weekTop} locale={locale} />
-      )}
+      {weekTop.length > 0 && <TopPeriodLeaders period="week" products={weekTop} locale={locale} />}
       {monthTop.length > 0 && (
         <TopPeriodLeaders period="month" products={monthTop} locale={locale} />
       )}

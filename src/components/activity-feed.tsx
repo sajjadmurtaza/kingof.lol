@@ -68,11 +68,7 @@ export function ActivityFeed({
         <ul className="activity-list">
           {activity.map((item) => (
             <li key={`${item.slug}-${item.occurredAt}`}>
-              <Link
-                href={`/product/${item.slug}`}
-                locale={locale}
-                className="activity-row group"
-              >
+              <Link href={`/product/${item.slug}`} locale={locale} className="activity-row group">
                 <ProductLogo
                   name={item.name}
                   iconUrl={item.iconUrl}
@@ -82,9 +78,7 @@ export function ActivityFeed({
                   rounded="md"
                 />
                 <span className="min-w-0 flex-1 truncate text-sm">
-                  <span className="font-medium text-text group-hover:text-gold">
-                    {item.name}
-                  </span>
+                  <span className="font-medium text-text group-hover:text-gold">{item.name}</span>
                   <span className="text-text-muted">
                     {" "}
                     {t("activityAt", {

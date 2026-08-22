@@ -21,10 +21,7 @@ export async function GET(request: Request) {
 
   const meta = getCountryMeta(country);
   if (!meta) {
-    return NextResponse.json(
-      { error: "Unsupported country code" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Unsupported country code" }, { status: 400 });
   }
 
   try {

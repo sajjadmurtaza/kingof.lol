@@ -136,18 +136,18 @@ export async function confirmBidFromCheckoutSession(
   revalidatePath("/[locale]/categories", "page");
   revalidatePath("/[locale]/products", "page");
 
+  const [updated] = await db
+    .select({ totalBid: products.totalBid, name: products.name, slug: products.slug })
+    .from(products)
+    .where(eq(products.id, meta.productId))
+    .limit(1);
+
   checkAndNotifyDethroned(meta.productId).catch((err) => {
     Sentry.captureException(err, {
       tags: { route: "payments/confirm-bid", failure: "email_send_failed" },
       extra: { productId: meta.productId },
     });
   });
-
-  const [updated] = await db
-    .select({ totalBid: products.totalBid, name: products.name, slug: products.slug })
-    .from(products)
-    .where(eq(products.id, meta.productId))
-    .limit(1);
 
   logger.info("Bid confirmed", {
     productId: meta.productId,

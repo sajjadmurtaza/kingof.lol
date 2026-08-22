@@ -5,9 +5,7 @@ import { metadataCache } from "@/db/schema";
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
-export async function getCachedMetadata(
-  domain: string,
-): Promise<ProductPreview | null> {
+export async function getCachedMetadata(domain: string): Promise<ProductPreview | null> {
   const db = tryGetDb();
   if (!db) return null;
 
@@ -28,10 +26,7 @@ export async function getCachedMetadata(
   }
 }
 
-export async function setCachedMetadata(
-  domain: string,
-  preview: ProductPreview,
-): Promise<void> {
+export async function setCachedMetadata(domain: string, preview: ProductPreview): Promise<void> {
   const db = tryGetDb();
   if (!db) return;
 

@@ -134,8 +134,14 @@ export function validateFetchUrl(raw: string): { url: URL; domain: string } | { 
 
 export function findExistingByNormalizedUrl(
   normalizedUrl: string,
-  products: Array<{ url: string; slug: string; name: string; totalBid: number; categorySlug: string }>,
-): typeof products[0] | null {
+  products: Array<{
+    url: string;
+    slug: string;
+    name: string;
+    totalBid: number;
+    categorySlug: string;
+  }>,
+): (typeof products)[0] | null {
   const result = normalizeUrl(normalizedUrl);
   if (!result) return null;
 

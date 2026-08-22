@@ -56,7 +56,10 @@ export function slugFromProductName(name: string): string {
 
 /** Decide post-submit navigation — never show inline success for free listings. */
 export function resolveSubmitOutcome(
-  response: { ok: boolean; data: { error?: string; reason?: string; slug?: string; checkoutUrl?: string } },
+  response: {
+    ok: boolean;
+    data: { error?: string; reason?: string; slug?: string; checkoutUrl?: string };
+  },
   opts: { bidCents: number; productName: string; fallbackError: string },
 ): SubmitOutcome {
   if (!response.ok) {

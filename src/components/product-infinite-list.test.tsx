@@ -5,9 +5,7 @@ import type { PaginatedProductsResult } from "@/domains/leaderboard/queries";
 import en from "@/i18n/locales/en/app.json";
 
 vi.mock("@/components/product-leaderboard-row", () => ({
-  ProductLeaderboardRow: ({ product }: { product: { name: string } }) => (
-    <div>{product.name}</div>
-  ),
+  ProductLeaderboardRow: ({ product }: { product: { name: string } }) => <div>{product.name}</div>,
 }));
 
 import { ProductInfiniteList } from "./product-infinite-list";

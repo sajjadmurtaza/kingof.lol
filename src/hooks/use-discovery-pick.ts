@@ -1,10 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  DISCOVERY_COOLDOWN_MS,
-  DISCOVERY_PICK_MS,
-} from "@/lib/discovery-pacing";
+import { DISCOVERY_COOLDOWN_MS, DISCOVERY_PICK_MS } from "@/lib/discovery-pacing";
 
 export function useDiscoveryPick<T extends { slug: string }>({
   initial,

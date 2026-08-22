@@ -10,11 +10,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
-export const productStatusEnum = pgEnum("product_status", [
-  "pending",
-  "approved",
-  "disabled",
-]);
+export const productStatusEnum = pgEnum("product_status", ["pending", "approved", "disabled"]);
 
 export const categories = pgTable("categories", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -45,12 +41,8 @@ export const products = pgTable(
     manageTokenHash: text("manage_token_hash").notNull(),
     totalBid: integer("total_bid").notNull().default(0),
     status: productStatusEnum("status").notNull().default("pending"),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
     uniqueIndex("products_normalized_url_idx").on(table.normalizedUrl),
@@ -70,9 +62,7 @@ export const bids = pgTable(
     status: text("status").notNull().default("pending"),
     stripeSession: text("stripe_session"),
     stripeEventId: text("stripe_event_id"),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index("bids_product_id_status_idx").on(table.productId, table.status)],
 );
@@ -87,9 +77,7 @@ export const clicks = pgTable(
     ipHash: text("ip_hash").notNull(),
     userAgent: text("user_agent"),
     countryCode: text("country_code"),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
     index("clicks_product_id_created_at_idx").on(table.productId, table.createdAt),
@@ -103,9 +91,7 @@ export const randomPicks = pgTable("random_picks", {
     .notNull()
     .references(() => products.id),
   categoryId: uuid("category_id").references(() => categories.id),
-  pickedAt: timestamp("picked_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
+  pickedAt: timestamp("picked_at", { withTimezone: true }).notNull().defaultNow(),
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
 });
 
@@ -129,15 +115,10 @@ export const rankingSnapshots = pgTable(
       .references(() => products.id),
     overallRank: integer("overall_rank").notNull(),
     categoryRank: integer("category_rank").notNull(),
-    recordedAt: timestamp("recorded_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    recordedAt: timestamp("recorded_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
-    index("ranking_snapshots_product_id_recorded_at_idx").on(
-      table.productId,
-      table.recordedAt,
-    ),
+    index("ranking_snapshots_product_id_recorded_at_idx").on(table.productId, table.recordedAt),
   ],
 );
 
@@ -146,9 +127,7 @@ export const hiddenGemPicks = pgTable("hidden_gem_picks", {
   productId: uuid("product_id")
     .notNull()
     .references(() => products.id),
-  pickedAt: timestamp("picked_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
+  pickedAt: timestamp("picked_at", { withTimezone: true }).notNull().defaultNow(),
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
 });
 
@@ -156,9 +135,7 @@ export const webhookEvents = pgTable("webhook_events", {
   id: uuid("id").primaryKey().defaultRandom(),
   stripeEventId: text("stripe_event_id").notNull().unique(),
   eventType: text("event_type").notNull(),
-  processedAt: timestamp("processed_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
+  processedAt: timestamp("processed_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const metadataCache = pgTable("metadata_cache", {
@@ -216,22 +193,16 @@ export const sponsorsRelations = relations(sponsors, ({ one }) => ({
   }),
 }));
 
-export const rankingSnapshotsRelations = relations(
-  rankingSnapshots,
-  ({ one }) => ({
-    product: one(products, {
-      fields: [rankingSnapshots.productId],
-      references: [products.id],
-    }),
+export const rankingSnapshotsRelations = relations(rankingSnapshots, ({ one }) => ({
+  product: one(products, {
+    fields: [rankingSnapshots.productId],
+    references: [products.id],
   }),
-);
+}));
 
-export const hiddenGemPicksRelations = relations(
-  hiddenGemPicks,
-  ({ one }) => ({
-    product: one(products, {
-      fields: [hiddenGemPicks.productId],
-      references: [products.id],
-    }),
+export const hiddenGemPicksRelations = relations(hiddenGemPicks, ({ one }) => ({
+  product: one(products, {
+    fields: [hiddenGemPicks.productId],
+    references: [products.id],
   }),
-);
+}));

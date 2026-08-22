@@ -79,7 +79,9 @@ export function ProductPreviewCard({
       {showEdit && (
         <div className="space-y-3 border-t border-border/50 pt-4">
           <div>
-            <label className="mb-1 block text-xs font-medium text-text-dim">{t("productName")}</label>
+            <label className="mb-1 block text-xs font-medium text-text-dim">
+              {t("productName")}
+            </label>
             <input
               type="text"
               value={editName}
@@ -88,7 +90,9 @@ export function ProductPreviewCard({
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-text-dim">{t("taglineLabel")}</label>
+            <label className="mb-1 block text-xs font-medium text-text-dim">
+              {t("taglineLabel")}
+            </label>
             <input
               type="text"
               value={editTagline}

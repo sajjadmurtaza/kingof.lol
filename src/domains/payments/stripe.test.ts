@@ -1,9 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const checkoutCreate = vi.fn();
+const { MockStripeError } = vi.hoisted(() => {
+  class StripeError extends Error {}
+  return { MockStripeError: StripeError };
+});
 
 vi.mock("stripe", () => ({
   default: class StripeMock {
+    static errors = { StripeError: MockStripeError };
     checkout = { sessions: { create: checkoutCreate } };
   },
 }));
@@ -82,5 +87,44 @@ describe("stripe payments", () => {
         success_url: "https://kingof.lol/payment/success?session_id={CHECKOUT_SESSION_ID}",
       }),
     );
+  });
+
+  it("throws when checkout session has no redirect URL", async () => {
+    checkoutCreate.mockResolvedValue({ url: null });
+    const { createBidCheckoutSession } = await import("./stripe");
+
+    await expect(
+      createBidCheckoutSession({
+        productName: "Acme",
+        bidAmountCents: 2500,
+        productSlug: "acme",
+        productId: "prod-1",
+        bidId: "bid-1",
+        email: "owner@example.com",
+      }),
+    ).rejects.toThrow("Stripe checkout session missing redirect URL");
+  });
+});
+
+describe("formatStripeError", () => {
+  beforeEach(() => {
+    vi.resetModules();
+    process.env.STRIPE_SECRET_KEY = "sk_test_123";
+  });
+
+  it("returns Stripe error messages", async () => {
+    const { formatStripeError } = await import("./stripe");
+    const err = new MockStripeError("Invalid request");
+    expect(formatStripeError(err)).toBe("Invalid request");
+  });
+
+  it("returns generic Error messages", async () => {
+    const { formatStripeError } = await import("./stripe");
+    expect(formatStripeError(new Error("network down"))).toBe("network down");
+  });
+
+  it("returns fallback for unknown values", async () => {
+    const { formatStripeError } = await import("./stripe");
+    expect(formatStripeError("unexpected")).toBe("Unknown Stripe error");
   });
 });

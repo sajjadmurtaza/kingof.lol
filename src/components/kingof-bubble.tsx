@@ -17,9 +17,7 @@ export function KingofBubble({
     tilt === "left" ? "kingof-tilt-left" : tilt === "right" ? "kingof-tilt-right" : "";
 
   return (
-    <div
-      className={`kingof-bubble kingof-bubble--${variant} ${tiltClass} ${className}`.trim()}
-    >
+    <div className={`kingof-bubble kingof-bubble--${variant} ${tiltClass} ${className}`.trim()}>
       <p className="kingof-bubble-brand">KINGOF</p>
       <p className="kingof-bubble-message">{message}</p>
     </div>

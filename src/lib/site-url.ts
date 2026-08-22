@@ -1,8 +1,6 @@
 /** Canonical public URL (no trailing slash). Set via NEXT_PUBLIC_SITE_URL in Vercel. */
 export function getSiteUrl(): string {
-  const raw =
-    process.env.SITE_URL ??
-    process.env.NEXT_PUBLIC_SITE_URL;
+  const raw = process.env.SITE_URL ?? process.env.NEXT_PUBLIC_SITE_URL;
 
   if (raw) {
     const url = raw.replace(/\/$/, "");

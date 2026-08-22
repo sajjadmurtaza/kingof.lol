@@ -104,11 +104,7 @@ export default function PaymentSuccessPage() {
   const sessionId = searchParams.get("session_id");
 
   if (!sessionId) {
-    return (
-      <PaymentSuccessView
-        state={{ phase: "error", message: t("missingSession") }}
-      />
-    );
+    return <PaymentSuccessView state={{ phase: "error", message: t("missingSession") }} />;
   }
 
   return <PaymentSuccessConfirm sessionId={sessionId} />;

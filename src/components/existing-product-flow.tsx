@@ -49,9 +49,7 @@ export function ExistingProductFlow({
 
   return (
     <div className="space-y-6">
-      <p className="flex items-center gap-2 text-lg font-bold text-gold">
-        👑 {t("welcomeBack")}
-      </p>
+      <p className="flex items-center gap-2 text-lg font-bold text-gold">👑 {t("welcomeBack")}</p>
 
       <div className="rounded-2xl border border-gold/20 bg-gradient-to-br from-gold/5 to-transparent p-6">
         <div className="flex items-start gap-4">
@@ -80,9 +78,7 @@ export function ExistingProductFlow({
           </div>
           <div className="rounded-lg bg-surface p-3 text-center">
             <p className="text-xs text-text-dim">{t("currentBidLabel")}</p>
-            <p className="text-lg font-bold text-gold">
-              {formatBid(existing.totalBid)}
-            </p>
+            <p className="text-lg font-bold text-gold">{formatBid(existing.totalBid)}</p>
           </div>
         </div>
       </div>
@@ -97,7 +93,9 @@ export function ExistingProductFlow({
             min={existing.totalBid / 100 + 5}
             step={5}
             value={newTotal}
-            onChange={(e) => setNewTotal(Math.max(existing.totalBid / 100 + 5, Number(e.target.value)))}
+            onChange={(e) =>
+              setNewTotal(Math.max(existing.totalBid / 100 + 5, Number(e.target.value)))
+            }
             className="w-full rounded-xl border-2 border-border bg-bg py-3 px-4 text-2xl font-black text-text focus:border-gold focus:outline-none"
           />
         </div>

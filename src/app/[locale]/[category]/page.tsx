@@ -57,21 +57,60 @@ export default async function CategoryPage({
   const { locale, category } = await params;
   setRequestLocale(locale);
 
-  const KNOWN_CATEGORIES: Record<string, { id: string; slug: string; name: string; emoji: string; sortOrder: number }> = {
+  const KNOWN_CATEGORIES: Record<
+    string,
+    { id: string; slug: string; name: string; emoji: string; sortOrder: number }
+  > = {
     ai: { id: "ai", slug: "ai", name: "AI & Machine Learning", emoji: "🤖", sortOrder: 1 },
     fintech: { id: "fintech", slug: "fintech", name: "Fintech", emoji: "💳", sortOrder: 2 },
-    devtools: { id: "devtools", slug: "devtools", name: "Developer Tools", emoji: "🛠️", sortOrder: 3 },
+    devtools: {
+      id: "devtools",
+      slug: "devtools",
+      name: "Developer Tools",
+      emoji: "🛠️",
+      sortOrder: 3,
+    },
     design: { id: "design", slug: "design", name: "Design", emoji: "🎨", sortOrder: 4 },
     saas: { id: "saas", slug: "saas", name: "SaaS", emoji: "☁️", sortOrder: 5 },
     health: { id: "health", slug: "health", name: "Health & Wellness", emoji: "💚", sortOrder: 6 },
     education: { id: "education", slug: "education", name: "Education", emoji: "📚", sortOrder: 7 },
-    ecommerce: { id: "ecommerce", slug: "ecommerce", name: "E-Commerce", emoji: "🛒", sortOrder: 8 },
+    ecommerce: {
+      id: "ecommerce",
+      slug: "ecommerce",
+      name: "E-Commerce",
+      emoji: "🛒",
+      sortOrder: 8,
+    },
     social: { id: "social", slug: "social", name: "Social", emoji: "💬", sortOrder: 9 },
-    productivity: { id: "productivity", slug: "productivity", name: "Productivity", emoji: "⚡", sortOrder: 10 },
-    marketing: { id: "marketing", slug: "marketing", name: "Marketing", emoji: "📣", sortOrder: 11 },
-    analytics: { id: "analytics", slug: "analytics", name: "Analytics", emoji: "📊", sortOrder: 12 },
+    productivity: {
+      id: "productivity",
+      slug: "productivity",
+      name: "Productivity",
+      emoji: "⚡",
+      sortOrder: 10,
+    },
+    marketing: {
+      id: "marketing",
+      slug: "marketing",
+      name: "Marketing",
+      emoji: "📣",
+      sortOrder: 11,
+    },
+    analytics: {
+      id: "analytics",
+      slug: "analytics",
+      name: "Analytics",
+      emoji: "📊",
+      sortOrder: 12,
+    },
     security: { id: "security", slug: "security", name: "Security", emoji: "🔒", sortOrder: 13 },
-    nocode: { id: "nocode", slug: "nocode", name: "No-Code / Low-Code", emoji: "🧩", sortOrder: 14 },
+    nocode: {
+      id: "nocode",
+      slug: "nocode",
+      name: "No-Code / Low-Code",
+      emoji: "🧩",
+      sortOrder: 14,
+    },
     gaming: { id: "gaming", slug: "gaming", name: "Gaming", emoji: "🎮", sortOrder: 15 },
   };
 
@@ -142,7 +181,9 @@ function CategoryProducts({
               locale={locale}
               className="group block rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/10 to-transparent p-6 shadow-[var(--shadow-gold)] transition-all hover:border-gold/50"
             >
-              <p className="text-xs font-bold uppercase tracking-widest text-gold/70">{tCat("king")}</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-gold/70">
+                {tCat("king")}
+              </p>
               <div className="mt-3 flex items-center gap-4">
                 <ProductLogo
                   name={king.name}

@@ -20,11 +20,11 @@ export function Hero({
   const showStats = productCount > 0 || categoryCount > 0 || clicksToday > 0;
 
   return (
-    <section className={embedded ? "text-left" : "relative overflow-hidden py-8 text-center sm:py-12"}>
+    <section
+      className={embedded ? "text-left" : "relative overflow-hidden py-8 text-center sm:py-12"}
+    >
       <div className={embedded ? "max-w-xl" : "relative mx-auto max-w-2xl"}>
-        {!embedded && (
-          <p className="text-sm font-bold tracking-[0.18em] text-gold">KINGOF 👑</p>
-        )}
+        {!embedded && <p className="text-sm font-bold tracking-[0.18em] text-gold">KINGOF 👑</p>}
 
         <h1
           className={`font-display font-extrabold uppercase tracking-tight text-text ${

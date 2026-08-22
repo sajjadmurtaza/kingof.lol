@@ -79,17 +79,17 @@ KINGOF is a public leaderboard where **software products compete for visibility*
 
 ## Key concepts (glossary)
 
-| Term | Meaning |
-|------|---------|
-| **Bid** | Payment in **cents** (e.g. `500` = $5). Stored in `bids` table; confirmed bids increase `products.total_bid`. |
-| **King** | #1 product overall or in a category. |
-| **Category king** | Highest-bid product within one category. |
-| **Manage token** | Secret URL token (`/manage/{token}`) — hashed in DB; never expose the hash. |
-| **Latest activity** | Recent confirmed bids + new product joins (up to **5** items, refreshes every **45s** in the browser). |
-| **Trending** | Products with high click velocity (up to **5** items). |
-| **Random pick** | Rotating spotlight product; cron picks a new one hourly. |
-| **Hidden gem** | Lower-ranked product featured for discovery; cron picks daily. |
-| **Demo data** | Fallback fake activity/trending only when the DB has **zero** activity — not used for rankings. |
+| Term                | Meaning                                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------------------- |
+| **Bid**             | Payment in **cents** (e.g. `500` = $5). Stored in `bids` table; confirmed bids increase `products.total_bid`. |
+| **King**            | #1 product overall or in a category.                                                                          |
+| **Category king**   | Highest-bid product within one category.                                                                      |
+| **Manage token**    | Secret URL token (`/manage/{token}`) — hashed in DB; never expose the hash.                                   |
+| **Latest activity** | Recent confirmed bids + new product joins (up to **5** items, refreshes every **45s** in the browser).        |
+| **Trending**        | Products with high click velocity (up to **5** items).                                                        |
+| **Random pick**     | Rotating spotlight product; cron picks a new one hourly.                                                      |
+| **Hidden gem**      | Lower-ranked product featured for discovery; cron picks daily.                                                |
+| **Demo data**       | Fallback fake activity/trending only when the DB has **zero** activity — not used for rankings.               |
 
 ---
 
@@ -153,42 +153,42 @@ sequenceDiagram
 
 **Homepage data**
 
-| Section | Source | Refresh |
-|---------|--------|---------|
-| King + runners | `getTopProducts(3)` | ISR 60s |
-| Stats (counts, clicks today) | DB aggregates | ISR 60s |
-| Category kings, most clicked, discover | DB queries | ISR 60s |
-| Trending + latest activity | `getHappeningNow(5,5)` | SSR + client poll 45s |
+| Section                                | Source                 | Refresh               |
+| -------------------------------------- | ---------------------- | --------------------- |
+| King + runners                         | `getTopProducts(3)`    | ISR 60s               |
+| Stats (counts, clicks today)           | DB aggregates          | ISR 60s               |
+| Category kings, most clicked, discover | DB queries             | ISR 60s               |
+| Trending + latest activity             | `getHappeningNow(5,5)` | SSR + client poll 45s |
 
 ### Code organization
 
-| Layer | Location | Role |
-|-------|----------|------|
-| **Pages** | `src/app/[locale]/` | Routes, metadata, server data fetching |
-| **Components** | `src/components/` | UI (React) |
-| **Domains** | `src/domains/` | Business logic (payments, email, clicks, discovery, SEO) |
-| **Queries** | `src/domains/leaderboard/queries.ts` | Leaderboard & activity SQL |
-| **DB** | `src/db/` | Drizzle schema, connection, seed |
-| **i18n** | `src/i18n/` | Locales, routing, message loading |
-| **Lib** | `src/lib/` | URL normalization, metadata parsing, formatting |
+| Layer          | Location                             | Role                                                     |
+| -------------- | ------------------------------------ | -------------------------------------------------------- |
+| **Pages**      | `src/app/[locale]/`                  | Routes, metadata, server data fetching                   |
+| **Components** | `src/components/`                    | UI (React)                                               |
+| **Domains**    | `src/domains/`                       | Business logic (payments, email, clicks, discovery, SEO) |
+| **Queries**    | `src/domains/leaderboard/queries.ts` | Leaderboard & activity SQL                               |
+| **DB**         | `src/db/`                            | Drizzle schema, connection, seed                         |
+| **i18n**       | `src/i18n/`                          | Locales, routing, message loading                        |
+| **Lib**        | `src/lib/`                           | URL normalization, metadata parsing, formatting          |
 
 ---
 
 ## Tech stack
 
-| Area | Technology |
-|------|------------|
-| Framework | [Next.js 16](https://nextjs.org) (App Router) |
-| Language | TypeScript |
-| UI | React 19, Tailwind CSS 4 |
-| i18n | [next-intl](https://next-intl.dev) — 10 locales |
-| Database | PostgreSQL + [Drizzle ORM](https://orm.drizzle.team) |
-| Payments | [Stripe](https://stripe.com) Checkout |
-| Email | [Resend](https://resend.com) |
-| Hosting | [Vercel](https://vercel.com) |
-| Analytics | Vercel Analytics |
-| Errors | Sentry (optional locally) |
-| Tests | Vitest |
+| Area      | Technology                                           |
+| --------- | ---------------------------------------------------- |
+| Framework | [Next.js 16](https://nextjs.org) (App Router)        |
+| Language  | TypeScript                                           |
+| UI        | React 19, Tailwind CSS 4                             |
+| i18n      | [next-intl](https://next-intl.dev) — 10 locales      |
+| Database  | PostgreSQL + [Drizzle ORM](https://orm.drizzle.team) |
+| Payments  | [Stripe](https://stripe.com) Checkout                |
+| Email     | [Resend](https://resend.com)                         |
+| Hosting   | [Vercel](https://vercel.com)                         |
+| Analytics | Vercel Analytics                                     |
+| Errors    | Sentry (optional locally)                            |
+| Tests     | Vitest                                               |
 
 ---
 
@@ -231,21 +231,21 @@ kingof/
 
 ### Main pages
 
-| Path | Purpose |
-|------|---------|
-| `/[locale]` | Homepage — king, activity, category kings, discover |
-| `/[locale]/submit` | Full submission flow |
-| `/[locale]/[category]` | Category leaderboard (e.g. `/en/ai`) |
-| `/[locale]/product/[slug]` | Product detail page |
-| `/[locale]/categories` | All categories |
-| `/[locale]/discover` | Random pick + hidden gems |
-| `/[locale]/products` | All products (paginated, sorted by bid) |
-| `/[locale]/new` | Products listed in the last 5 minutes |
-| `/[locale]/most-clicked` | Top clicked products |
-| `/[locale]/by-country` | Clicks by country |
-| `/[locale]/how-it-works` | Explainer |
-| `/[locale]/rules` | Rules & legal fine print |
-| `/manage/[token]` | Owner dashboard (increase bid, edit listing) |
+| Path                       | Purpose                                             |
+| -------------------------- | --------------------------------------------------- |
+| `/[locale]`                | Homepage — king, activity, category kings, discover |
+| `/[locale]/submit`         | Full submission flow                                |
+| `/[locale]/[category]`     | Category leaderboard (e.g. `/en/ai`)                |
+| `/[locale]/product/[slug]` | Product detail page                                 |
+| `/[locale]/categories`     | All categories                                      |
+| `/[locale]/discover`       | Random pick + hidden gems                           |
+| `/[locale]/products`       | All products (paginated, sorted by bid)             |
+| `/[locale]/new`            | Products listed in the last 5 minutes               |
+| `/[locale]/most-clicked`   | Top clicked products                                |
+| `/[locale]/by-country`     | Clicks by country                                   |
+| `/[locale]/how-it-works`   | Explainer                                           |
+| `/[locale]/rules`          | Rules & legal fine print                            |
+| `/manage/[token]`          | Owner dashboard (increase bid, edit listing)        |
 
 ---
 
@@ -308,34 +308,34 @@ npm run dev:fresh   # clears .next cache and restarts
 
 Copy `.env.local.example` → `.env.local`.
 
-| Variable | Required | Local dev | Production |
-|----------|----------|-----------|------------|
-| `DATABASE_URL` | **Yes** | `postgresql://localhost:5432/kingof` | Vercel Postgres / Neon / RDS connection string |
-| `STRIPE_SECRET_KEY` | For payments | `sk_test_…` | `sk_live_…` (live mode) |
-| `STRIPE_WEBHOOK_SECRET` | For payments | From Stripe CLI (`whsec_…`) | From Stripe dashboard → live webhook endpoint |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | For payments | `pk_test_…` | `pk_live_…` |
-| `NEXT_PUBLIC_SITE_URL` | **Yes in prod** | `http://localhost:3000` | `https://kingof.lol` (no trailing slash) |
-| `RESEND_API_KEY` | For email | `re_test_…` | `re_…` (live key; domain verified in Resend) |
-| `IP_HASH_SALT` | **Yes in prod** | Any dev string | Long random secret (never reuse dev value) |
-| `CRON_SECRET` | **Yes in prod** | Any dev string | Long random secret; Vercel cron uses this |
-| `SLACK_WEBHOOK_URL` | Optional | Omit locally | Slack incoming webhook for cron/payment alerts |
-| `NEXT_PUBLIC_SENTRY_DSN` | Optional | Omit locally | Sentry project DSN |
-| `SENTRY_ORG` / `SENTRY_PROJECT` / `SENTRY_AUTH_TOKEN` | Optional | Omit locally | CI/Vercel build — uploads source maps |
-| `GOOGLE_SITE_VERIFICATION` | Optional | Omit locally | Meta tag content from Search Console |
-| `BING_SITE_VERIFICATION` | Optional | Omit locally | Meta tag content from Bing Webmaster |
+| Variable                                              | Required        | Local dev                            | Production                                     |
+| ----------------------------------------------------- | --------------- | ------------------------------------ | ---------------------------------------------- |
+| `DATABASE_URL`                                        | **Yes**         | `postgresql://localhost:5432/kingof` | Vercel Postgres / Neon / RDS connection string |
+| `STRIPE_SECRET_KEY`                                   | For payments    | `sk_test_…`                          | `sk_live_…` (live mode)                        |
+| `STRIPE_WEBHOOK_SECRET`                               | For payments    | From Stripe CLI (`whsec_…`)          | From Stripe dashboard → live webhook endpoint  |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`                  | For payments    | `pk_test_…`                          | `pk_live_…`                                    |
+| `NEXT_PUBLIC_SITE_URL`                                | **Yes in prod** | `http://localhost:3000`              | `https://kingof.lol` (no trailing slash)       |
+| `RESEND_API_KEY`                                      | For email       | `re_test_…`                          | `re_…` (live key; domain verified in Resend)   |
+| `IP_HASH_SALT`                                        | **Yes in prod** | Any dev string                       | Long random secret (never reuse dev value)     |
+| `CRON_SECRET`                                         | **Yes in prod** | Any dev string                       | Long random secret; Vercel cron uses this      |
+| `SLACK_WEBHOOK_URL`                                   | Optional        | Omit locally                         | Slack incoming webhook for cron/payment alerts |
+| `NEXT_PUBLIC_SENTRY_DSN`                              | Optional        | Omit locally                         | Sentry project DSN                             |
+| `SENTRY_ORG` / `SENTRY_PROJECT` / `SENTRY_AUTH_TOKEN` | Optional        | Omit locally                         | CI/Vercel build — uploads source maps          |
+| `GOOGLE_SITE_VERIFICATION`                            | Optional        | Omit locally                         | Meta tag content from Search Console           |
+| `BING_SITE_VERIFICATION`                              | Optional        | Omit locally                         | Meta tag content from Bing Webmaster           |
 
 **Never commit** `.env.local` or production secrets. Templates live in `.env.local.example` and `.env.example`.
 
 ### Production vs local — quick rules
 
-| Setting | Local | Production |
-|---------|-------|------------|
-| Stripe keys | Test mode (`sk_test_`, `pk_test_`) | Live mode (`sk_live_`, `pk_live_`) |
-| `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` | `https://kingof.lol` |
-| Resend | Test API key | Live key + verified sending domain |
-| `db:seed` | OK for local sample data | **Do not run** on production DB |
-| Console logs | Visible in terminal | Stripped from client bundles (`removeConsole` in prod build) |
-| Geo / by-country | No country detection on localhost | Vercel: `x-vercel-ip-country`; Netlify: `x-country` |
+| Setting                | Local                              | Production                                                   |
+| ---------------------- | ---------------------------------- | ------------------------------------------------------------ |
+| Stripe keys            | Test mode (`sk_test_`, `pk_test_`) | Live mode (`sk_live_`, `pk_live_`)                           |
+| `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000`            | `https://kingof.lol`                                         |
+| Resend                 | Test API key                       | Live key + verified sending domain                           |
+| `db:seed`              | OK for local sample data           | **Do not run** on production DB                              |
+| Console logs           | Visible in terminal                | Stripped from client bundles (`removeConsole` in prod build) |
+| Geo / by-country       | No country detection on localhost  | Vercel: `x-vercel-ip-country`; Netlify: `x-country`          |
 
 ---
 
@@ -343,13 +343,13 @@ Copy `.env.local.example` → `.env.local`.
 
 ### Tools
 
-| Tool | Command | Use case |
-|------|---------|----------|
-| **Drizzle Studio** | `npm run db:studio` | Browser UI to browse/edit tables ([local.drizzle.studio](https://local.drizzle.studio)) |
-| **psql** | `psql postgresql://localhost:5432/kingof` | SQL shell |
-| **Seed** | `npm run db:seed` | Refresh sample products (idempotent) |
-| **Push schema** | `npm run db:push` | Apply schema changes without migrations |
-| **Migrations** | `npm run db:migrate` | Run generated migrations (production-style) |
+| Tool               | Command                                   | Use case                                                                                |
+| ------------------ | ----------------------------------------- | --------------------------------------------------------------------------------------- |
+| **Drizzle Studio** | `npm run db:studio`                       | Browser UI to browse/edit tables ([local.drizzle.studio](https://local.drizzle.studio)) |
+| **psql**           | `psql postgresql://localhost:5432/kingof` | SQL shell                                                                               |
+| **Seed**           | `npm run db:seed`                         | Refresh sample products (idempotent)                                                    |
+| **Push schema**    | `npm run db:push`                         | Apply schema changes without migrations                                                 |
+| **Migrations**     | `npm run db:migrate`                      | Run generated migrations (production-style)                                             |
 
 ### Useful SQL
 
@@ -375,18 +375,18 @@ UNION ALL SELECT 'clicks', count(*) FROM clicks;
 
 ### Tables (summary)
 
-| Table | Purpose |
-|-------|---------|
-| `categories` | 15 product categories |
-| `products` | Listings, bids totals, status, manage token hash |
-| `bids` | Individual payments (pending → confirmed) |
-| `clicks` | Outbound click tracking (IP hashed) |
-| `random_picks` | Current random spotlight rotation |
-| `hidden_gem_picks` | Current hidden gem feature |
-| `ranking_snapshots` | Hourly rank history |
-| `webhook_events` | Stripe idempotency log |
-| `metadata_cache` | Cached URL metadata fetches |
-| `sponsors` | Sponsored placement windows |
+| Table               | Purpose                                          |
+| ------------------- | ------------------------------------------------ |
+| `categories`        | 15 product categories                            |
+| `products`          | Listings, bids totals, status, manage token hash |
+| `bids`              | Individual payments (pending → confirmed)        |
+| `clicks`            | Outbound click tracking (IP hashed)              |
+| `random_picks`      | Current random spotlight rotation                |
+| `hidden_gem_picks`  | Current hidden gem feature                       |
+| `ranking_snapshots` | Hourly rank history                              |
+| `webhook_events`    | Stripe idempotency log                           |
+| `metadata_cache`    | Cached URL metadata fetches                      |
+| `sponsors`          | Sponsored placement windows                      |
 
 Schema source of truth: `src/db/schema.ts`.
 
@@ -394,13 +394,13 @@ Schema source of truth: `src/db/schema.ts`.
 
 ## Running the app
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Development server (Turbopack) |
-| `npm run dev:fresh` | Clear `.next` + dev (fixes cache issues) |
-| `npm run build` | Production build |
-| `npm run start` | Run production build locally |
-| `npm run verify` | Full CI check: format, lint, types, tests, i18n, build |
+| Command             | Description                                            |
+| ------------------- | ------------------------------------------------------ |
+| `npm run dev`       | Development server (Turbopack)                         |
+| `npm run dev:fresh` | Clear `.next` + dev (fixes cache issues)               |
+| `npm run build`     | Production build                                       |
+| `npm run start`     | Run production build locally                           |
+| `npm run verify`    | Full CI check: format, lint, types, tests, i18n, build |
 
 ---
 
@@ -447,47 +447,47 @@ stripe listen --forward-to localhost:3000/api/webhooks/stripe
 
 ## Scripts & npm commands
 
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start dev server |
-| `npm run dev:fresh` | Clear cache + dev |
-| `npm run build` | Production build |
-| `npm run test` | Vitest unit tests |
-| `npm run lint` | ESLint |
-| `npm run typecheck` | TypeScript check |
-| `npm run format` | Prettier write |
-| `npm run format:check` | Prettier check |
-| `npm run db:setup` | Push schema + seed |
-| `npm run db:push` | Sync schema to DB |
-| `npm run db:seed` | Insert/update sample data |
-| `npm run db:studio` | Open Drizzle Studio |
-| `npm run db:generate` | Generate Drizzle migrations |
-| `npm run db:migrate` | Run migrations |
-| `npm run validate:i18n` | Check all locale files |
-| `npm run verify` | Run everything before merge |
+| Script                  | Description                 |
+| ----------------------- | --------------------------- |
+| `npm run dev`           | Start dev server            |
+| `npm run dev:fresh`     | Clear cache + dev           |
+| `npm run build`         | Production build            |
+| `npm run test`          | Vitest unit tests           |
+| `npm run lint`          | ESLint                      |
+| `npm run typecheck`     | TypeScript check            |
+| `npm run format`        | Prettier write              |
+| `npm run format:check`  | Prettier check              |
+| `npm run db:setup`      | Push schema + seed          |
+| `npm run db:push`       | Sync schema to DB           |
+| `npm run db:seed`       | Insert/update sample data   |
+| `npm run db:studio`     | Open Drizzle Studio         |
+| `npm run db:generate`   | Generate Drizzle migrations |
+| `npm run db:migrate`    | Run migrations              |
+| `npm run validate:i18n` | Check all locale files      |
+| `npm run verify`        | Run everything before merge |
 
 ---
 
 ## API routes
 
-| Method | Path | Purpose |
-|--------|------|---------|
-| `GET` | `/api/products/list` | Paginated product list (`sort=bid\|new`) |
-| `GET` | `/api/activity` | Trending + latest activity (JSON) |
-| `GET` | `/api/categories` | Category list |
-| `POST` | `/api/submit` | Create product + Stripe session |
-| `POST` | `/api/products/preview` | Fetch URL metadata |
-| `GET` | `/api/products/random` | Next random pick |
-| `GET` | `/api/products/hidden-gem` | Current hidden gem |
-| `GET` | `/api/products/rank-preview` | Estimate rank for bid amount |
-| `GET` | `/api/click/[productId]` | Track click + redirect |
-| `GET` | `/api/top-by-country` | Leaderboard by visitor country |
-| `GET/POST` | `/api/manage/[token]` | Owner read/update listing |
-| `POST` | `/api/manage/[token]/increase-bid` | New Stripe session for top-up |
-| `POST` | `/api/webhooks/stripe` | Stripe payment confirmation |
-| `GET` | `/api/cron/snapshots` | Daily rank snapshots |
-| `GET` | `/api/cron/random-picks` | Daily random pick rotation |
-| `GET` | `/api/cron/hidden-gems` | Daily hidden gem pick |
+| Method     | Path                               | Purpose                                  |
+| ---------- | ---------------------------------- | ---------------------------------------- |
+| `GET`      | `/api/products/list`               | Paginated product list (`sort=bid\|new`) |
+| `GET`      | `/api/activity`                    | Trending + latest activity (JSON)        |
+| `GET`      | `/api/categories`                  | Category list                            |
+| `POST`     | `/api/submit`                      | Create product + Stripe session          |
+| `POST`     | `/api/products/preview`            | Fetch URL metadata                       |
+| `GET`      | `/api/products/random`             | Next random pick                         |
+| `GET`      | `/api/products/hidden-gem`         | Current hidden gem                       |
+| `GET`      | `/api/products/rank-preview`       | Estimate rank for bid amount             |
+| `GET`      | `/api/click/[productId]`           | Track click + redirect                   |
+| `GET`      | `/api/top-by-country`              | Leaderboard by visitor country           |
+| `GET/POST` | `/api/manage/[token]`              | Owner read/update listing                |
+| `POST`     | `/api/manage/[token]/increase-bid` | New Stripe session for top-up            |
+| `POST`     | `/api/webhooks/stripe`             | Stripe payment confirmation              |
+| `GET`      | `/api/cron/snapshots`              | Daily rank snapshots                     |
+| `GET`      | `/api/cron/random-picks`           | Daily random pick rotation               |
+| `GET`      | `/api/cron/hidden-gems`            | Daily hidden gem pick                    |
 
 Cron routes require `Authorization: Bearer {CRON_SECRET}` when the secret is set.
 
@@ -497,11 +497,11 @@ Cron routes require `Authorization: Bearer {CRON_SECRET}` when the secret is set
 
 Configured in `vercel.json`:
 
-| Job | Schedule | Purpose |
-|-----|----------|---------|
-| `/api/cron/snapshots` | Daily 00:00 UTC (`0 0 * * *`) | Save rank history |
+| Job                      | Schedule                      | Purpose                 |
+| ------------------------ | ----------------------------- | ----------------------- |
+| `/api/cron/snapshots`    | Daily 00:00 UTC (`0 0 * * *`) | Save rank history       |
 | `/api/cron/random-picks` | Daily 01:00 UTC (`0 1 * * *`) | Rotate random spotlight |
-| `/api/cron/hidden-gems` | Daily 06:00 UTC (`0 6 * * *`) | Pick new hidden gem |
+| `/api/cron/hidden-gems`  | Daily 06:00 UTC (`0 6 * * *`) | Pick new hidden gem     |
 
 **Vercel Hobby** allows only **once-per-day** cron schedules. Hourly jobs (`0 * * * *`) require **Pro**. Netlify scheduled functions (in `netlify/functions/`) can still run hourly on staging if needed.
 
@@ -523,12 +523,12 @@ Failures optionally notify Slack (`SLACK_WEBHOOK_URL`).
 
 ## What is live vs demo data?
 
-| Data | Source |
-|------|--------|
-| King, runners, category kings, most clicked, discover, stats | **PostgreSQL** (real) |
-| Trending + latest activity | **PostgreSQL** when any activity exists |
-| Trending + latest activity (empty DB) | **Demo fallback** (`src/lib/demo-data.ts`) — filler only |
-| Seed products (Stripe, ChatGPT, …) | **Local dev seed** — real DB rows, not hardcoded in UI |
+| Data                                                         | Source                                                   |
+| ------------------------------------------------------------ | -------------------------------------------------------- |
+| King, runners, category kings, most clicked, discover, stats | **PostgreSQL** (real)                                    |
+| Trending + latest activity                                   | **PostgreSQL** when any activity exists                  |
+| Trending + latest activity (empty DB)                        | **Demo fallback** (`src/lib/demo-data.ts`) — filler only |
+| Seed products (Stripe, ChatGPT, …)                           | **Local dev seed** — real DB rows, not hardcoded in UI   |
 
 If the database has products, you see real data. Demo names (NeuralForge, PayFlow, etc.) only appear when the activity feed is completely empty.
 
@@ -552,18 +552,18 @@ Fix anything that fails. Do not deploy with a red `verify`.
 
 In **Vercel → Project → Settings → Environment Variables**, confirm **Production** has:
 
-| Variable | Must be set? | Production value |
-|----------|--------------|------------------|
-| `DATABASE_URL` | Yes | Production Postgres URL |
-| `NEXT_PUBLIC_SITE_URL` | Yes | `https://kingof.lol` |
-| `STRIPE_SECRET_KEY` | Yes (if taking payments) | `sk_live_…` |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Yes | `pk_live_…` |
-| `STRIPE_WEBHOOK_SECRET` | Yes | Live webhook signing secret |
-| `RESEND_API_KEY` | Yes (if sending email) | Live Resend key |
-| `IP_HASH_SALT` | Yes | Unique production secret |
-| `CRON_SECRET` | Yes | Unique production secret |
-| `NEXT_PUBLIC_SENTRY_DSN` | Recommended | Sentry DSN |
-| `SLACK_WEBHOOK_URL` | Recommended | For payment/cron failure alerts |
+| Variable                             | Must be set?             | Production value                |
+| ------------------------------------ | ------------------------ | ------------------------------- |
+| `DATABASE_URL`                       | Yes                      | Production Postgres URL         |
+| `NEXT_PUBLIC_SITE_URL`               | Yes                      | `https://kingof.lol`            |
+| `STRIPE_SECRET_KEY`                  | Yes (if taking payments) | `sk_live_…`                     |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Yes                      | `pk_live_…`                     |
+| `STRIPE_WEBHOOK_SECRET`              | Yes                      | Live webhook signing secret     |
+| `RESEND_API_KEY`                     | Yes (if sending email)   | Live Resend key                 |
+| `IP_HASH_SALT`                       | Yes                      | Unique production secret        |
+| `CRON_SECRET`                        | Yes                      | Unique production secret        |
+| `NEXT_PUBLIC_SENTRY_DSN`             | Recommended              | Sentry DSN                      |
+| `SLACK_WEBHOOK_URL`                  | Recommended              | For payment/cron failure alerts |
 
 Use **Preview** env for staging if you have a preview deployment — never point preview at the production database.
 
@@ -641,10 +641,10 @@ You can deploy the **same Git repo** to both Vercel and [Netlify](https://app.ne
 
 #### What's included in the repo
 
-| File | Purpose |
-|------|---------|
-| `netlify.toml` | Build command, `@netlify/plugin-nextjs`, `www` redirect, security headers |
-| `netlify/functions/cron-*.mts` | Scheduled jobs that ping `/api/cron/*` (same schedule as `vercel.json`) |
+| File                           | Purpose                                                                   |
+| ------------------------------ | ------------------------------------------------------------------------- |
+| `netlify.toml`                 | Build command, `@netlify/plugin-nextjs`, `www` redirect, security headers |
+| `netlify/functions/cron-*.mts` | Scheduled jobs that ping `/api/cron/*` (same schedule as `vercel.json`)   |
 
 #### Netlify setup (first time)
 
@@ -657,13 +657,13 @@ You can deploy the **same Git repo** to both Vercel and [Netlify](https://app.ne
 
 #### Dual-deploy rules
 
-| | Vercel (production) | Netlify (staging) |
-|--|---------------------|-------------------|
-| Domain | `kingof.lol` | `*.netlify.app` or staging subdomain |
-| Stripe | Live keys + webhook → `kingof.lol/api/webhooks/stripe` | Test keys, or a **second** webhook for the Netlify URL |
-| Database | Production Postgres | Staging DB recommended (or same DB only if you accept shared data) |
-| Cron | `vercel.json` (automatic) | `netlify/functions/cron-*.mts` (automatic when `CRON_SECRET` is set) |
-| Geo / by-country | `x-vercel-ip-country` | `x-country` (supported in code) |
+|                  | Vercel (production)                                    | Netlify (staging)                                                    |
+| ---------------- | ------------------------------------------------------ | -------------------------------------------------------------------- |
+| Domain           | `kingof.lol`                                           | `*.netlify.app` or staging subdomain                                 |
+| Stripe           | Live keys + webhook → `kingof.lol/api/webhooks/stripe` | Test keys, or a **second** webhook for the Netlify URL               |
+| Database         | Production Postgres                                    | Staging DB recommended (or same DB only if you accept shared data)   |
+| Cron             | `vercel.json` (automatic)                              | `netlify/functions/cron-*.mts` (automatic when `CRON_SECRET` is set) |
+| Geo / by-country | `x-vercel-ip-country`                                  | `x-country` (supported in code)                                      |
 
 #### If Netlify build fails
 
@@ -689,20 +689,20 @@ curl -s -o /dev/null -w "%{http_code}" https://kingof.lol/en/products
 
 ### Manual checklist
 
-| Check | How | Expected |
-|-------|-----|----------|
-| Homepage loads | Open `https://kingof.lol/en` | King, categories, activity visible |
-| Locales | Spot-check `/de`, `/ja` | Translated UI, no `MISSING_MESSAGE` |
-| Submit flow | `/en/submit` → paste URL → free list | Success; management email received |
-| Paid bid | Submit with $5+ bid | Redirects to Stripe **live** Checkout |
-| Stripe webhook | Complete a live/test payment | Product rank updates; bid `confirmed` in DB |
-| Product page | Click through from leaderboard | `/en/product/{slug}` loads |
-| Click tracking | Click a product outbound link | Row in `clicks` table; geo on Vercel |
-| By country | `/en/by-country` | Country picker works; data after real clicks |
-| Cron | Vercel → Cron logs (next hour) | `snapshots`, `random-picks` succeed |
-| Errors | Sentry dashboard | No spike in new errors |
-| SEO | `https://kingof.lol/sitemap.xml` | Lists main routes |
-| Security | Browser devtools console | No app secrets or debug logs leaked |
+| Check          | How                                  | Expected                                     |
+| -------------- | ------------------------------------ | -------------------------------------------- |
+| Homepage loads | Open `https://kingof.lol/en`         | King, categories, activity visible           |
+| Locales        | Spot-check `/de`, `/ja`              | Translated UI, no `MISSING_MESSAGE`          |
+| Submit flow    | `/en/submit` → paste URL → free list | Success; management email received           |
+| Paid bid       | Submit with $5+ bid                  | Redirects to Stripe **live** Checkout        |
+| Stripe webhook | Complete a live/test payment         | Product rank updates; bid `confirmed` in DB  |
+| Product page   | Click through from leaderboard       | `/en/product/{slug}` loads                   |
+| Click tracking | Click a product outbound link        | Row in `clicks` table; geo on Vercel         |
+| By country     | `/en/by-country`                     | Country picker works; data after real clicks |
+| Cron           | Vercel → Cron logs (next hour)       | `snapshots`, `random-picks` succeed          |
+| Errors         | Sentry dashboard                     | No spike in new errors                       |
+| SEO            | `https://kingof.lol/sitemap.xml`     | Lists main routes                            |
+| Security       | Browser devtools console             | No app secrets or debug logs leaked          |
 
 ### If something fails after deploy
 
@@ -720,16 +720,16 @@ There is only one project README (`README.md`). Update it **in the same PR** whe
 
 ### When to update README
 
-| You changed… | Update in README |
-|--------------|------------------|
-| New page under `src/app/[locale]/` | [Main pages](#main-pages) table |
-| New API route | [API routes](#api-routes) table |
-| New env var in code | [Environment variables](#environment-variables) + `.env.example` |
-| New cron job | [Background jobs](#background-jobs-cron) + `vercel.json` |
-| New npm script | [Scripts & npm commands](#scripts--npm-commands) |
-| New locale or i18n workflow | [Internationalization](#internationalization-i18n) |
-| Deploy / hosting steps | [Release checklist](#release-checklist-before-production) or [Deployment](#deployment) |
-| Payment or email flow | [Payments & webhooks](#payments--webhooks-stripe) |
+| You changed…                       | Update in README                                                                       |
+| ---------------------------------- | -------------------------------------------------------------------------------------- |
+| New page under `src/app/[locale]/` | [Main pages](#main-pages) table                                                        |
+| New API route                      | [API routes](#api-routes) table                                                        |
+| New env var in code                | [Environment variables](#environment-variables) + `.env.example`                       |
+| New cron job                       | [Background jobs](#background-jobs-cron) + `vercel.json`                               |
+| New npm script                     | [Scripts & npm commands](#scripts--npm-commands)                                       |
+| New locale or i18n workflow        | [Internationalization](#internationalization-i18n)                                     |
+| Deploy / hosting steps             | [Release checklist](#release-checklist-before-production) or [Deployment](#deployment) |
+| Payment or email flow              | [Payments & webhooks](#payments--webhooks-stripe)                                      |
 
 ### How to verify docs are current (before merge)
 
@@ -763,12 +763,12 @@ find src/app/api -name route.ts | sort
 
 ### Who updates what
 
-| Audience | Document |
-|----------|----------|
-| Engineers | `README.md`, `.env.example`, code comments for non-obvious logic |
+| Audience           | Document                                                                        |
+| ------------------ | ------------------------------------------------------------------------------- |
+| Engineers          | `README.md`, `.env.example`, code comments for non-obvious logic                |
 | Operators / deploy | [Release checklist](#release-checklist-before-production), Vercel env dashboard |
-| Product / copy | `src/i18n/locales/en/app.json` (+ propagate to other locales) |
-| Legal / rules | `/en/rules` content in locale files |
+| Product / copy     | `src/i18n/locales/en/app.json` (+ propagate to other locales)                   |
+| Legal / rules      | `/en/rules` content in locale files                                             |
 
 ---
 
@@ -788,11 +788,11 @@ npm run verify            # Full CI pipeline locally (format → lint → types 
 
 **Deploy builds:** Vercel and Netlify run `npm run build` only — no tests in deploy. Test files are excluded via `.vercelignore` and are never part of the Next.js bundle.
 
-| When | Command |
-|------|---------|
-| Every PR | `npm run verify` (or rely on GitHub Actions) |
-| Quick iteration | `npm run typecheck` + `npm run test` |
-| Copy changes only | `npm run validate:i18n` |
+| When                     | Command                                                        |
+| ------------------------ | -------------------------------------------------------------- |
+| Every PR                 | `npm run verify` (or rely on GitHub Actions)                   |
+| Quick iteration          | `npm run typecheck` + `npm run test`                           |
+| Copy changes only        | `npm run validate:i18n`                                        |
 | Before production deploy | Full [Release checklist](#release-checklist-before-production) |
 
 Before opening a PR, run `npm run verify` locally. Before deploying to production, run `verify` on the commit you are about to ship.
@@ -810,32 +810,32 @@ Before opening a PR, run `npm run verify` locally. Before deploying to productio
 
 ## Troubleshooting
 
-| Problem | Fix |
-|---------|-----|
-| `MISSING_MESSAGE` in console | Run `npm run dev:fresh` — stale Turbopack cache |
-| Empty homepage | Run `npm run db:setup` — need seeded or real products |
-| Stripe webhook not firing locally | Run `stripe listen --forward-to localhost:3000/api/webhooks/stripe` |
-| `DATABASE_URL is not set` | Copy `.env.local.example` → `.env.local` |
-| Drizzle Studio won't connect | Check Postgres is running: `pg_isready` |
-| Bid shows wrong dollar amount | Remember DB stores **cents**; divide by 100 |
-| Activity not updating live | Polls every **45s** — not WebSockets; refresh or wait |
-| i18n validation fails | Add missing keys to all locale files or run fill script |
+| Problem                                 | Fix                                                                               |
+| --------------------------------------- | --------------------------------------------------------------------------------- |
+| `MISSING_MESSAGE` in console            | Run `npm run dev:fresh` — stale Turbopack cache                                   |
+| Empty homepage                          | Run `npm run db:setup` — need seeded or real products                             |
+| Stripe webhook not firing locally       | Run `stripe listen --forward-to localhost:3000/api/webhooks/stripe`               |
+| `DATABASE_URL is not set`               | Copy `.env.local.example` → `.env.local`                                          |
+| Drizzle Studio won't connect            | Check Postgres is running: `pg_isready`                                           |
+| Bid shows wrong dollar amount           | Remember DB stores **cents**; divide by 100                                       |
+| Activity not updating live              | Polls every **45s** — not WebSockets; refresh or wait                             |
+| i18n validation fails                   | Add missing keys to all locale files or run fill script                           |
 | Submit shows success but 404 on product | API may have failed — check Stripe/DB; paid listings stay `pending` until webhook |
-| By country empty locally | Normal — needs Vercel geo headers + real clicks with `country_code` |
-| Console logs in production | Client `console.*` is stripped in prod builds; use Sentry for errors |
+| By country empty locally                | Normal — needs Vercel geo headers + real clicks with `country_code`               |
+| Console logs in production              | Client `console.*` is stripped in prod builds; use Sentry for errors              |
 
 ---
 
 ## Useful links
 
-| Resource | URL |
-|----------|-----|
-| Production site | https://kingof.lol |
-| Stripe test dashboard | https://dashboard.stripe.com/test |
-| Resend | https://resend.com |
-| Drizzle docs | https://orm.drizzle.team/docs/overview |
-| next-intl docs | https://next-intl.dev |
-| Vercel cron docs | https://vercel.com/docs/cron-jobs |
+| Resource              | URL                                    |
+| --------------------- | -------------------------------------- |
+| Production site       | https://kingof.lol                     |
+| Stripe test dashboard | https://dashboard.stripe.com/test      |
+| Resend                | https://resend.com                     |
+| Drizzle docs          | https://orm.drizzle.team/docs/overview |
+| next-intl docs        | https://next-intl.dev                  |
+| Vercel cron docs      | https://vercel.com/docs/cron-jobs      |
 
 ---
 

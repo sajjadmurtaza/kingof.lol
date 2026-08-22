@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import type { PaginatedProductsResult, ProductListSort } from "@/domains/leaderboard/queries";
 import { ProductLeaderboardRow } from "@/components/product-leaderboard-row";
 import { NEW_LISTINGS_WITHIN_MINUTES, PRODUCT_PAGE_SIZE } from "@/lib/product-pagination";
 
+/** Always expose at most one page on first paint, even if SSR sent a larger batch. */
 function clampToPage(result: PaginatedProductsResult, pageSize: number): PaginatedProductsResult {
   const products = result.products.slice(0, pageSize);
   return {
@@ -45,9 +46,6 @@ export function ProductInfiniteList({
   const pageRef = useRef(firstPage.page);
   const totalRef = useRef(firstPage.total);
   const productsCountRef = useRef(firstPage.products.length);
-  const sentinelRef = useRef<HTMLDivElement>(null);
-  const sentinelWasVisibleRef = useRef(false);
-  const scrollReadyRef = useRef(false);
 
   const hasMore = products.length < total;
 
@@ -88,47 +86,6 @@ export function ProductInfiniteList({
     }
   }, [sort, resolvedPageSize, newWithinMinutes]);
 
-  useEffect(() => {
-    const markScrollReady = () => {
-      scrollReadyRef.current = true;
-    };
-
-    window.addEventListener("scroll", markScrollReady, { passive: true, once: true });
-    window.addEventListener("wheel", markScrollReady, { passive: true, once: true });
-    window.addEventListener("touchmove", markScrollReady, { passive: true, once: true });
-
-    return () => {
-      window.removeEventListener("scroll", markScrollReady);
-      window.removeEventListener("wheel", markScrollReady);
-      window.removeEventListener("touchmove", markScrollReady);
-    };
-  }, []);
-
-  useEffect(() => {
-    const node = sentinelRef.current;
-    if (!node || !hasMore) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (!entry) return;
-
-        const visible = entry.isIntersecting;
-        const entered = visible && !sentinelWasVisibleRef.current;
-
-        sentinelWasVisibleRef.current = visible;
-
-        if (entered && scrollReadyRef.current) {
-          void loadMore();
-        }
-      },
-      { rootMargin: "0px", threshold: 0 },
-    );
-
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [hasMore, loadMore, products.length]);
-
   if (products.length === 0) {
     return (
       <div className="rounded-xl border border-border bg-bg-card p-8 text-center">
@@ -153,8 +110,6 @@ export function ProductInfiniteList({
           ))}
         </div>
       </div>
-
-      <div ref={sentinelRef} className="h-px" aria-hidden="true" />
 
       <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
         <p className="text-center text-xs text-text-dim sm:text-left">

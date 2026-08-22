@@ -9,13 +9,7 @@ import { ProductLogo } from "@/components/product-logo";
 import { heroContentGrid } from "@/lib/discover-layout";
 import type { ActivityItem, RankedProduct, TrendingItem } from "@/domains/leaderboard/queries";
 
-function TrendingStrip({
-  trending,
-  locale,
-}: {
-  trending: TrendingItem[];
-  locale: string;
-}) {
+function TrendingStrip({ trending, locale }: { trending: TrendingItem[]; locale: string }) {
   const t = useTranslations("app.sections");
 
   if (trending.length === 0) return null;
@@ -77,9 +71,7 @@ export function HomeAboveFold({
 
   return (
     <div className="w-full pt-4 pb-5 sm:pt-5 sm:pb-6">
-      <div
-        className={`flex flex-col gap-6 ${king ? heroContentGrid : ""}`}
-      >
+      <div className={`flex flex-col gap-6 ${king ? heroContentGrid : ""}`}>
         {/* Mobile: 1st — Desktop: left column, top */}
         <div className="order-1 lg:col-start-1 lg:row-start-1">
           <Hero

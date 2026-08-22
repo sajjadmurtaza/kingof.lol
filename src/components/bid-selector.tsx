@@ -113,9 +113,7 @@ export function BidSelector({
                 <p className="text-xs text-text-dim">{t("overall")}</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-black text-gold">
-                  #{rankPreview.categoryRank}
-                </p>
+                <p className="text-2xl font-black text-gold">#{rankPreview.categoryRank}</p>
                 <p className="text-xs text-text-dim">
                   {rankPreview.categoryEmoji} {rankPreview.categoryName}
                 </p>

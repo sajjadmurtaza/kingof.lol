@@ -207,7 +207,9 @@ export async function POST(request: Request) {
           });
         }
 
-        notifySlack(`🔴 Stripe checkout failed for "${name}" (${slug}): ${checkout.reason ?? checkout.error}`);
+        notifySlack(
+          `🔴 Stripe checkout failed for "${name}" (${slug}): ${checkout.reason ?? checkout.error}`,
+        );
         return NextResponse.json(
           { error: checkout.error, reason: checkout.reason },
           { status: 500 },

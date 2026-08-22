@@ -19,9 +19,7 @@ export function rankEmoji(rank: number): string {
   return "";
 }
 
-export type TimeAgoParts =
-  | { unit: "now" }
-  | { unit: "minutes" | "hours" | "days"; count: number };
+export type TimeAgoParts = { unit: "now" } | { unit: "minutes" | "hours" | "days"; count: number };
 
 /**
  * Locale-agnostic on purpose — returns a unit + count instead of a formatted
@@ -42,7 +40,10 @@ export function siteLabelForAvatar(
   domain: string | null | undefined,
   size: number,
 ): { text: string; fontSize: number } {
-  const domainStem = domain?.replace(/^www\./i, "").split(".")[0]?.trim();
+  const domainStem = domain
+    ?.replace(/^www\./i, "")
+    .split(".")[0]
+    ?.trim();
   const nameStem = name.split(/\s+/)[0]?.trim();
   const raw = domainStem || nameStem || name;
   const clean = raw.replace(/[^a-zA-Z0-9-]/g, "").toLowerCase() || name.slice(0, 2).toLowerCase();

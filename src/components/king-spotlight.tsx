@@ -35,7 +35,8 @@ function RunnerPodium({
         {runners.map((p) => {
           const gap = kingBid - p.totalBid;
           const accent = p.rank === 2 ? "runner-podium-card--silver" : "runner-podium-card--bronze";
-          const rankLive = p.rank === 2 ? "rank-live rank-live-silver" : "rank-live rank-live-bronze";
+          const rankLive =
+            p.rank === 2 ? "rank-live rank-live-silver" : "rank-live rank-live-bronze";
           const rankColor = p.rank === 2 ? "text-silver" : "text-bronze";
 
           return (
@@ -144,7 +145,9 @@ export function KingSpotlight({
           >
             {king.name}
           </Link>
-          <p className="text-xs text-text-muted">{tu("kingOfCategory", { category: king.categoryName })}</p>
+          <p className="text-xs text-text-muted">
+            {tu("kingOfCategory", { category: king.categoryName })}
+          </p>
           <p className="text-sm font-medium tabular-nums text-text-dim">
             {formatBid(king.totalBid)}
           </p>
@@ -167,12 +170,7 @@ export function KingSpotlight({
           {ts("takeTheCrown")}
         </Link>
 
-        <RunnerPodium
-          runners={runners}
-          kingBid={king.totalBid}
-          locale={locale}
-          prominent
-        />
+        <RunnerPodium runners={runners} kingBid={king.totalBid} locale={locale} prominent />
       </section>
     );
   }
@@ -209,7 +207,9 @@ export function KingSpotlight({
         >
           {king.name}
         </Link>
-        <p className="mt-1 text-sm text-text-muted">{tu("kingOfCategory", { category: king.categoryName })}</p>
+        <p className="mt-1 text-sm text-text-muted">
+          {tu("kingOfCategory", { category: king.categoryName })}
+        </p>
       </div>
 
       <div className="relative flex justify-center px-2">
