@@ -91,7 +91,8 @@
     "notFoundError": "Produkt nicht gefunden oder Verwaltungslink ungültig.",
     "rankLabel": "Rang",
     "clicksLabel": "Klicks",
-    "paymentFailed": "Payment could not be started. Please try again."
+    "paymentFailed": "Payment could not be started. Please try again.",
+    "paymentConfirmed": "Payment confirmed — your bid is now {amount}."
   },
   "discover": {
     "title": "Produkte entdecken",
@@ -148,7 +149,7 @@
     "viewAll": "Alle anzeigen",
     "products": "{count} Produkte",
     "noProductsYet": "Noch keine Produkte",
-    "noKingYet": "Noch kein König. Sei der Erste",
+    "noKingYet": "Noch kein König — sei der Erste",
     "emptyCategoryCta": "Sei der Erste →"
   },
   "meta": {
@@ -301,7 +302,7 @@
     "noProductsInCategory": "In dieser Kategorie gibt es noch keine Produkte.",
     "beFirst": "Sei der Erste →",
     "noProductsYet": "Noch keine Produkte",
-    "noKingYet": "Noch kein König. Sei der Erste",
+    "noKingYet": "Noch kein König — sei der Erste",
     "defaultProductName": "Dein Produkt",
     "categoriesLabel": "Kategorien",
     "ogKingSubtitle": "Top-Produkte im Wettbewerb um die Krone",
@@ -326,6 +327,22 @@
     "showingCount": "{loaded} von {total} Produkten",
     "rangeCount": "{start} – {end} von {total}",
     "loadMore": "Mehr laden",
-    "viewProduct": "Ansehen →"
+    "viewProduct": "Ansehen →",
+    "topThisWeek": "Top 3 diese Woche",
+    "topThisWeekHint": "Höchste Gebote in den letzten 7 Tagen.",
+    "topThisMonth": "Top 3 diesen Monat",
+    "topThisMonthHint": "Höchste Gebote in den letzten 30 Tagen."
+  },
+  "paymentSuccess": {
+    "confirmingTitle": "Payment received",
+    "confirmingDesc": "Activating your listing on KINGOF…",
+    "successTitle": "You're on the board!",
+    "successDesc": "Your {amount} bid is live.",
+    "redirecting": "Taking you to your listing…",
+    "errorTitle": "Almost there",
+    "confirmFailed": "We couldn't confirm your payment yet. Your card was charged — we'll apply your bid shortly.",
+    "missingSession": "Missing payment session. Check your email for your management link.",
+    "errorHint": "If your bid doesn't appear in a few minutes, contact support with your payment receipt.",
+    "backToBoard": "Browse the board"
   }
 }

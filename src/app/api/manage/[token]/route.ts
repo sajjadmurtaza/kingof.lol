@@ -2,12 +2,9 @@ import { createHash } from "node:crypto";
 import { eq, sql, and, desc, gte } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { getDb } from "@/db";
-import { products, categories, clicks } from "@/db/schema";
+import { products, categories } from "@/db/schema";
 
-export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ token: string }> },
-) {
+export async function GET(_request: Request, { params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const tokenHash = createHash("sha256").update(token).digest("hex");
   const db = getDb();

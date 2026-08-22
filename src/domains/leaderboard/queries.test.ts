@@ -30,6 +30,7 @@ import {
   getRecentActivity,
   getHappeningNow,
   getProductsPaginated,
+  getTopProductsByBidPeriod,
 } from "./queries";
 
 describe("leaderboard queries", () => {
@@ -331,6 +332,44 @@ describe("leaderboard queries", () => {
     const data = await getHappeningNow(1, 0);
     expect(data.trending).toHaveLength(1);
     expect(data.activity).toEqual([]);
+  });
+
+  it("getTopProductsByBidPeriod returns leaders with period bid totals", async () => {
+    mock.execute.mockImplementationOnce(async () => ({
+      rows: [
+        {
+          id: "prod-1",
+          slug: "acme",
+          name: "Acme",
+          tagline: "Test",
+          url: "https://acme.com",
+          icon_url: null,
+          og_image_url: null,
+          normalized_domain: "acme.com",
+          total_bid: 5000,
+          status: "approved",
+          created_at: new Date("2026-01-01"),
+          category_id: "cat-1",
+          category_slug: "devtools",
+          category_name: "DevTools",
+          category_emoji: "🛠️",
+          period_bid: 2500,
+          click_count: 12,
+        },
+      ],
+    }));
+
+    const leaders = await getTopProductsByBidPeriod("week", 3);
+    expect(leaders).toHaveLength(1);
+    expect(leaders[0]!.slug).toBe("acme");
+    expect(leaders[0]!.periodBid).toBe(2500);
+    expect(leaders[0]!.rank).toBe(1);
+  });
+
+  it("getTopProductsByBidPeriod returns empty when no bids in period", async () => {
+    mock.execute.mockImplementationOnce(async () => ({ rows: [] }));
+
+    await expect(getTopProductsByBidPeriod("month", 3)).resolves.toEqual([]);
   });
 
   it("getProductsPaginated handles bid sort", async () => {

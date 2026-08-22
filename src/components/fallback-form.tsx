@@ -6,17 +6,12 @@ import { useTranslations } from "next-intl";
 type Category = { slug: string; name: string; emoji: string };
 
 export function FallbackForm({
-  url,
   domain,
   onComplete,
 }: {
   url: string;
   domain: string;
-  onComplete: (data: {
-    name: string;
-    tagline: string;
-    category: string;
-  }) => void;
+  onComplete: (data: { name: string; tagline: string; category: string }) => void;
 }) {
   const t = useTranslations("app.onboard");
   const [categories, setCategories] = useState<Category[]>([]);
@@ -29,7 +24,9 @@ export function FallbackForm({
       .then((r) => r.json())
       .then((cats: Category[]) => {
         setCategories(cats);
-        if (cats.length > 0 && !category) setCategory(cats[0].slug);
+        if (cats.length > 0) {
+          setCategory((current) => current || cats[0]!.slug);
+        }
       })
       .catch(() => {});
   }, []);
@@ -53,9 +50,7 @@ export function FallbackForm({
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="mb-1 block text-sm font-medium text-text">
-            {t("productName")}
-          </label>
+          <label className="mb-1 block text-sm font-medium text-text">{t("productName")}</label>
           <input
             type="text"
             required
@@ -67,9 +62,7 @@ export function FallbackForm({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-text">
-            {t("taglineLabel")}
-          </label>
+          <label className="mb-1 block text-sm font-medium text-text">{t("taglineLabel")}</label>
           <input
             type="text"
             maxLength={100}
@@ -82,9 +75,7 @@ export function FallbackForm({
 
         {categories.length > 0 && (
           <div>
-            <label className="mb-1 block text-sm font-medium text-text">
-              {t("categoryLabel")}
-            </label>
+            <label className="mb-1 block text-sm font-medium text-text">{t("categoryLabel")}</label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}

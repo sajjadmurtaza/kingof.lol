@@ -1,8 +1,7 @@
 import { and, eq, sql } from "drizzle-orm";
 import { getDb } from "@/db";
-import { products, categories, clicks } from "@/db/schema";
+import { products, categories } from "@/db/schema";
 
-const GEMS_CACHE_KEY = "hidden-gems";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 let gemsCache: { data: unknown[]; expiresAt: number } | null = null;
@@ -37,10 +36,7 @@ export async function getHiddenGems(limit = 3) {
     .from(products)
     .innerJoin(categories, eq(products.categoryId, categories.id))
     .where(
-      and(
-        eq(products.status, "approved"),
-        sql`${products.createdAt} <= ${seventyTwoHoursAgo}`,
-      ),
+      and(eq(products.status, "approved"), sql`${products.createdAt} <= ${seventyTwoHoursAgo}`),
     )
     .orderBy(
       sql`(SELECT count(*) FROM clicks WHERE clicks.product_id = ${products.id} AND clicks.created_at >= ${sevenDaysAgo}) ASC`,

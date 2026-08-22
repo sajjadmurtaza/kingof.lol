@@ -18,9 +18,11 @@ async function pingCron(path: string) {
   }
 }
 
-export default async () => {
+const runSnapshotsCron = async () => {
   await pingCron("/api/cron/snapshots");
 };
+
+export default runSnapshotsCron;
 
 export const config: Config = {
   schedule: "0 * * * *",

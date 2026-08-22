@@ -165,7 +165,20 @@
     "notFoundError": "Product not found or invalid management link.",
     "rankLabel": "Rank",
     "clicksLabel": "Clicks",
-    "paymentFailed": "Payment could not be started. Please try again."
+    "paymentFailed": "Payment could not be started. Please try again.",
+    "paymentConfirmed": "Payment confirmed — your bid is now {amount}."
+  },
+  "paymentSuccess": {
+    "confirmingTitle": "Payment received",
+    "confirmingDesc": "Activating your listing on KINGOF…",
+    "successTitle": "You're on the board!",
+    "successDesc": "Your {amount} bid is live.",
+    "redirecting": "Taking you to your listing…",
+    "errorTitle": "Almost there",
+    "confirmFailed": "We couldn't confirm your payment yet. Your card was charged — we'll apply your bid shortly.",
+    "missingSession": "Missing payment session. Check your email for your management link.",
+    "errorHint": "If your bid doesn't appear in a few minutes, contact support with your payment receipt.",
+    "backToBoard": "Browse the board"
   },
   "discover": {
     "title": "Discover Products",
@@ -187,7 +200,11 @@
     "showingCount": "{loaded} of {total} products",
     "rangeCount": "{start} – {end} of {total}",
     "loadMore": "Load more",
-    "viewProduct": "View →"
+    "viewProduct": "View →",
+    "topThisWeek": "Top 3 this week",
+    "topThisWeekHint": "Highest bids placed in the last 7 days.",
+    "topThisMonth": "Top 3 this month",
+    "topThisMonthHint": "Highest bids placed in the last 30 days."
   },
   "howItWorks": {
     "title": "How It Works",

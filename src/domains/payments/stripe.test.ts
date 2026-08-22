@@ -79,7 +79,7 @@ describe("stripe payments", () => {
 
     expect(checkoutCreate).toHaveBeenCalledWith(
       expect.objectContaining({
-        success_url: "https://kingof.lol/manage/token-1?bid=success",
+        success_url: "https://kingof.lol/payment/success?session_id={CHECKOUT_SESSION_ID}",
       }),
     );
   });

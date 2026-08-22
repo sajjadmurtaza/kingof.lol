@@ -40,21 +40,34 @@ export function CountryLeaderboardClient({ locale }: { locale: string }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+
     fetch("/api/top-by-country")
       .then((r) => r.json())
       .then((res) => {
+        if (cancelled) return;
         setCountries(res.countries ?? []);
         const auto = res.detectedCountry as string | null;
         setDetected(auto);
-        if (auto) {
-          setSelected(auto);
-        } else {
-          setSelected("US");
-        }
+        const code = auto || "US";
+        setSelected(code);
+        return fetch(`/api/top-by-country?country=${code}`);
+      })
+      .then((r) => (r?.ok ? r.json() : null))
+      .then((res) => {
+        if (cancelled) return;
+        if (res) setData(res);
+        setLoading(false);
       })
       .catch(() => {
+        if (cancelled) return;
         setSelected("US");
+        setLoading(false);
       });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const fetchCountry = useCallback((code: string) => {
@@ -72,12 +85,10 @@ export function CountryLeaderboardClient({ locale }: { locale: string }) {
       });
   }, []);
 
-  useEffect(() => {
-    if (selected) fetchCountry(selected);
-  }, [selected, fetchCountry]);
-
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelected(e.target.value);
+    const code = e.target.value;
+    setSelected(code);
+    fetchCountry(code);
   };
 
   return (
@@ -120,8 +131,7 @@ export function CountryLeaderboardClient({ locale }: { locale: string }) {
       ) : data ? (
         <div className="space-y-6">
           <h2 className="text-xl font-bold text-text">
-            {data.flag}{" "}
-            {t("topIn", { country: data.name })}
+            {data.flag} {t("topIn", { country: data.name })}
           </h2>
 
           {data.products.length > 0 ? (
@@ -168,9 +178,7 @@ export function CountryLeaderboardClient({ locale }: { locale: string }) {
                       <h3 className="text-lg font-bold text-text transition-colors group-hover:text-gold">
                         {product.name}
                       </h3>
-                      <p className="mt-1 line-clamp-2 text-sm text-text-muted">
-                        {product.tagline}
-                      </p>
+                      <p className="mt-1 line-clamp-2 text-sm text-text-muted">{product.tagline}</p>
                     </div>
                   </div>
 
@@ -183,9 +191,7 @@ export function CountryLeaderboardClient({ locale }: { locale: string }) {
             </div>
           ) : (
             <div className="rounded-xl border border-border bg-bg-card p-8 text-center">
-              <p className="text-text-muted">
-                {t("noData", { country: data.name })}
-              </p>
+              <p className="text-text-muted">{t("noData", { country: data.name })}</p>
             </div>
           )}
         </div>

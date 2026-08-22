@@ -91,7 +91,8 @@
     "notFoundError": "प्रोडक्ट नहीं मिला या प्रबंधन लिंक अमान्य है।",
     "rankLabel": "रैंक",
     "clicksLabel": "क्लिक",
-    "paymentFailed": "Payment could not be started. Please try again."
+    "paymentFailed": "Payment could not be started. Please try again.",
+    "paymentConfirmed": "Payment confirmed — your bid is now {amount}."
   },
   "discover": {
     "title": "उत्पाद खोजें",
@@ -148,7 +149,7 @@
     "viewAll": "सभी देखें",
     "products": "{count} उत्पाद",
     "noProductsYet": "अभी कोई प्रोडक्ट नहीं",
-    "noKingYet": "अभी कोई राजा नहीं। पहले बनें",
+    "noKingYet": "अभी कोई राजा नहीं — पहले बनें",
     "emptyCategoryCta": "पहले बनें →"
   },
   "meta": {
@@ -301,7 +302,7 @@
     "noProductsInCategory": "इस श्रेणी में अभी कोई प्रोडक्ट नहीं है।",
     "beFirst": "पहले बनें →",
     "noProductsYet": "अभी कोई प्रोडक्ट नहीं",
-    "noKingYet": "अभी कोई राजा नहीं। पहले बनें",
+    "noKingYet": "अभी कोई राजा नहीं — पहले बनें",
     "defaultProductName": "आपका प्रोडक्ट",
     "categoriesLabel": "श्रेणियाँ",
     "ogKingSubtitle": "मुकुट के लिए प्रतिस्पर्धा करते शीर्ष प्रोडक्ट",
@@ -326,6 +327,22 @@
     "showingCount": "{total} में से {loaded} उत्पाद",
     "rangeCount": "{total} में से {start} – {end}",
     "loadMore": "और लोड करें",
-    "viewProduct": "देखें →"
+    "viewProduct": "देखें →",
+    "topThisWeek": "इस सप्ताह के शीर्ष 3",
+    "topThisWeekHint": "पिछले 7 दिनों में सबसे अधिक बोली।",
+    "topThisMonth": "इस महीने के शीर्ष 3",
+    "topThisMonthHint": "पिछले 30 दिनों में सबसे अधिक बोली।"
+  },
+  "paymentSuccess": {
+    "confirmingTitle": "Payment received",
+    "confirmingDesc": "Activating your listing on KINGOF…",
+    "successTitle": "You're on the board!",
+    "successDesc": "Your {amount} bid is live.",
+    "redirecting": "Taking you to your listing…",
+    "errorTitle": "Almost there",
+    "confirmFailed": "We couldn't confirm your payment yet. Your card was charged — we'll apply your bid shortly.",
+    "missingSession": "Missing payment session. Check your email for your management link.",
+    "errorHint": "If your bid doesn't appear in a few minutes, contact support with your payment receipt.",
+    "backToBoard": "Browse the board"
   }
 }

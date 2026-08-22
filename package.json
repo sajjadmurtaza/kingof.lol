@@ -24,6 +24,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx --env-file=.env.local --tsconfig tsconfig.scripts.json src/db/seed.ts --categories-only",
     "db:seed:demo": "tsx --env-file=.env.local --tsconfig tsconfig.scripts.json src/db/seed.ts",
+    "db:clear": "tsx --env-file=.env.local --tsconfig tsconfig.scripts.json src/db/clear.ts",
     "db:setup": "npm run db:push && npm run db:seed:demo",
     "db:studio": "drizzle-kit studio",
     "validate:i18n": "tsx --tsconfig tsconfig.scripts.json scripts/validate-i18n.ts",

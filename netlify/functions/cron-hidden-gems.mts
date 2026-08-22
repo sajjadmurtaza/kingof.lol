@@ -18,9 +18,11 @@ async function pingCron(path: string) {
   }
 }
 
-export default async () => {
+const runHiddenGemsCron = async () => {
   await pingCron("/api/cron/hidden-gems");
 };
+
+export default runHiddenGemsCron;
 
 export const config: Config = {
   schedule: "0 6 * * *",

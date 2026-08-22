@@ -91,7 +91,8 @@
     "notFoundError": "未找到产品或管理链接无效。",
     "rankLabel": "排名",
     "clicksLabel": "点击",
-    "paymentFailed": "Payment could not be started. Please try again."
+    "paymentFailed": "Payment could not be started. Please try again.",
+    "paymentConfirmed": "Payment confirmed — your bid is now {amount}."
   },
   "discover": {
     "title": "发现产品",
@@ -148,7 +149,7 @@
     "viewAll": "查看全部",
     "products": "{count}个产品",
     "noProductsYet": "还没有产品",
-    "noKingYet": "还没有王者，来做第一个",
+    "noKingYet": "还没有王者 — 来做第一个",
     "emptyCategoryCta": "来做第一个 →"
   },
   "meta": {
@@ -301,7 +302,7 @@
     "noProductsInCategory": "这个分类还没有产品。",
     "beFirst": "来做第一个 →",
     "noProductsYet": "还没有产品",
-    "noKingYet": "还没有王者，来做第一个",
+    "noKingYet": "还没有王者 — 来做第一个",
     "defaultProductName": "你的产品",
     "categoriesLabel": "分类",
     "ogKingSubtitle": "争夺王冠的热门产品",
@@ -326,6 +327,22 @@
     "showingCount": "已加载 {loaded} / {total} 个产品",
     "rangeCount": "第 {start} – {end} 个，共 {total} 个",
     "loadMore": "加载更多",
-    "viewProduct": "查看 →"
+    "viewProduct": "查看 →",
+    "topThisWeek": "本周 Top 3",
+    "topThisWeekHint": "过去 7 天内最高出价。",
+    "topThisMonth": "本月 Top 3",
+    "topThisMonthHint": "过去 30 天内最高出价。"
+  },
+  "paymentSuccess": {
+    "confirmingTitle": "Payment received",
+    "confirmingDesc": "Activating your listing on KINGOF…",
+    "successTitle": "You're on the board!",
+    "successDesc": "Your {amount} bid is live.",
+    "redirecting": "Taking you to your listing…",
+    "errorTitle": "Almost there",
+    "confirmFailed": "We couldn't confirm your payment yet. Your card was charged — we'll apply your bid shortly.",
+    "missingSession": "Missing payment session. Check your email for your management link.",
+    "errorHint": "If your bid doesn't appear in a few minutes, contact support with your payment receipt.",
+    "backToBoard": "Browse the board"
   }
 }

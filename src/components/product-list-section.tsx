@@ -2,17 +2,16 @@
 
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import type {
-  PaginatedProductsResult,
-  ProductListSort,
-} from "@/domains/leaderboard/queries";
+import type { PaginatedProductsResult, ProductListSort } from "@/domains/leaderboard/queries";
 import { ProductInfiniteList } from "@/components/product-infinite-list";
+import { NEW_LISTINGS_WITHIN_MINUTES, PRODUCT_PAGE_SIZE } from "@/lib/product-pagination";
 
 export function ProductListSection({
   initial,
   sort,
   locale,
   viewAllHref,
+  newWithinMinutes = NEW_LISTINGS_WITHIN_MINUTES,
   titleKey,
   hintKey,
   viewAllKey,
@@ -21,10 +20,11 @@ export function ProductListSection({
   initial: PaginatedProductsResult;
   sort: ProductListSort;
   locale: string;
-  viewAllHref: "/products";
-  titleKey: "allProducts";
-  hintKey: "allProductsHint";
-  viewAllKey: "viewAllProducts";
+  viewAllHref: "/products" | "/new";
+  newWithinMinutes?: number;
+  titleKey: "allProducts" | "newListings";
+  hintKey: "allProductsHint" | "newListingsHint";
+  viewAllKey: "viewAllProducts" | "viewNewListings";
   flashTopBid?: boolean;
 }) {
   const t = useTranslations("app.productList");
@@ -34,7 +34,9 @@ export function ProductListSection({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1">
           <h2 className="font-display text-xl font-bold text-text">{t(titleKey)}</h2>
-          <p className="text-sm text-text-muted">{t(hintKey)}</p>
+          <p className="text-sm text-text-muted">
+            {sort === "new" ? t(hintKey, { minutes: newWithinMinutes }) : t(hintKey)}
+          </p>
         </div>
         <Link
           href={viewAllHref}
@@ -46,9 +48,12 @@ export function ProductListSection({
       </div>
 
       <ProductInfiniteList
+        key={`${sort}-${initial.total}-${initial.products[0]?.id ?? "empty"}`}
         initial={initial}
         sort={sort}
         locale={locale}
+        pageSize={PRODUCT_PAGE_SIZE}
+        newWithinMinutes={newWithinMinutes}
         highlightTop={flashTopBid}
       />
     </section>

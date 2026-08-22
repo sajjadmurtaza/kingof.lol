@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import {
   normalizeUrl,
   isPrivateOrBlocked,
@@ -72,7 +72,7 @@ describe("normalizeUrl", () => {
       hostname = "example.com";
       pathname = "/";
       searchParams = new URLSearchParams();
-      constructor(_input: string) {}
+      constructor() {}
     } as unknown as typeof URL;
     try {
       expect(normalizeUrl("https://example.com")).toBeNull();
@@ -175,7 +175,7 @@ describe("validateFetchUrl", () => {
       hostname = "example.com";
       username = "";
       password = "";
-      constructor(_input: string) {}
+      constructor() {}
     } as unknown as typeof URL;
 
     try {

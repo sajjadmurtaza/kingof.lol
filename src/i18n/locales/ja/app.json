@@ -91,7 +91,8 @@
     "notFoundError": "製品が見つからないか、管理リンクが無効です。",
     "rankLabel": "順位",
     "clicksLabel": "クリック",
-    "paymentFailed": "Payment could not be started. Please try again."
+    "paymentFailed": "Payment could not be started. Please try again.",
+    "paymentConfirmed": "Payment confirmed — your bid is now {amount}."
   },
   "discover": {
     "title": "プロダクトを発見",
@@ -148,7 +149,7 @@
     "viewAll": "すべて見る",
     "products": "{count}プロダクト",
     "noProductsYet": "まだ製品がありません",
-    "noKingYet": "まだキングがいません。最初の参加者になりましょう",
+    "noKingYet": "まだキングがいません — 最初の参加者に",
     "emptyCategoryCta": "最初の参加者になる →"
   },
   "meta": {
@@ -301,7 +302,7 @@
     "noProductsInCategory": "このカテゴリにはまだ製品がありません。",
     "beFirst": "最初の参加者になる →",
     "noProductsYet": "まだ製品がありません",
-    "noKingYet": "まだキングがいません。最初の参加者になりましょう",
+    "noKingYet": "まだキングがいません — 最初の参加者に",
     "defaultProductName": "あなたのプロダクト",
     "categoriesLabel": "カテゴリ",
     "ogKingSubtitle": "王冠を争うトッププロダクト",
@@ -326,6 +327,22 @@
     "showingCount": "{total}件中{loaded}件を表示",
     "rangeCount": "{total}件中{start} – {end}件",
     "loadMore": "もっと読み込む",
-    "viewProduct": "見る →"
+    "viewProduct": "見る →",
+    "topThisWeek": "今週のトップ3",
+    "topThisWeekHint": "過去7日間の最高入札額。",
+    "topThisMonth": "今月のトップ3",
+    "topThisMonthHint": "過去30日間の最高入札額。"
+  },
+  "paymentSuccess": {
+    "confirmingTitle": "Payment received",
+    "confirmingDesc": "Activating your listing on KINGOF…",
+    "successTitle": "You're on the board!",
+    "successDesc": "Your {amount} bid is live.",
+    "redirecting": "Taking you to your listing…",
+    "errorTitle": "Almost there",
+    "confirmFailed": "We couldn't confirm your payment yet. Your card was charged — we'll apply your bid shortly.",
+    "missingSession": "Missing payment session. Check your email for your management link.",
+    "errorHint": "If your bid doesn't appear in a few minutes, contact support with your payment receipt.",
+    "backToBoard": "Browse the board"
   }
 }

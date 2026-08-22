@@ -11,8 +11,10 @@ import {
   getRandomPicks,
   getTopProducts,
   getProductsPaginated,
+  getTopProductsByBidPeriod,
 } from "@/domains/leaderboard/queries";
 import { buildPageMetadata } from "@/domains/marketing/seo-metadata";
+import { NEW_LISTINGS_WITHIN_MINUTES, PRODUCT_PAGE_SIZE } from "@/lib/product-pagination";
 
 export async function generateMetadata({
   params,
@@ -43,23 +45,44 @@ export default async function DiscoverPage({ params }: { params: Promise<{ local
     products: [],
     total: 0,
     page: 1,
-    pageSize: 10,
+    pageSize: PRODUCT_PAGE_SIZE,
     hasMore: false,
   };
+  let newProducts: Awaited<ReturnType<typeof getProductsPaginated>> = {
+    products: [],
+    total: 0,
+    page: 1,
+    pageSize: PRODUCT_PAGE_SIZE,
+    hasMore: false,
+  };
+  let weekTop: Awaited<ReturnType<typeof getTopProductsByBidPeriod>> = [];
+  let monthTop: Awaited<ReturnType<typeof getTopProductsByBidPeriod>> = [];
 
   try {
-    const [random3, gems, clicked, kings, allPage] = await Promise.all([
-      getRandomPicks(1),
-      getHiddenGems(1),
-      getMostClicked(6),
-      getTopProducts(3),
-      getProductsPaginated({ sort: "bid", page: 1, pageSize: 10 }),
-    ]);
+    const [random3, gems, clicked, kings, allPage, newPage, weekLeaders, monthLeaders] =
+      await Promise.all([
+        getRandomPicks(1),
+        getHiddenGems(1),
+        getMostClicked(6),
+        getTopProducts(3),
+        getProductsPaginated({ sort: "bid", page: 1, pageSize: PRODUCT_PAGE_SIZE }),
+        getProductsPaginated({
+          sort: "new",
+          page: 1,
+          pageSize: PRODUCT_PAGE_SIZE,
+          newWithinMinutes: NEW_LISTINGS_WITHIN_MINUTES,
+        }),
+        getTopProductsByBidPeriod("week", 3),
+        getTopProductsByBidPeriod("month", 3),
+      ]);
     randomPick = random3[0];
     hiddenGem = gems[0];
     mostClicked = clicked;
     newKings = kings;
     allProducts = allPage;
+    newProducts = newPage;
+    weekTop = weekLeaders;
+    monthTop = monthLeaders;
   } catch {
     // DB unavailable
   }
@@ -72,6 +95,9 @@ export default async function DiscoverPage({ params }: { params: Promise<{ local
         mostClicked={mostClicked}
         newKings={newKings}
         allProducts={allProducts}
+        newProducts={newProducts}
+        weekTop={weekTop}
+        monthTop={monthTop}
         locale={locale}
       />
     </div>
@@ -84,6 +110,9 @@ function DiscoverContent({
   mostClicked,
   newKings,
   allProducts,
+  newProducts,
+  weekTop,
+  monthTop,
   locale,
 }: {
   randomPick?: Awaited<ReturnType<typeof getRandomPicks>>[number];
@@ -91,6 +120,9 @@ function DiscoverContent({
   mostClicked: Awaited<ReturnType<typeof getMostClicked>>;
   newKings: Awaited<ReturnType<typeof getTopProducts>>;
   allProducts: Awaited<ReturnType<typeof getProductsPaginated>>;
+  newProducts: Awaited<ReturnType<typeof getProductsPaginated>>;
+  weekTop: Awaited<ReturnType<typeof getTopProductsByBidPeriod>>;
+  monthTop: Awaited<ReturnType<typeof getTopProductsByBidPeriod>>;
   locale: string;
 }) {
   const t = useTranslations("app");
@@ -100,7 +132,10 @@ function DiscoverContent({
     hiddenGem != null ||
     mostClicked.length > 0 ||
     newKings.length > 0 ||
-    allProducts.total > 0;
+    allProducts.total > 0 ||
+    newProducts.total > 0 ||
+    weekTop.length > 0 ||
+    monthTop.length > 0;
 
   return (
     <>
@@ -111,10 +146,17 @@ function DiscoverContent({
 
       {hasData ? (
         <>
-          {(randomPick || hiddenGem || allProducts.total > 0) && (
+          {(randomPick ||
+            hiddenGem ||
+            allProducts.total > 0 ||
+            newProducts.total > 0 ||
+            weekTop.length > 0 ||
+            monthTop.length > 0) && (
             <Section title={t("sections.discover")}>
               <DiscoverPicks
                 locale={locale}
+                weekTop={weekTop}
+                monthTop={monthTop}
                 random={
                   randomPick
                     ? {
@@ -142,6 +184,7 @@ function DiscoverContent({
                     : undefined
                 }
                 allProducts={allProducts.total > 0 ? allProducts : undefined}
+                newProducts={newProducts.total > 0 ? newProducts : undefined}
               />
             </Section>
           )}

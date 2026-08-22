@@ -18,9 +18,11 @@ async function pingCron(path: string) {
   }
 }
 
-export default async () => {
+const runRandomPicksCron = async () => {
   await pingCron("/api/cron/random-picks");
 };
+
+export default runRandomPicksCron;
 
 export const config: Config = {
   schedule: "5 * * * *",

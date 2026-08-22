@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createMockDb } from "../../../tests/helpers/mock-db";
-import { sampleCategory, sampleRankedRow } from "../../../tests/helpers/sample-data";
 
 const mock = createMockDb();
 

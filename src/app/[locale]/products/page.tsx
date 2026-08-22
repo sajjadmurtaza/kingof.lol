@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ProductInfiniteList } from "@/components/product-infinite-list";
 import { getProductsPaginated, type PaginatedProductsResult } from "@/domains/leaderboard/queries";
 import { buildPageMetadata } from "@/domains/marketing/seo-metadata";
+import { PRODUCT_PAGE_SIZE } from "@/lib/product-pagination";
 
 export async function generateMetadata({
   params,
@@ -26,7 +27,7 @@ const emptyPage: PaginatedProductsResult = {
   products: [],
   total: 0,
   page: 1,
-  pageSize: 10,
+  pageSize: PRODUCT_PAGE_SIZE,
   hasMore: false,
 };
 
@@ -36,7 +37,7 @@ export default async function ProductsPage({ params }: { params: Promise<{ local
 
   let initial = emptyPage;
   try {
-    initial = await getProductsPaginated({ sort: "bid", page: 1, pageSize: 10 });
+    initial = await getProductsPaginated({ sort: "bid", page: 1, pageSize: PRODUCT_PAGE_SIZE });
   } catch {
     // DB unavailable
   }
@@ -66,9 +67,11 @@ function ProductsList({
 
       <div className="mt-8">
         <ProductInfiniteList
+          key={`bid-${initial.total}-${initial.products[0]?.id ?? "empty"}`}
           initial={initial}
           sort="bid"
           locale={locale}
+          pageSize={PRODUCT_PAGE_SIZE}
           highlightTop
         />
       </div>

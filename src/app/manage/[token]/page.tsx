@@ -2,8 +2,10 @@
 
 import { useTranslations } from "next-intl";
 import * as Sentry from "@sentry/nextjs";
-import { use, useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { use, useState, useEffect, useCallback } from "react";
 import { formatBid } from "@/lib/format";
+import { confirmPaymentSession } from "@/lib/payment-confirmation";
 import { ProductLogo } from "@/components/product-logo";
 
 type ProductData = {
@@ -21,24 +23,64 @@ type ProductData = {
 
 export default function ManagePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = use(params);
+  const searchParams = useSearchParams();
+  const sessionId = searchParams.get("session_id");
   const t = useTranslations("app.manage");
   const [bidIncrease, setBidIncrease] = useState(500);
   const [product, setProduct] = useState<ProductData>(null);
+  const [displayBidCents, setDisplayBidCents] = useState<number | null>(null);
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [paymentError, setPaymentError] = useState("");
   const [paying, setPaying] = useState(false);
 
-  useEffect(() => {
-    fetch(`/api/manage/${token}`)
+  const loadProduct = useCallback(() => {
+    return fetch(`/api/manage/${token}`)
       .then((res) => {
         if (!res.ok) throw new Error("Not found");
         return res.json();
       })
-      .then(setProduct)
-      .catch(() => setError(t("notFoundError")))
-      .finally(() => setLoading(false));
+      .then((data: NonNullable<ProductData>) => {
+        setProduct(data);
+        setDisplayBidCents((current) => current ?? data.totalBid);
+      });
   }, [token]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function init() {
+      try {
+        if (sessionId) {
+          const result = await confirmPaymentSession(sessionId);
+          if (!cancelled && !("error" in result)) {
+            setPaymentConfirmed(true);
+            setDisplayBidCents(result.totalBidCents);
+          }
+        }
+
+        await loadProduct();
+
+        if (!cancelled && sessionId) {
+          const refreshed = await fetch(`/api/manage/${token}`).then((r) => r.json());
+          if (refreshed?.totalBid != null) {
+            setDisplayBidCents(refreshed.totalBid);
+          }
+        }
+      } catch {
+        if (!cancelled) setError(t("notFoundError"));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    init();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token, sessionId, loadProduct, t]);
 
   if (loading) {
     return (
@@ -53,9 +95,7 @@ export default function ManagePage({ params }: { params: Promise<{ token: string
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="text-center">
           <p className="text-xl font-bold text-text">{t("invalidLinkTitle")}</p>
-          <p className="mt-2 text-text-muted">
-            {error || t("invalidLinkDesc")}
-          </p>
+          <p className="mt-2 text-text-muted">{error || t("invalidLinkDesc")}</p>
         </div>
       </div>
     );
@@ -64,6 +104,12 @@ export default function ManagePage({ params }: { params: Promise<{ token: string
   return (
     <div className="mx-auto max-w-xl px-4 py-12">
       <h1 className="text-3xl font-black">{t("title")}</h1>
+
+      {paymentConfirmed ? (
+        <p className="mt-4 rounded-xl border border-gold/30 bg-gold/10 px-4 py-3 text-sm font-medium text-gold">
+          {t("paymentConfirmed", { amount: formatBid(displayBidCents ?? product.totalBid) })}
+        </p>
+      ) : null}
 
       <div className="mt-8 space-y-6">
         <div className="rounded-xl border border-border bg-bg-card p-6">
@@ -89,7 +135,7 @@ export default function ManagePage({ params }: { params: Promise<{ token: string
             <div className="rounded-lg bg-surface p-3 text-center">
               <p className="text-xs text-text-dim">{t("currentBid")}</p>
               <p className="text-lg font-bold text-gold">
-                {formatBid(product.totalBid)}
+                {formatBid(displayBidCents ?? product.totalBid)}
               </p>
             </div>
             <div className="rounded-lg bg-surface p-3 text-center">
@@ -105,9 +151,7 @@ export default function ManagePage({ params }: { params: Promise<{ token: string
             <div>
               <label className="mb-1 block text-sm text-text-muted">{t("bidIncrease")}</label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted">
-                  $
-                </span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted">$</span>
                 <input
                   type="number"
                   min={5}
@@ -135,9 +179,7 @@ export default function ManagePage({ params }: { params: Promise<{ token: string
                     window.location.href = data.checkoutUrl;
                     return;
                   }
-                  setPaymentError(
-                    typeof data.error === "string" ? data.error : t("paymentFailed"),
-                  );
+                  setPaymentError(typeof data.error === "string" ? data.error : t("paymentFailed"));
                 } catch (err) {
                   Sentry.captureException(err, {
                     tags: { route: "manage/increase-bid" },

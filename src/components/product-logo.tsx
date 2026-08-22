@@ -53,6 +53,8 @@ export function ProductLogo({
   }
 
   return (
+    // External product icons — next/image remotePatterns cannot cover arbitrary user URLs.
+    // eslint-disable-next-line @next/next/no-img-element -- third-party favicons/OG images
     <img
       src={src}
       alt=""

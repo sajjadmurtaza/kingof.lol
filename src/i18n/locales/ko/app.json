@@ -91,7 +91,8 @@
     "notFoundError": "제품을 찾을 수 없거나 관리 링크가 유효하지 않습니다.",
     "rankLabel": "순위",
     "clicksLabel": "클릭",
-    "paymentFailed": "Payment could not be started. Please try again."
+    "paymentFailed": "Payment could not be started. Please try again.",
+    "paymentConfirmed": "Payment confirmed — your bid is now {amount}."
   },
   "discover": {
     "title": "제품 발견",
@@ -148,7 +149,7 @@
     "viewAll": "모두 보기",
     "products": "{count}개 제품",
     "noProductsYet": "아직 제품 없음",
-    "noKingYet": "아직 킹 없음. 첫 번째가 되세요",
+    "noKingYet": "아직 킹 없음 — 첫 번째가 되세요",
     "emptyCategoryCta": "첫 번째가 되기 →"
   },
   "meta": {
@@ -301,7 +302,7 @@
     "noProductsInCategory": "이 카테고리에 아직 제품이 없습니다.",
     "beFirst": "첫 번째가 되기 →",
     "noProductsYet": "아직 제품 없음",
-    "noKingYet": "아직 킹 없음. 첫 번째가 되세요",
+    "noKingYet": "아직 킹 없음 — 첫 번째가 되세요",
     "defaultProductName": "당신의 제품",
     "categoriesLabel": "카테고리",
     "ogKingSubtitle": "왕관을 두고 경쟁하는 인기 제품",
@@ -326,6 +327,22 @@
     "showingCount": "전체 {total}개 중 {loaded}개",
     "rangeCount": "전체 {total}개 중 {start} – {end}",
     "loadMore": "더 불러오기",
-    "viewProduct": "보기 →"
+    "viewProduct": "보기 →",
+    "topThisWeek": "이번 주 Top 3",
+    "topThisWeekHint": "최근 7일간 가장 높은 입찰.",
+    "topThisMonth": "이번 달 Top 3",
+    "topThisMonthHint": "최근 30일간 가장 높은 입찰."
+  },
+  "paymentSuccess": {
+    "confirmingTitle": "Payment received",
+    "confirmingDesc": "Activating your listing on KINGOF…",
+    "successTitle": "You're on the board!",
+    "successDesc": "Your {amount} bid is live.",
+    "redirecting": "Taking you to your listing…",
+    "errorTitle": "Almost there",
+    "confirmFailed": "We couldn't confirm your payment yet. Your card was charged — we'll apply your bid shortly.",
+    "missingSession": "Missing payment session. Check your email for your management link.",
+    "errorHint": "If your bid doesn't appear in a few minutes, contact support with your payment receipt.",
+    "backToBoard": "Browse the board"
   }
 }

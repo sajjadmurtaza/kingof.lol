@@ -4,12 +4,16 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { KingofBubble } from "@/components/kingof-bubble";
 import { ProductLogo } from "@/components/product-logo";
-import { HiddenGemCard } from "@/components/hidden-gem-card";
 import { RandomPick } from "@/components/random-pick";
 import { ProductListSection } from "@/components/product-list-section";
+import { DiscoverSidebar } from "@/components/discover-sidebar";
 import { formatBid, formatClicks } from "@/lib/format";
 import { discoverContentGrid } from "@/lib/discover-layout";
-import type { RankedProduct, PaginatedProductsResult } from "@/domains/leaderboard/queries";
+import type {
+  RankedProduct,
+  PaginatedProductsResult,
+  PeriodTopProduct,
+} from "@/domains/leaderboard/queries";
 import type { getCategoryKings } from "@/domains/leaderboard/queries";
 
 export function CategoryKingsSection({
@@ -59,7 +63,9 @@ export function CategoryKingsSection({
                 <p className="truncate text-lg font-bold text-text group-hover:text-gold">
                   {ck.king.name}
                 </p>
-                <p className="text-xs text-text-dim">{tu("kingOfCategory", { category: ck.categoryName })}</p>
+                <p className="text-xs text-text-dim">
+                  {tu("kingOfCategory", { category: ck.categoryName })}
+                </p>
               </div>
             </div>
             <p className="text-sm font-medium tabular-nums text-text-muted">
@@ -158,15 +164,32 @@ export function DiscoverSection({
   gem,
   locale,
   allProducts,
+  newProducts,
+  weekTop,
+  monthTop,
 }: {
   random?: RankedProduct;
   gem?: RankedProduct;
   locale: string;
   allProducts?: PaginatedProductsResult;
+  newProducts?: PaginatedProductsResult;
+  weekTop?: PeriodTopProduct[];
+  monthTop?: PeriodTopProduct[];
 }) {
   const tv = useTranslations("app.voice");
+  const resolvedWeekTop = weekTop ?? [];
+  const resolvedMonthTop = monthTop ?? [];
 
-  if (!random && !gem && !allProducts) return null;
+  if (
+    !random &&
+    !gem &&
+    !allProducts &&
+    !newProducts &&
+    resolvedWeekTop.length === 0 &&
+    resolvedMonthTop.length === 0
+  ) {
+    return null;
+  }
 
   return (
     <section className="space-y-6">
@@ -203,24 +226,38 @@ export function DiscoverSection({
               flashTopBid
             />
           )}
+
+          {newProducts && (
+            <ProductListSection
+              initial={newProducts}
+              sort="new"
+              locale={locale}
+              viewAllHref="/new"
+              titleKey="newListings"
+              hintKey="newListingsHint"
+              viewAllKey="viewNewListings"
+            />
+          )}
         </div>
 
-        {gem && (
-          <div className="lg:sticky lg:top-24">
-            <HiddenGemCard
-              locale={locale}
-              initial={{
-                slug: gem.slug,
-                name: gem.name,
-                tagline: gem.tagline,
-                iconUrl: gem.iconUrl,
-                ogImageUrl: gem.ogImageUrl,
-                normalizedDomain: gem.normalizedDomain,
-                clickCount: gem.clickCount,
-              }}
-            />
-          </div>
-        )}
+        <DiscoverSidebar
+          weekTop={resolvedWeekTop}
+          monthTop={resolvedMonthTop}
+          gem={
+            gem
+              ? {
+                  slug: gem.slug,
+                  name: gem.name,
+                  tagline: gem.tagline,
+                  iconUrl: gem.iconUrl,
+                  ogImageUrl: gem.ogImageUrl,
+                  normalizedDomain: gem.normalizedDomain,
+                  clickCount: gem.clickCount,
+                }
+              : undefined
+          }
+          locale={locale}
+        />
       </div>
     </section>
   );

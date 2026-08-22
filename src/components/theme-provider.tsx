@@ -9,13 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import {
-  DEFAULT_THEME,
-  getStoredTheme,
-  isTheme,
-  THEME_STORAGE_KEY,
-  type Theme,
-} from "@/lib/theme";
+import { DEFAULT_THEME, getStoredTheme, isTheme, THEME_STORAGE_KEY, type Theme } from "@/lib/theme";
 
 type ThemeContextValue = {
   theme: Theme;
@@ -36,13 +30,14 @@ function readThemeFromDocument(): Theme {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(DEFAULT_THEME);
+  const [theme, setThemeState] = useState<Theme>(() => {
+    if (typeof window === "undefined") return DEFAULT_THEME;
+    return readThemeFromDocument();
+  });
 
   useEffect(() => {
-    const initial = readThemeFromDocument();
-    setThemeState(initial);
-    applyTheme(initial);
-  }, []);
+    applyTheme(theme);
+  }, [theme]);
 
   const persistTheme = useCallback((next: Theme) => {
     applyTheme(next);
@@ -69,10 +64,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     });
   }, [persistTheme]);
 
-  const value = useMemo(
-    () => ({ theme, setTheme, toggleTheme }),
-    [theme, setTheme, toggleTheme],
-  );
+  const value = useMemo(() => ({ theme, setTheme, toggleTheme }), [theme, setTheme, toggleTheme]);
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
@@ -86,13 +78,7 @@ export function useTheme() {
 }
 
 /** Sync lang/dir on the document element for localized routes. */
-export function LocaleHtmlAttributes({
-  lang,
-  dir,
-}: {
-  lang: string;
-  dir: "ltr" | "rtl";
-}) {
+export function LocaleHtmlAttributes({ lang, dir }: { lang: string; dir: "ltr" | "rtl" }) {
   useEffect(() => {
     document.documentElement.lang = lang;
     document.documentElement.dir = dir;

@@ -3,7 +3,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 
 const BUILD_DIR = resolve(process.cwd(), ".next/server/app");
-const hasBuild = existsSync(BUILD_DIR);
+const hasBuild = existsSync(resolve(BUILD_DIR, "en.html"));
 
 function readBuiltPage(path: string): string {
   const file = resolve(BUILD_DIR, path);

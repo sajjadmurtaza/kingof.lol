@@ -25,8 +25,10 @@ import {
   getCategoryCount,
   getHappeningNow,
   getProductsPaginated,
+  getTopProductsByBidPeriod,
 } from "@/domains/leaderboard/queries";
 import { demoHappeningNow, emptyHappeningNow, shouldShowDemoActivity } from "@/lib/demo-data";
+import { NEW_LISTINGS_WITHIN_MINUTES, PRODUCT_PAGE_SIZE } from "@/lib/product-pagination";
 
 export async function generateMetadata({
   params,
@@ -70,6 +72,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     clicksToday,
     happeningNow,
     allProducts,
+    newProducts,
+    weekTop,
+    monthTop,
   ] = await Promise.all([
     safeQuery(() => getTopProducts(3), []),
     safeQuery(() => getCategoryKings(), []),
@@ -80,10 +85,25 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     safeQuery(() => getCategoryCount(), 0),
     safeQuery(() => getTodayClickCount(), 0),
     safeQuery(() => getHappeningNow(5, 5), { trending: [], activity: [] }),
+    safeQuery(() => getProductsPaginated({ sort: "bid", page: 1, pageSize: PRODUCT_PAGE_SIZE }), {
+      products: [],
+      total: 0,
+      page: 1,
+      pageSize: PRODUCT_PAGE_SIZE,
+      hasMore: false,
+    }),
     safeQuery(
-      () => getProductsPaginated({ sort: "bid", page: 1, pageSize: 10 }),
-      { products: [], total: 0, page: 1, pageSize: 10, hasMore: false },
+      () =>
+        getProductsPaginated({
+          sort: "new",
+          page: 1,
+          pageSize: PRODUCT_PAGE_SIZE,
+          newWithinMinutes: NEW_LISTINGS_WITHIN_MINUTES,
+        }),
+      { products: [], total: 0, page: 1, pageSize: PRODUCT_PAGE_SIZE, hasMore: false },
     ),
+    safeQuery(() => getTopProductsByBidPeriod("week", 3), []),
+    safeQuery(() => getTopProductsByBidPeriod("month", 3), []),
   ]);
 
   const liveFeed =
@@ -131,7 +151,12 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 <MostClickedSection products={mostClicked} locale={locale} />
               </>
             )}
-            {(random3.length > 0 || hiddenGems.length > 0 || allProducts.total > 0) && (
+            {(random3.length > 0 ||
+              hiddenGems.length > 0 ||
+              allProducts.total > 0 ||
+              newProducts.total > 0 ||
+              weekTop.length > 0 ||
+              monthTop.length > 0) && (
               <>
                 <SectionDivider />
                 <DiscoverSection
@@ -139,6 +164,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                   gem={hiddenGems[0]}
                   locale={locale}
                   allProducts={allProducts.total > 0 ? allProducts : undefined}
+                  newProducts={newProducts.total > 0 ? newProducts : undefined}
+                  weekTop={weekTop}
+                  monthTop={monthTop}
                 />
               </>
             )}

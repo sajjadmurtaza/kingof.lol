@@ -36,8 +36,6 @@ export async function createBidCheckoutSession({
   productSlug,
   productId,
   bidId,
-  manageToken,
-  successUrl,
   email,
   locale = "en",
 }: {
@@ -53,11 +51,7 @@ export async function createBidCheckoutSession({
 }): Promise<string> {
   const stripe = getStripe();
   const siteUrl = getSiteUrl();
-  const checkoutSuccessUrl =
-    successUrl ??
-    (manageToken
-      ? `${siteUrl}/manage/${manageToken}?bid=success`
-      : `${siteUrl}/${locale}/product/${productSlug}?bid=success`);
+  const checkoutSuccessUrl = `${siteUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`;
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",

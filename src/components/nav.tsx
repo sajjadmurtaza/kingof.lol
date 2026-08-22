@@ -6,14 +6,14 @@ import { Link, usePathname } from "@/i18n/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export function Nav({ locale }: { locale: string }) {
+  const pathname = usePathname();
+  return <NavBody key={pathname} locale={locale} pathname={pathname} />;
+}
+
+function NavBody({ locale, pathname }: { locale: string; pathname: string }) {
   const t = useTranslations("common.nav");
   const tt = useTranslations("common.theme");
-  const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
-
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [pathname]);
 
   useEffect(() => {
     if (menuOpen) {
@@ -37,7 +37,11 @@ export function Nav({ locale }: { locale: string }) {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-bg/80 backdrop-blur-md">
       <nav className="mx-auto flex max-w-[1200px] items-center justify-between px-4 py-2.5 sm:px-5">
-        <Link href="/" locale={locale} className="font-display flex items-center gap-2 text-xl font-extrabold tracking-tight">
+        <Link
+          href="/"
+          locale={locale}
+          className="font-display flex items-center gap-2 text-xl font-extrabold tracking-tight"
+        >
           <span className="text-gold">KINGOF</span>
           <span className="text-lg">👑</span>
         </Link>
@@ -50,9 +54,7 @@ export function Nav({ locale }: { locale: string }) {
               href={link.href}
               locale={locale}
               className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-                pathname === link.href
-                  ? "bg-gold/12 text-gold"
-                  : "text-text-muted hover:text-text"
+                pathname === link.href ? "bg-gold/12 text-gold" : "text-text-muted hover:text-text"
               }`}
             >
               {link.label}
@@ -79,12 +81,28 @@ export function Nav({ locale }: { locale: string }) {
             className="flex h-9 w-9 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-surface hover:text-text md:hidden"
           >
             {menuOpen ? (
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              >
                 <line x1="4" y1="4" x2="16" y2="16" />
                 <line x1="16" y1="4" x2="4" y2="16" />
               </svg>
             ) : (
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              >
                 <line x1="3" y1="6" x2="17" y2="6" />
                 <line x1="3" y1="10" x2="17" y2="10" />
                 <line x1="3" y1="14" x2="17" y2="14" />
