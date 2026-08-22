@@ -1,7 +1,7 @@
 {
   "crons": [
-    { "path": "/api/cron/snapshots", "schedule": "0 * * * *" },
-    { "path": "/api/cron/random-picks", "schedule": "5 * * * *" },
+    { "path": "/api/cron/snapshots", "schedule": "0 0 * * *" },
+    { "path": "/api/cron/random-picks", "schedule": "0 1 * * *" },
     { "path": "/api/cron/hidden-gems", "schedule": "0 6 * * *" }
   ],
   "redirects": [

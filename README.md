@@ -485,8 +485,8 @@ stripe listen --forward-to localhost:3000/api/webhooks/stripe
 | `GET/POST` | `/api/manage/[token]` | Owner read/update listing |
 | `POST` | `/api/manage/[token]/increase-bid` | New Stripe session for top-up |
 | `POST` | `/api/webhooks/stripe` | Stripe payment confirmation |
-| `GET` | `/api/cron/snapshots` | Hourly rank snapshots |
-| `GET` | `/api/cron/random-picks` | Hourly random pick rotation |
+| `GET` | `/api/cron/snapshots` | Daily rank snapshots |
+| `GET` | `/api/cron/random-picks` | Daily random pick rotation |
 | `GET` | `/api/cron/hidden-gems` | Daily hidden gem pick |
 
 Cron routes require `Authorization: Bearer {CRON_SECRET}` when the secret is set.
@@ -499,9 +499,11 @@ Configured in `vercel.json`:
 
 | Job | Schedule | Purpose |
 |-----|----------|---------|
-| `/api/cron/snapshots` | Every hour (`0 * * * *`) | Save rank history |
-| `/api/cron/random-picks` | Hourly at :05 (`5 * * * *`) | Rotate random spotlight |
+| `/api/cron/snapshots` | Daily 00:00 UTC (`0 0 * * *`) | Save rank history |
+| `/api/cron/random-picks` | Daily 01:00 UTC (`0 1 * * *`) | Rotate random spotlight |
 | `/api/cron/hidden-gems` | Daily 06:00 UTC (`0 6 * * *`) | Pick new hidden gem |
+
+**Vercel Hobby** allows only **once-per-day** cron schedules. Hourly jobs (`0 * * * *`) require **Pro**. Netlify scheduled functions (in `netlify/functions/`) can still run hourly on staging if needed.
 
 Failures optionally notify Slack (`SLACK_WEBHOOK_URL`).
 
