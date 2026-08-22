@@ -46,29 +46,20 @@ export default async function DiscoverPage({ params }: { params: Promise<{ local
     pageSize: 10,
     hasMore: false,
   };
-  let newProducts: Awaited<ReturnType<typeof getProductsPaginated>> = {
-    products: [],
-    total: 0,
-    page: 1,
-    pageSize: 10,
-    hasMore: false,
-  };
 
   try {
-    const [random3, gems, clicked, kings, allPage, newPage] = await Promise.all([
+    const [random3, gems, clicked, kings, allPage] = await Promise.all([
       getRandomPicks(1),
       getHiddenGems(1),
       getMostClicked(6),
       getTopProducts(3),
       getProductsPaginated({ sort: "bid", page: 1, pageSize: 10 }),
-      getProductsPaginated({ sort: "new", page: 1, pageSize: 10, newWithinMinutes: 5 }),
     ]);
     randomPick = random3[0];
     hiddenGem = gems[0];
     mostClicked = clicked;
     newKings = kings;
     allProducts = allPage;
-    newProducts = newPage;
   } catch {
     // DB unavailable
   }
@@ -81,7 +72,6 @@ export default async function DiscoverPage({ params }: { params: Promise<{ local
         mostClicked={mostClicked}
         newKings={newKings}
         allProducts={allProducts}
-        newProducts={newProducts}
         locale={locale}
       />
     </div>
@@ -94,7 +84,6 @@ function DiscoverContent({
   mostClicked,
   newKings,
   allProducts,
-  newProducts,
   locale,
 }: {
   randomPick?: Awaited<ReturnType<typeof getRandomPicks>>[number];
@@ -102,7 +91,6 @@ function DiscoverContent({
   mostClicked: Awaited<ReturnType<typeof getMostClicked>>;
   newKings: Awaited<ReturnType<typeof getTopProducts>>;
   allProducts: Awaited<ReturnType<typeof getProductsPaginated>>;
-  newProducts: Awaited<ReturnType<typeof getProductsPaginated>>;
   locale: string;
 }) {
   const t = useTranslations("app");
@@ -123,7 +111,7 @@ function DiscoverContent({
 
       {hasData ? (
         <>
-          {(randomPick || hiddenGem || allProducts.total > 0 || newProducts.total > 0) && (
+          {(randomPick || hiddenGem || allProducts.total > 0) && (
             <Section title={t("sections.discover")}>
               <DiscoverPicks
                 locale={locale}
@@ -154,7 +142,6 @@ function DiscoverContent({
                     : undefined
                 }
                 allProducts={allProducts.total > 0 ? allProducts : undefined}
-                newProducts={newProducts.total > 0 ? newProducts : undefined}
               />
             </Section>
           )}

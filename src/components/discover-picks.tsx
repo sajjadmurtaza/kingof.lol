@@ -20,15 +20,13 @@ export function DiscoverPicks({
   gem,
   locale,
   allProducts,
-  newProducts,
 }: {
   random?: RandomPickProduct;
   gem?: HiddenGemProduct;
   locale: string;
   allProducts?: PaginatedProductsResult;
-  newProducts?: PaginatedProductsResult;
 }) {
-  if (!random && !gem && !allProducts && !newProducts) return null;
+  if (!random && !gem && !allProducts) return null;
 
   return (
     <div className="space-y-10">
@@ -48,18 +46,6 @@ export function DiscoverPicks({
               hintKey="allProductsHint"
               viewAllKey="viewAllProducts"
               flashTopBid
-            />
-          )}
-
-          {newProducts && newProducts.total > 0 && (
-            <ProductListSection
-              initial={newProducts}
-              sort="new"
-              locale={locale}
-              viewAllHref="/new"
-              titleKey="newListings"
-              hintKey="newListingsHint"
-              viewAllKey="viewNewListings"
             />
           )}
         </div>

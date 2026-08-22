@@ -205,16 +205,7 @@ function makeManageToken(): { raw: string; hash: string } {
   return { raw, hash };
 }
 
-async function seed() {
-  console.log("Seeding database...\n");
-
-  // 1. Push schema (creates tables if they don't exist)
-  console.log("Creating tables from schema...");
-  // Use drizzle-kit push via schema, but since we're running raw here,
-  // we create the enum + tables manually via raw SQL if needed.
-  // Better: use drizzle-kit push before seeding. We'll just insert data.
-
-  // 2. Upsert categories (idempotent — safe to re-run)
+async function seedCategories() {
   console.log(`Upserting ${CATEGORIES.length} categories...`);
   for (const cat of CATEGORIES) {
     await db
@@ -226,12 +217,12 @@ async function seed() {
       });
   }
   console.log("  ✓ Categories done\n");
+}
 
-  // 3. Resolve category slug → id map
+async function seedDemoProducts() {
   const allCats = await db.select().from(schema.categories);
   const catMap = new Map(allCats.map((c) => [c.slug, c.id]));
 
-  // 4. Upsert sample products (idempotent by normalizedUrl)
   console.log(`Upserting ${SAMPLE_PRODUCTS.length} sample products...`);
   const managementLinks: { name: string; url: string }[] = [];
 
@@ -281,7 +272,6 @@ async function seed() {
   }
   console.log("  ✓ Products done\n");
 
-  // 5. Add confirmed bids for each product so totalBid is backed by bid records
   console.log("Creating bid records...");
   const allProducts = await db
     .select({ id: schema.products.id, totalBid: schema.products.totalBid })
@@ -307,7 +297,33 @@ async function seed() {
   }
   console.log("  ✓ Bids done\n");
 
-  // 6. Print management links
+  return managementLinks;
+}
+
+async function seed() {
+  const categoriesOnly = process.argv.includes("--categories-only");
+
+  console.log("Seeding database...\n");
+  console.log("Creating tables from schema...");
+  console.log("(Run npm run db:push first if tables are missing.)\n");
+
+  await seedCategories();
+
+  if (categoriesOnly) {
+    console.log("✓ Categories seed complete!");
+    process.exit(0);
+  }
+
+  if (process.env.NODE_ENV === "production" && process.env.SEED_DEMO !== "1") {
+    console.error(
+      "Refusing to seed demo products in production. Use npm run db:seed:demo with SEED_DEMO=1 if you really mean it.",
+    );
+    process.exit(1);
+  }
+
+  const managementLinks = await seedDemoProducts();
+
+  // Print management links
   if (managementLinks.length > 0) {
     console.log("Management links (dev only):");
     console.log("─".repeat(60));

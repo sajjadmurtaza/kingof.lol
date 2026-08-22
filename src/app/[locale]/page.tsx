@@ -70,7 +70,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     clicksToday,
     happeningNow,
     allProducts,
-    newProducts,
   ] = await Promise.all([
     safeQuery(() => getTopProducts(3), []),
     safeQuery(() => getCategoryKings(), []),
@@ -83,11 +82,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     safeQuery(() => getHappeningNow(5, 5), { trending: [], activity: [] }),
     safeQuery(
       () => getProductsPaginated({ sort: "bid", page: 1, pageSize: 10 }),
-      { products: [], total: 0, page: 1, pageSize: 10, hasMore: false },
-    ),
-    safeQuery(
-      () =>
-        getProductsPaginated({ sort: "new", page: 1, pageSize: 10, newWithinMinutes: 5 }),
       { products: [], total: 0, page: 1, pageSize: 10, hasMore: false },
     ),
   ]);
@@ -145,7 +139,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                   gem={hiddenGems[0]}
                   locale={locale}
                   allProducts={allProducts.total > 0 ? allProducts : undefined}
-                  newProducts={newProducts.total > 0 ? newProducts : undefined}
                 />
               </>
             )}

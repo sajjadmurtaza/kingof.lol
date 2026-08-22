@@ -13,7 +13,6 @@ export function ProductListSection({
   sort,
   locale,
   viewAllHref,
-  newWithinMinutes = 5,
   titleKey,
   hintKey,
   viewAllKey,
@@ -22,11 +21,10 @@ export function ProductListSection({
   initial: PaginatedProductsResult;
   sort: ProductListSort;
   locale: string;
-  viewAllHref: "/products" | "/new";
-  newWithinMinutes?: number;
-  titleKey: "allProducts" | "newListings";
-  hintKey: "allProductsHint" | "newListingsHint";
-  viewAllKey: "viewAllProducts" | "viewNewListings";
+  viewAllHref: "/products";
+  titleKey: "allProducts";
+  hintKey: "allProductsHint";
+  viewAllKey: "viewAllProducts";
   flashTopBid?: boolean;
 }) {
   const t = useTranslations("app.productList");
@@ -36,9 +34,7 @@ export function ProductListSection({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1">
           <h2 className="font-display text-xl font-bold text-text">{t(titleKey)}</h2>
-          <p className="text-sm text-text-muted">
-            {t(hintKey, { minutes: newWithinMinutes })}
-          </p>
+          <p className="text-sm text-text-muted">{t(hintKey)}</p>
         </div>
         <Link
           href={viewAllHref}
@@ -53,7 +49,6 @@ export function ProductListSection({
         initial={initial}
         sort={sort}
         locale={locale}
-        newWithinMinutes={newWithinMinutes}
         highlightTop={flashTopBid}
       />
     </section>

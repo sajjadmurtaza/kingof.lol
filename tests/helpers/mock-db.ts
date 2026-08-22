@@ -50,6 +50,9 @@ export function createMockDb() {
     })),
     })),
     execute: vi.fn(async () => ({ rows: dequeue() as unknown[] })),
+    delete: vi.fn(() => ({
+      where: vi.fn(() => Promise.resolve()),
+    })),
   };
 
   return {

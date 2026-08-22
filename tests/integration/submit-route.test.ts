@@ -123,6 +123,27 @@ describe("POST /api/submit", () => {
     });
   });
 
+  it("rolls back product and bid when Stripe checkout fails", async () => {
+    vi.mocked(createBidCheckoutSession).mockRejectedValue(new Error("Stripe down"));
+
+    mock.enqueue([]);
+    mock.enqueue([{ id: sampleCategory.id }]);
+    mock.enqueue([]);
+    mock.enqueue([{ id: "prod-new", slug: "kingof" }]);
+    mock.enqueue([{ id: "bid-1" }]);
+
+    const res = await submitPost(
+      new Request("https://kingof.lol/api/submit", {
+        method: "POST",
+        body: JSON.stringify(submitBody({ bid: 2500 })),
+      }),
+    );
+
+    expect(res.status).toBe(500);
+    await expect(res.json()).resolves.toMatchObject({ error: "Payment setup failed" });
+    expect(mock.db.delete).toHaveBeenCalledTimes(2);
+  });
+
   it("validates required fields", async () => {
     const res = await submitPost(
       new Request("https://kingof.lol/api/submit", {

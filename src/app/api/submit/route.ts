@@ -146,6 +146,16 @@ export async function POST(request: Request) {
           ...(ranks ?? {}),
         });
       } catch (err) {
+        try {
+          await db.delete(bids).where(eq(bids.productId, product.id));
+          await db.delete(products).where(eq(products.id, product.id));
+        } catch (cleanupErr) {
+          Sentry.captureException(cleanupErr, {
+            tags: { route: "api/submit", failure: "stripe_checkout_cleanup_failed" },
+            extra: { productId: product.id, slug },
+          });
+        }
+
         Sentry.captureException(err, {
           tags: { route: "api/submit", failure: "stripe_checkout_failed" },
           extra: { productId: product.id, slug },

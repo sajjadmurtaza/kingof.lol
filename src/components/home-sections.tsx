@@ -158,17 +158,15 @@ export function DiscoverSection({
   gem,
   locale,
   allProducts,
-  newProducts,
 }: {
   random?: RankedProduct;
   gem?: RankedProduct;
   locale: string;
   allProducts?: PaginatedProductsResult;
-  newProducts?: PaginatedProductsResult;
 }) {
   const tv = useTranslations("app.voice");
 
-  if (!random && !gem && !allProducts && !newProducts) return null;
+  if (!random && !gem && !allProducts) return null;
 
   return (
     <section className="space-y-6">
@@ -203,18 +201,6 @@ export function DiscoverSection({
               hintKey="allProductsHint"
               viewAllKey="viewAllProducts"
               flashTopBid
-            />
-          )}
-
-          {newProducts && newProducts.total > 0 && (
-            <ProductListSection
-              initial={newProducts}
-              sort="new"
-              locale={locale}
-              viewAllHref="/new"
-              titleKey="newListings"
-              hintKey="newListingsHint"
-              viewAllKey="viewNewListings"
             />
           )}
         </div>
