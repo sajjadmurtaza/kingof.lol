@@ -11,7 +11,7 @@ export function ExistingProductFlow({
   onIncreaseBid,
 }: {
   preview: ProductPreview;
-  onIncreaseBid: (newTotalCents: number) => void;
+  onIncreaseBid: (incrementCents: number) => void;
 }) {
   const t = useTranslations("app.onboard");
   const existing = preview.existing!;
@@ -116,7 +116,7 @@ export function ExistingProductFlow({
       </div>
 
       <button
-        onClick={() => onIncreaseBid(newTotal * 100)}
+        onClick={() => onIncreaseBid(amountDue)}
         disabled={amountDue < 500}
         className="w-full rounded-2xl bg-gold py-4 text-lg font-bold text-on-gold transition-colors hover:bg-accent-hover disabled:opacity-50"
       >

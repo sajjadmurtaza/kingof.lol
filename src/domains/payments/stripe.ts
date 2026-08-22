@@ -37,6 +37,7 @@ export async function createBidCheckoutSession({
   productId,
   bidId,
   manageToken,
+  successUrl,
   email,
   locale = "en",
 }: {
@@ -45,12 +46,18 @@ export async function createBidCheckoutSession({
   productSlug: string;
   productId: string;
   bidId: string;
-  manageToken: string;
+  manageToken?: string;
+  successUrl?: string;
   email: string;
   locale?: string;
 }): Promise<string> {
   const stripe = getStripe();
   const siteUrl = getSiteUrl();
+  const checkoutSuccessUrl =
+    successUrl ??
+    (manageToken
+      ? `${siteUrl}/manage/${manageToken}?bid=success`
+      : `${siteUrl}/${locale}/product/${productSlug}?bid=success`);
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
@@ -75,7 +82,7 @@ export async function createBidCheckoutSession({
       bidId,
       bidAmount: bidAmountCents.toString(),
     },
-    success_url: `${siteUrl}/manage/${manageToken}?bid=success`,
+    success_url: checkoutSuccessUrl,
     cancel_url: `${siteUrl}/${locale}/product/${productSlug}`,
   });
 

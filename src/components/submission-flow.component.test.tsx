@@ -115,19 +115,19 @@ describe("SubmissionFlow", () => {
 
   it("shows an error instead of success when submit fails", async () => {
     mockSubmissionFetches(
-      new Response(JSON.stringify({ error: "This product is already listed" }), {
-        status: 409,
+      new Response(JSON.stringify({ error: "Payment setup failed", reason: "Stripe down" }), {
+        status: 500,
       }),
     );
 
     renderWithIntl(<SubmissionFlow locale="en" />);
     await reachBidStep();
 
-    fireEvent.click(screen.getByText("list-free"));
+    fireEvent.click(screen.getByText("bid-paid"));
     fireEvent.click(screen.getByText("send-email"));
 
     await waitFor(() => {
-      expect(screen.getByRole("alert")).toHaveTextContent("This product is already listed");
+      expect(screen.getByRole("alert")).toHaveTextContent("Stripe down");
     });
 
     expect(replace).not.toHaveBeenCalled();

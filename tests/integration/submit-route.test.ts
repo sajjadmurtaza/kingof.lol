@@ -85,21 +85,58 @@ describe("POST /api/submit", () => {
     });
   });
 
-  it("rejects duplicate URLs with 409", async () => {
-    mock.enqueue([{ id: "prod-existing", slug: "kingof" }]);
+  it("returns checkout for an existing product instead of rejecting duplicate URLs", async () => {
+    vi.mocked(createBidCheckoutSession).mockResolvedValue("https://checkout.stripe.com/existing");
+
+    mock.enqueue([
+      {
+        id: "prod-existing",
+        slug: "kingof",
+        name: "KINGOF",
+        email: "founder@kingof.lol",
+        totalBid: 0,
+      },
+    ]);
+    mock.enqueue([{ id: "bid-2" }]);
 
     const res = await submitPost(
       new Request("https://kingof.lol/api/submit", {
         method: "POST",
-        body: JSON.stringify(submitBody()),
+        body: JSON.stringify(submitBody({ bid: 2500 })),
       }),
     );
 
-    expect(res.status).toBe(409);
+    expect(res.status).toBe(200);
     await expect(res.json()).resolves.toMatchObject({
-      error: "This product is already listed",
-      existingSlug: "kingof",
+      success: true,
+      slug: "kingof",
+      checkoutUrl: "https://checkout.stripe.com/existing",
+      alreadyListed: true,
     });
+    expect(mock.db.insert).toHaveBeenCalled();
+  });
+
+  it("rejects bid increases from a different email", async () => {
+    mock.enqueue([
+      {
+        id: "prod-existing",
+        slug: "kingof",
+        name: "KINGOF",
+        email: "owner@kingof.lol",
+        totalBid: 2500,
+      },
+    ]);
+
+    const res = await submitPost(
+      new Request("https://kingof.lol/api/submit", {
+        method: "POST",
+        body: JSON.stringify(
+          submitBody({ email: "founder@kingof.lol", bid: 2500, bidIsIncrement: true }),
+        ),
+      }),
+    );
+
+    expect(res.status).toBe(403);
   });
 
   it("returns checkout URL for paid bids", async () => {

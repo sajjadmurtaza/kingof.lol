@@ -43,6 +43,7 @@ export function SubmissionFlow({
   const [preview, setPreview] = useState<ProductPreview | null>(null);
   const [category, setCategory] = useState("");
   const [bidCents, setBidCents] = useState(0);
+  const [bidIsIncrement, setBidIsIncrement] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [manualData, setManualData] = useState<{
@@ -135,11 +136,13 @@ export function SubmissionFlow({
 
   function handleBid(cents: number) {
     setBidCents(cents);
+    setBidIsIncrement(false);
     setPhase("email");
   }
 
   function handleListFree() {
     setBidCents(0);
+    setBidIsIncrement(false);
     setPhase("email");
   }
 
@@ -170,6 +173,7 @@ export function SubmissionFlow({
           category,
           email,
           bid: bidCents,
+          bidIsIncrement,
           iconUrl: preview?.logoUrl ?? preview?.icon,
           ogImageUrl: preview?.ogImage,
           locale,
@@ -206,14 +210,16 @@ export function SubmissionFlow({
     }
   }
 
-  function handleExistingBidIncrease(newTotalCents: number) {
-    setBidCents(newTotalCents);
+  function handleExistingBidIncrease(incrementCents: number) {
+    setBidCents(incrementCents);
+    setBidIsIncrement(true);
     setPhase("email");
   }
 
   function handleBack() {
     if (phase === "email") {
-      setPhase("bid");
+      setBidIsIncrement(false);
+      setPhase(preview?.existing ? "existing" : "bid");
     } else if (phase === "bid") {
       setPhase(preview?.existing ? "existing" : preview ? "preview" : "idle");
     } else {
