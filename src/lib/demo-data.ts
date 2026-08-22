@@ -241,3 +241,12 @@ export function demoHappeningNow(
     activity: demoRecentActivity(activityLimit),
   };
 }
+
+/** Demo activity (PayFlow, CodeShip, …) is for local dev only — never on production deploys. */
+export function shouldShowDemoActivity(): boolean {
+  return process.env.NODE_ENV !== "production";
+}
+
+export function emptyHappeningNow(): { trending: TrendingItem[]; activity: ActivityItem[] } {
+  return { trending: [], activity: [] };
+}

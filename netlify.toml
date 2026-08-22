@@ -10,6 +10,11 @@
   package = "@netlify/plugin-nextjs"
 
 [[redirects]]
+  from = "/"
+  to = "/en"
+  status = 302
+
+[[redirects]]
   from = "https://www.kingof.lol/*"
   to = "https://kingof.lol/:splat"
   status = 301

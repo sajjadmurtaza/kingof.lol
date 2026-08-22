@@ -26,7 +26,7 @@ import {
   getHappeningNow,
   getProductsPaginated,
 } from "@/domains/leaderboard/queries";
-import { demoHappeningNow } from "@/lib/demo-data";
+import { demoHappeningNow, emptyHappeningNow, shouldShowDemoActivity } from "@/lib/demo-data";
 
 export async function generateMetadata({
   params,
@@ -95,7 +95,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const liveFeed =
     happeningNow.trending.length > 0 || happeningNow.activity.length > 0
       ? happeningNow
-      : demoHappeningNow(5, 5);
+      : shouldShowDemoActivity()
+        ? demoHappeningNow(5, 5)
+        : emptyHappeningNow();
 
   const hasAnyData =
     top3.length > 0 ||
