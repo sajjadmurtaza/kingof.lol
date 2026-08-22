@@ -1,0 +1,18 @@
+{
+  "nav": {
+    "overall": "عام",
+    "categories": "الفئات",
+    "discover": "اكتشف",
+    "howItWorks": "كيف يعمل",
+    "submit": "انضم للقائمة",
+    "mostClicked": "الأكثر نقراً",
+    "rules": "القواعد"
+  },
+  "footer": {
+    "tagline": "المنتجات تتنافس على التاج.",
+    "rights": "جميع الحقوق محفوظة."
+  },
+  "locale": {
+    "switch": "اللغة"
+  }
+}

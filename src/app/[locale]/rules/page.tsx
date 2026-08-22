@@ -1,0 +1,50 @@
+import { useTranslations } from "next-intl";
+import { setRequestLocale } from "next-intl/server";
+
+export default async function RulesPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
+  return (
+    <div className="py-12">
+      <RulesContent />
+    </div>
+  );
+}
+
+function RulesContent() {
+  const t = useTranslations("app.rules");
+
+  const rules = [
+    t("rule1"),
+    t("rule2"),
+    t("rule3"),
+    t("rule4"),
+    t("rule5"),
+    t("rule6"),
+  ];
+
+  return (
+    <div className="mx-auto max-w-3xl">
+      <h1 className="text-3xl font-black">{t("title")}</h1>
+      <p className="mt-2 text-lg text-text-muted">{t("subtitle")}</p>
+
+      <div className="mt-10 rounded-xl border border-border bg-bg-card p-8">
+        <ol className="space-y-4">
+          {rules.map((rule, i) => (
+            <li key={i} className="flex gap-4">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold/10 text-sm font-bold text-gold">
+                {i + 1}
+              </span>
+              <p className="pt-1 text-text-muted leading-relaxed">{rule}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  );
+}

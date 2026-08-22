@@ -1,0 +1,5 @@
+{
+  "nav": { "overall": "Gesamt", "categories": "Kategorien", "discover": "Entdecken", "howItWorks": "So funktioniert's", "submit": "MITMACHEN", "mostClicked": "Meistgeklickt", "rules": "Regeln" },
+  "footer": { "tagline": "Produkte konkurrieren um die Krone.", "rights": "Alle Rechte vorbehalten." },
+  "locale": { "switch": "Sprache" }
+}

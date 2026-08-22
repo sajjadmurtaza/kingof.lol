@@ -1,0 +1,18 @@
+{
+  "nav": {
+    "overall": "General",
+    "categories": "Categorías",
+    "discover": "Descubrir",
+    "howItWorks": "Cómo funciona",
+    "submit": "ENTRAR AL RANKING",
+    "mostClicked": "Más Clicados",
+    "rules": "Reglas"
+  },
+  "footer": {
+    "tagline": "Los productos compiten por la corona.",
+    "rights": "Todos los derechos reservados."
+  },
+  "locale": {
+    "switch": "Idioma"
+  }
+}

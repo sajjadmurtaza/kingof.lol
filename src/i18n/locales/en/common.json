@@ -1,0 +1,18 @@
+{
+  "nav": {
+    "overall": "Overall",
+    "categories": "Categories",
+    "discover": "Discover",
+    "howItWorks": "How it works",
+    "submit": "GET ON THE BOARD",
+    "mostClicked": "Most Clicked",
+    "rules": "Rules"
+  },
+  "footer": {
+    "tagline": "Products compete for the crown.",
+    "rights": "All rights reserved."
+  },
+  "locale": {
+    "switch": "Language"
+  }
+}

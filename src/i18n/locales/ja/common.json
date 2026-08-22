@@ -1,0 +1,5 @@
+{
+  "nav": { "overall": "総合", "categories": "カテゴリー", "discover": "ディスカバー", "howItWorks": "仕組み", "submit": "ボードに参加", "mostClicked": "最多クリック", "rules": "ルール" },
+  "footer": { "tagline": "プロダクトが王冠を争う。", "rights": "全著作権所有。" },
+  "locale": { "switch": "言語" }
+}

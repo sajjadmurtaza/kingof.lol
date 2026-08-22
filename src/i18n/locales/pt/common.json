@@ -1,0 +1,5 @@
+{
+  "nav": { "overall": "Geral", "categories": "Categorias", "discover": "Descobrir", "howItWorks": "Como funciona", "submit": "ENTRE NO RANKING", "mostClicked": "Mais Clicados", "rules": "Regras" },
+  "footer": { "tagline": "Produtos competem pela coroa.", "rights": "Todos os direitos reservados." },
+  "locale": { "switch": "Idioma" }
+}

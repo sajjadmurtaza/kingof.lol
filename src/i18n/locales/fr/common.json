@@ -1,0 +1,5 @@
+{
+  "nav": { "overall": "Général", "categories": "Catégories", "discover": "Découvrir", "howItWorks": "Comment ça marche", "submit": "REJOINDRE LE CLASSEMENT", "mostClicked": "Plus Cliqués", "rules": "Règles" },
+  "footer": { "tagline": "Les produits se battent pour la couronne.", "rights": "Tous droits réservés." },
+  "locale": { "switch": "Langue" }
+}

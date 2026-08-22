@@ -1,0 +1,5 @@
+**/*.test.ts
+**/*.test.tsx
+**/coverage
+vitest.config.ts
+docs/
