@@ -665,9 +665,10 @@ You can deploy the **same Git repo** to both Vercel and [Netlify](https://app.ne
 
 #### If Netlify build fails
 
+- **`publish directory cannot be the same as the base directory`** — In Netlify UI go to **Site configuration → Build & deploy → Build settings** and **clear** the Publish directory field (leave empty), or rely on `publish = ".next"` in `netlify.toml`. Never set publish to `/` or the repo root.
 - Confirm `@netlify/plugin-nextjs` is in `package.json` (installed as devDependency)
 - Check deploy log for missing env vars (especially `DATABASE_URL`)
-- If every path 404s, ensure the Next.js runtime plugin is active in **Site configuration → Build & deploy**
+- If every path 404s after a green build, try `https://your-site.netlify.app/en` (locales are always prefixed)
 
 ---
 

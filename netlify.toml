@@ -3,6 +3,8 @@
 
 [build]
   command = "npm run build"
+  # Override Netlify UI if publish is set to repo root (breaks @netlify/plugin-nextjs).
+  publish = ".next"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
