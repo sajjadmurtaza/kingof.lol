@@ -1,4 +1,13 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { createMockDb } from "../../../tests/helpers/mock-db";
+
+const mock = createMockDb();
+
+vi.mock("@/db", () => ({
+  tryGetDb: vi.fn(() => null),
+}));
+
+import { tryGetDb } from "@/db";
 import { isBot, hashIp, isRateLimited, getClientIp } from "./tracking";
 
 describe("isBot", () => {
@@ -52,9 +61,31 @@ describe("hashIp", () => {
 });
 
 describe("isRateLimited", () => {
+  beforeEach(() => {
+    mock.reset();
+    vi.mocked(tryGetDb).mockReturnValue(null);
+  });
+
   it("returns false when no DB is available (graceful fallback)", async () => {
-    const hash = `test-hash-${Date.now()}`;
-    expect(await isRateLimited(hash, "product-1")).toBe(false);
+    expect(await isRateLimited("hash", "product-1")).toBe(false);
+  });
+
+  it("returns true when a recent click exists", async () => {
+    vi.mocked(tryGetDb).mockReturnValue(mock.db);
+    mock.enqueue([{ id: "click-1" }]);
+    await expect(isRateLimited("hash", "product-1")).resolves.toBe(true);
+  });
+
+  it("returns false when no recent click exists", async () => {
+    vi.mocked(tryGetDb).mockReturnValue(mock.db);
+    mock.enqueue([]);
+    await expect(isRateLimited("hash", "product-1")).resolves.toBe(false);
+  });
+
+  it("returns false when db query throws", async () => {
+    vi.mocked(tryGetDb).mockReturnValue(mock.db);
+    mock.enqueue(Promise.reject(new Error("db")));
+    await expect(isRateLimited("hash", "product-1")).resolves.toBe(false);
   });
 });
 

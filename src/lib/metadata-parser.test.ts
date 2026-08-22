@@ -53,11 +53,7 @@ describe("parseHtmlMetadata", () => {
   });
 
   it("cleans Instagram title and categorizes as social", () => {
-    const parsed = parseHtmlMetadata(
-      FIXTURE_INSTAGRAM,
-      "https://instagram.com",
-      "instagram.com",
-    );
+    const parsed = parseHtmlMetadata(FIXTURE_INSTAGRAM, "https://instagram.com", "instagram.com");
     expect(parsed.name).toBe("Instagram");
     expect(parsed.description).toContain("Create an account");
     expect(parsed.faviconUrl).toBe("https://static.cdninstagram.com/favicon.ico");
@@ -66,11 +62,7 @@ describe("parseHtmlMetadata", () => {
   });
 
   it("resolves relative icon and og image URLs", () => {
-    const parsed = parseHtmlMetadata(
-      FIXTURE_RELATIVE,
-      "https://example.com/page",
-      "example.com",
-    );
+    const parsed = parseHtmlMetadata(FIXTURE_RELATIVE, "https://example.com/page", "example.com");
     expect(parsed.faviconUrl).toBe("https://example.com/assets/favicon.png");
     expect(parsed.ogImageUrl).toBe("https://example.com/images/og.jpg");
   });
@@ -80,6 +72,93 @@ describe("parseHtmlMetadata", () => {
     expect(parsed.name).toBe("Vercel");
     expect(parsed.faviconUrl).toBe("https://vercel.com/favicon.ico");
     expect(parsed.suggestedCategory).toBe("devtools");
+  });
+
+  it("keeps the shorter side when cleaning pipe-separated titles", () => {
+    const html = `<!DOCTYPE html><html><head><title>Very Long Product Marketing Name | Short</title></head><body></body></html>`;
+    const parsed = parseHtmlMetadata(html, "https://example.com", "example.com");
+    expect(parsed.name).toBe("Short");
+  });
+
+  it("keeps the left side when it is shorter than the right", () => {
+    const html = `<!DOCTYPE html><html><head><title>Short | Much longer marketing title</title></head><body></body></html>`;
+    const parsed = parseHtmlMetadata(html, "https://example.com", "example.com");
+    expect(parsed.name).toBe("Short");
+  });
+
+  it("uses alternate meta tag order and long descriptions", () => {
+    const longDesc = "A".repeat(170);
+    const html = `<!DOCTYPE html><html><head>
+      <meta content="Alt OG Site" property="og:site_name" />
+      <meta content="Alt OG Title" property="og:title" />
+      <meta content="${longDesc}" property="og:description" />
+      <meta content="Twitter Title" name="twitter:title" />
+      <meta content="Twitter Desc" name="twitter:description" />
+      <meta content="App Name" name="application-name" />
+      <meta content="https://example.com/og.png" property="og:image" />
+      <meta content="https://example.com/og.png" name="twitter:image" />
+      <link rel="mask-icon" href="/mask.svg" sizes="32x32" />
+      <link href="/skip.ico" />
+      <title>Fallback title</title>
+    </head><body></body></html>`;
+
+    const parsed = parseHtmlMetadata(html, "https://example.com/page", "example.com");
+    expect(parsed.name).toBe("Alt OG Site");
+    expect(parsed.metadataSource.description).toBe("og:description");
+    expect(parsed.description?.endsWith("...")).toBe(true);
+    expect(parsed.metadataSource.name).toBe("og:site_name");
+  });
+
+  it("falls back through title sources and favicon-only logos", () => {
+    const html = `<!DOCTYPE html><html><head>
+      <meta content="Twitter Title" name="twitter:title" />
+      <meta content="Twitter Desc" name="twitter:description" />
+      <meta content="Fallback description" name="Description" />
+      <link rel="icon" href="/small.ico" sizes="16x16" />
+      <link rel="icon" href="/large.ico" sizes="64x64" />
+      <title>Title Tag Only</title>
+    </head><body></body></html>`;
+
+    const parsed = parseHtmlMetadata(html, "https://example.com", "example.com");
+    expect(parsed.name).toBe("Twitter Title");
+    expect(parsed.metadataSource.name).toBe("twitter:title");
+    expect(parsed.metadataSource.description).toBe("twitter:description");
+    expect(parsed.metadataSource.logo).toBe("favicon");
+    expect(parsed.faviconUrl).toBe("https://example.com/large.ico");
+  });
+
+  it("uses application-name and skips malformed icon links", () => {
+    const html = `<!DOCTYPE html><html><head>
+      <meta content="My App" name="application-name" />
+      <meta content="Capitalized description" name="Description" />
+      <link rel="" href="/skip-empty-rel.ico" />
+      <link rel="icon" href="/icon.ico" sizes="invalid-size" />
+      <link href="/missing-rel.ico" />
+      <link rel="stylesheet" href="/ignore.css" />
+      <link rel="icon" href="" />
+      <link rel="icon">
+      <title></title>
+    </head><body></body></html>`;
+
+    const parsed = parseHtmlMetadata(html, "https://example.com", "example.com");
+    expect(parsed.metadataSource.name).toBe("application-name");
+    expect(parsed.name).toBe("My App");
+    expect(parsed.description).toBe("Capitalized description");
+  });
+
+  it("uses favicon logo source when apple touch icon is absent", () => {
+    const html = `<!DOCTYPE html><html><head>
+      <link rel="shortcut icon" href="/only-favicon.ico" />
+      <title>Example</title>
+    </head><body></body></html>`;
+
+    const parsed = parseHtmlMetadata(html, "https://example.com", "example.com");
+    expect(parsed.appleTouchIconUrl).toBeNull();
+    expect(parsed.metadataSource.logo).toBe("favicon");
+  });
+
+  it("returns null from pickDisplayIcon when no icon sources exist", () => {
+    expect(pickDisplayIcon({})).toBeNull();
   });
 });
 

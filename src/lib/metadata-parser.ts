@@ -60,11 +60,7 @@ const DOMAIN_CATEGORY_OVERRIDES: Record<string, string> = {
   "hubspot.com": "marketing",
 };
 
-export function parseHtmlMetadata(
-  html: string,
-  pageUrl: string,
-  domain: string,
-): ParsedMetadata {
+export function parseHtmlMetadata(html: string, pageUrl: string, domain: string): ParsedMetadata {
   const ogSiteName = extractMeta(html, "og:site_name");
   const ogTitle = extractMeta(html, "og:title");
   const twitterTitle = extractMetaName(html, "twitter:title");
@@ -73,8 +69,7 @@ export function parseHtmlMetadata(
 
   const ogDesc = extractMeta(html, "og:description");
   const twitterDesc = extractMetaName(html, "twitter:description");
-  const metaDesc =
-    extractMetaName(html, "description") ?? extractMetaName(html, "Description");
+  const metaDesc = extractMetaName(html, "description");
 
   const ogImage =
     extractMeta(html, "og:image:secure_url") ||
@@ -87,9 +82,8 @@ export function parseHtmlMetadata(
     link.rel.includes("apple-touch-icon"),
   );
   const faviconUrl =
-    pickBestIcon(icons, pageUrl, (link) =>
-      /(^|\s)(icon|shortcut icon)(\s|$)/i.test(link.rel),
-    ) || resolveRelativeUrl(pageUrl, "/favicon.ico");
+    pickBestIcon(icons, pageUrl, (link) => /(^|\s)(icon|shortcut icon)(\s|$)/i.test(link.rel)) ||
+    resolveRelativeUrl(pageUrl, "/favicon.ico");
 
   const logoUrl = appleTouchIconUrl || faviconUrl;
 
@@ -114,17 +108,13 @@ export function parseHtmlMetadata(
   else if (twitterDesc) descriptionSource = "twitter:description";
   else if (metaDesc) descriptionSource = "meta:description";
 
-  let logoSource = "domain-favicon";
-  if (appleTouchIconUrl) logoSource = "apple-touch-icon";
-  else if (faviconUrl) logoSource = "favicon";
+  const logoSource = appleTouchIconUrl ? "apple-touch-icon" : "favicon";
 
   const overrideCategory = DOMAIN_CATEGORY_OVERRIDES[domain];
   const combinedText = `${name} ${description} ${domain}`;
   const detected = detectCategory(combinedText, domain);
   const suggestedCategory = overrideCategory ?? detected.slug;
-  const categoryConfidence: CategoryConfidence = overrideCategory
-    ? "high"
-    : detected.confidence;
+  const categoryConfidence: CategoryConfidence = overrideCategory ? "high" : detected.confidence;
 
   return {
     name,

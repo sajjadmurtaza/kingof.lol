@@ -58,6 +58,18 @@ describe("detectCategory", () => {
     expect(result.slug).toBe("devtools");
     expect(result.confidence).toBe("high");
   });
+
+  it("returns medium confidence for moderate keyword matches", () => {
+    const result = detectCategory("payment invoice platform");
+    expect(result.slug).toBe("fintech");
+    expect(result.confidence).toBe("medium");
+  });
+
+  it("returns low confidence for weak single-keyword matches", () => {
+    const result = detectCategory("payment");
+    expect(result.slug).toBe("fintech");
+    expect(result.confidence).toBe("low");
+  });
 });
 
 describe("extractNameFromDomain", () => {

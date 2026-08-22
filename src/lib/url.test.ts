@@ -1,5 +1,10 @@
-import { describe, it, expect } from "vitest";
-import { normalizeUrl, isPrivateOrBlocked, validateFetchUrl } from "./url";
+import { describe, it, expect, vi } from "vitest";
+import {
+  normalizeUrl,
+  isPrivateOrBlocked,
+  validateFetchUrl,
+  findExistingByNormalizedUrl,
+} from "./url";
 
 describe("normalizeUrl", () => {
   it("normalizes a basic URL", () => {
@@ -58,6 +63,26 @@ describe("normalizeUrl", () => {
     const result = normalizeUrl("http://example.com");
     expect(result).not.toBeNull();
     expect(result!.normalized).toBe("https://example.com");
+  });
+
+  it("returns null for unsupported protocols", () => {
+    const OriginalURL = globalThis.URL;
+    globalThis.URL = class MockURL {
+      protocol = "ftp:";
+      hostname = "example.com";
+      pathname = "/";
+      searchParams = new URLSearchParams();
+      constructor(_input: string) {}
+    } as unknown as typeof URL;
+    try {
+      expect(normalizeUrl("https://example.com")).toBeNull();
+    } finally {
+      globalThis.URL = OriginalURL;
+    }
+  });
+
+  it("returns null for very short hostnames", () => {
+    expect(normalizeUrl("https://ab")).toBeNull();
   });
 });
 
@@ -133,5 +158,74 @@ describe("validateFetchUrl", () => {
   it("adds https when missing", () => {
     const result = validateFetchUrl("example.com");
     expect("error" in result).toBe(false);
+  });
+
+  it("rejects malformed URLs", () => {
+    const result = validateFetchUrl("https://");
+    expect("error" in result).toBe(true);
+    if ("error" in result) {
+      expect(result.error).toBe("Invalid URL");
+    }
+  });
+
+  it("rejects non-http protocols", () => {
+    const OriginalURL = globalThis.URL;
+    globalThis.URL = class MockURL {
+      protocol = "ftp:";
+      hostname = "example.com";
+      username = "";
+      password = "";
+      constructor(_input: string) {}
+    } as unknown as typeof URL;
+
+    try {
+      const result = validateFetchUrl("https://example.com");
+      expect("error" in result).toBe(true);
+      if ("error" in result) {
+        expect(result.error).toBe("Only HTTP and HTTPS URLs are supported");
+      }
+    } finally {
+      globalThis.URL = OriginalURL;
+    }
+  });
+});
+
+describe("findExistingByNormalizedUrl", () => {
+  it("returns null when input cannot be normalized", () => {
+    expect(findExistingByNormalizedUrl("", [])).toBeNull();
+  });
+
+  it("finds a product by normalized domain", () => {
+    const products = [
+      {
+        url: "https://www.acme.com",
+        slug: "acme",
+        name: "Acme",
+        totalBid: 100,
+        categorySlug: "saas",
+      },
+    ];
+    expect(findExistingByNormalizedUrl("https://acme.com/about", products)?.slug).toBe("acme");
+    expect(findExistingByNormalizedUrl("https://other.com", products)).toBeNull();
+  });
+
+  it("skips products whose URLs cannot be normalized", () => {
+    const products = [
+      {
+        url: "not-a-url",
+        slug: "bad",
+        name: "Bad",
+        totalBid: 1,
+        categorySlug: "saas",
+      },
+      {
+        url: "https://acme.com",
+        slug: "acme",
+        name: "Acme",
+        totalBid: 100,
+        categorySlug: "saas",
+      },
+    ];
+    expect(findExistingByNormalizedUrl("https://acme.com", products)?.slug).toBe("acme");
   });
 });

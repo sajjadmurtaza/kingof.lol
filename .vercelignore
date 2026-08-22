@@ -1,5 +1,16 @@
+# Tests and CI tooling — never deployed to Vercel
 **/*.test.ts
 **/*.test.tsx
-**/coverage
+tests/
+coverage/
 vitest.config.ts
-docs/
+.github/
+
+# Dev / ops scripts
+scripts/
+*.md
+!README.md
+
+# Local env
+.env*
+!.env.example

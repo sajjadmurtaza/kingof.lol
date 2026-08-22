@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { formatBid, formatClicks, rankLabel, rankEmoji, siteLabelForAvatar } from "./format";
+import {
+  formatBid,
+  formatClicks,
+  rankLabel,
+  rankEmoji,
+  timeAgoParts,
+  siteLabelForAvatar,
+} from "./format";
 
 describe("formatBid", () => {
   it("formats zero cents", () => {
@@ -59,6 +66,35 @@ describe("rankEmoji", () => {
   });
 });
 
+describe("timeAgoParts", () => {
+  const now = new Date("2026-01-01T12:00:00.000Z").getTime();
+
+  it("returns now for sub-minute diff", () => {
+    expect(timeAgoParts(new Date(now - 30_000), now)).toEqual({ unit: "now" });
+  });
+
+  it("returns minutes", () => {
+    expect(timeAgoParts(new Date(now - 5 * 60_000), now)).toEqual({
+      unit: "minutes",
+      count: 5,
+    });
+  });
+
+  it("returns hours", () => {
+    expect(timeAgoParts(new Date(now - 3 * 60 * 60_000), now)).toEqual({
+      unit: "hours",
+      count: 3,
+    });
+  });
+
+  it("returns days", () => {
+    expect(timeAgoParts(new Date(now - 2 * 24 * 60 * 60_000), now)).toEqual({
+      unit: "days",
+      count: 2,
+    });
+  });
+});
+
 describe("siteLabelForAvatar", () => {
   it("prefers domain stem over product name", () => {
     expect(siteLabelForAvatar("ChatGPT", "openai.com", 40).text).toBe("openai");
@@ -77,5 +113,12 @@ describe("siteLabelForAvatar", () => {
     const small = siteLabelForAvatar("Example", "example.com", 28);
     const large = siteLabelForAvatar("Example", "example.com", 64);
     expect(small.fontSize).toBeLessThan(large.fontSize);
+  });
+
+  it("handles special-character names and large avatars", () => {
+    expect(siteLabelForAvatar("!!!", null, 64).text).toBe("!!");
+    expect(siteLabelForAvatar("Product", "product.io", 60).text.length).toBeLessThanOrEqual(10);
+    expect(siteLabelForAvatar("Stripe", null, 48).text).toBe("stripe");
+    expect(siteLabelForAvatar("   ", null, 40).text).toBe("  ");
   });
 });

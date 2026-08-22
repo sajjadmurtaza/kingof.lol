@@ -775,14 +775,22 @@ find src/app/api -name route.ts | sort
 ## Testing & quality checks
 
 ```bash
-npm run test              # Vitest — lib, metadata, SEO, clicks, email
+npm run test              # Vitest — unit + integration (251 tests)
+npm run test:coverage     # Same suite with 100% coverage gate (lib + domains + db)
+npm run test:seo          # Post-build SEO checks (runs after `npm run build`)
 npm run validate:i18n     # All 10 locales complete
-npm run verify            # Full pre-merge / pre-deploy pipeline
+npm run verify            # Full CI pipeline locally (format → lint → types → coverage → i18n → build → SEO)
 ```
+
+**Coverage scope:** `src/lib/**`, `src/domains/**`, `src/db/index.ts` (schema/seed excluded). **100%** statements, branches, functions, and lines enforced in CI.
+
+**CI:** GitHub Actions (`.github/workflows/ci.yml`) runs on every push/PR to `main`: Prettier → ESLint → TypeScript → `test:coverage` → i18n → production build → SEO tests. Coverage artifact uploaded for 7 days.
+
+**Deploy builds:** Vercel and Netlify run `npm run build` only — no tests in deploy. Test files are excluded via `.vercelignore` and are never part of the Next.js bundle.
 
 | When | Command |
 |------|---------|
-| Every PR | `npm run verify` |
+| Every PR | `npm run verify` (or rely on GitHub Actions) |
 | Quick iteration | `npm run typecheck` + `npm run test` |
 | Copy changes only | `npm run validate:i18n` |
 | Before production deploy | Full [Release checklist](#release-checklist-before-production) |

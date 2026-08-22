@@ -101,6 +101,18 @@ describe("buildPageMetadata", () => {
     });
     expect(meta.title).toBe("Categories");
   });
+
+  it("emits hreflang alternates when hreflangPath is provided", () => {
+    const meta = buildPageMetadata({
+      title: "Categories",
+      description: "Test",
+      path: "/en/categories",
+      hreflangPath: "/categories",
+    });
+    const languages = meta.alternates?.languages as Record<string, string>;
+    expect(languages.en).toBe("https://kingof.lol/en/categories");
+    expect(languages["x-default"]).toBe("https://kingof.lol/en/categories");
+  });
 });
 
 describe("websiteJsonLd", () => {
