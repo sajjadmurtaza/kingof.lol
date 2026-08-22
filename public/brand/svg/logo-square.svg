@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none" role="img" aria-label="KINGOF square logo">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0a0a0a"/>
+      <stop offset="100%" stop-color="#141414"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="96" y1="96" x2="416" y2="416" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#fde68a"/>
+      <stop offset="50%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="goldText" x1="80" y1="360" x2="432" y2="460" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#fde68a"/>
+      <stop offset="50%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <g transform="translate(96, 52) scale(1.05)">
+    <path d="M60 230 L80 100 L122.5 160 L160 80 L197.5 160 L240 100 L260 230 Z" fill="url(#gold)"/>
+    <rect x="60" y="220" width="200" height="25" rx="5" fill="url(#gold)"/>
+    <circle cx="160" cy="195" r="11" fill="#ef4444"/>
+    <circle cx="110" cy="200" r="7" fill="#3b82f6"/>
+    <circle cx="210" cy="200" r="7" fill="#3b82f6"/>
+    <circle cx="80" cy="95" r="12.5" fill="url(#gold)"/>
+    <circle cx="160" cy="75" r="15" fill="url(#gold)"/>
+    <circle cx="240" cy="95" r="12.5" fill="url(#gold)"/>
+  </g>
+  <text x="256" y="430" text-anchor="middle" fill="url(#goldText)" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="64" font-weight="900" letter-spacing="4">KINGOF</text>
+</svg>

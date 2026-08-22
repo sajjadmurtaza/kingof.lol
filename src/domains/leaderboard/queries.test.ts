@@ -28,6 +28,7 @@ import {
   getCategoryCount,
   getTrendingNow,
   getRecentActivity,
+  compareRecentActivityEvents,
   getHappeningNow,
   getProductsPaginated,
   getTopProductsByBidPeriod,
@@ -280,6 +281,13 @@ describe("leaderboard queries", () => {
     expect(fallback[0]!.slug).toBe("acme");
   });
 
+  it("compareRecentActivityEvents prefers bids over joins at the same timestamp", () => {
+    const at = new Date("2026-01-02T00:00:00.000Z");
+    expect(compareRecentActivityEvents({ type: "bid", at }, { type: "joined", at })).toBe(-1);
+    expect(compareRecentActivityEvents({ type: "joined", at }, { type: "bid", at })).toBe(1);
+    expect(compareRecentActivityEvents({ type: "bid", at }, { type: "bid", at })).toBe(0);
+  });
+
   it("getRecentActivity merges bids and joins", async () => {
     const at = new Date("2026-01-02T00:00:00.000Z");
     mock.enqueue([
@@ -348,6 +356,74 @@ describe("leaderboard queries", () => {
     expect(activity).toHaveLength(1);
     expect(activity[0]!.slug).toBe("kingof");
     expect(activity[0]!.type).toBe("bid");
+  });
+
+  it("getRecentActivity prefers bids over joins at the same timestamp", async () => {
+    const at = new Date("2026-01-02T00:00:00.000Z");
+    mock.enqueue([
+      {
+        slug: "acme",
+        name: "Acme",
+        iconUrl: null,
+        ogImageUrl: null,
+        normalizedDomain: "acme.com",
+        totalBid: 5000,
+        rank: 1,
+        categoryName: "SaaS",
+        createdAt: at,
+      },
+    ]);
+    mock.enqueue([
+      {
+        slug: "beta",
+        name: "Beta",
+        iconUrl: null,
+        ogImageUrl: null,
+        normalizedDomain: "beta.com",
+        totalBid: 1000,
+        rank: 2,
+        categoryName: "SaaS",
+        createdAt: at,
+      },
+    ]);
+
+    const activity = await getRecentActivity(5);
+    expect(activity).toHaveLength(2);
+    expect(activity[0]!.type).toBe("bid");
+    expect(activity[1]!.type).toBe("joined");
+  });
+
+  it("getRecentActivity handles same-timestamp bid pairs in sort tie-break", async () => {
+    const at = new Date("2026-01-02T00:00:00.000Z");
+    mock.enqueue([
+      {
+        slug: "acme",
+        name: "Acme",
+        iconUrl: null,
+        ogImageUrl: null,
+        normalizedDomain: "acme.com",
+        totalBid: 5000,
+        rank: 1,
+        categoryName: "SaaS",
+        createdAt: at,
+      },
+      {
+        slug: "beta",
+        name: "Beta",
+        iconUrl: null,
+        ogImageUrl: null,
+        normalizedDomain: "beta.com",
+        totalBid: 4000,
+        rank: 2,
+        categoryName: "SaaS",
+        createdAt: at,
+      },
+    ]);
+    mock.enqueue([]);
+
+    const activity = await getRecentActivity(5);
+    expect(activity).toHaveLength(2);
+    expect(activity.every((a) => a.type === "bid")).toBe(true);
   });
 
   it("getHappeningNow combines trending and activity", async () => {

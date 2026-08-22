@@ -85,6 +85,33 @@ describe("POST /api/submit", () => {
     });
   });
 
+  it("rejects a second free listing from the same IP in production", async () => {
+    const originalEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
+
+    mock.enqueue([]);
+    mock.enqueue([{ id: sampleCategory.id }]);
+    mock.enqueue([{ id: "claim-1" }]);
+
+    const res = await submitPost(
+      new Request("https://kingof.lol/api/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-forwarded-for": "203.0.113.50",
+        },
+        body: JSON.stringify(
+          submitBody({ bid: 0, url: "https://another-product.example", name: "Another" }),
+        ),
+      }),
+    );
+
+    process.env.NODE_ENV = originalEnv;
+
+    expect(res.status).toBe(403);
+    await expect(res.json()).resolves.toMatchObject({ error: "FREE_LISTING_LIMIT" });
+  });
+
   it("returns checkout for an existing product instead of rejecting duplicate URLs", async () => {
     vi.mocked(createBidCheckoutSession).mockResolvedValue("https://checkout.stripe.com/existing");
 

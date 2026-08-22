@@ -13,6 +13,20 @@ function getResend(): Resend {
 
 const FROM_EMAIL = "KINGOF <noreply@kingof.lol>";
 
+type ResendSendResult = {
+  data: { id: string } | null;
+  error: { message: string } | null;
+};
+
+async function sendEmail(payload: Parameters<Resend["emails"]["send"]>[0]) {
+  const resend = getResend();
+  const { data, error } = (await resend.emails.send(payload)) as ResendSendResult;
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data;
+}
+
 function escapeHtml(str: string): string {
   return str
     .replace(/&/g, "&amp;")
@@ -35,19 +49,18 @@ export async function sendManagementLinkEmail({
   productName: string;
   manageUrl: string;
 }) {
-  const resend = getResend();
   const safeName = escapeHtml(productName);
   const safeUrl = escapeAttr(manageUrl);
 
-  await resend.emails.send({
+  await sendEmail({
     from: FROM_EMAIL,
     to,
     subject: `Your KINGOF management link for ${productName.replace(/[<>"]/g, "")}`,
     html: `
-      <div style="font-family: system-ui, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+      <div style="font-family: system-ui, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; color: #171717;">
         <h1 style="color: #fbbf24; font-size: 24px;">👑 KINGOF</h1>
-        <h2 style="color: #f5f5f5; margin-top: 24px;">Your product &ldquo;${safeName}&rdquo; is on the board!</h2>
-        <p style="color: #888; line-height: 1.6;">
+        <h2 style="color: #171717; margin-top: 24px; font-size: 20px;">Your product &ldquo;${safeName}&rdquo; is on the board!</h2>
+        <p style="color: #525252; line-height: 1.6;">
           Use the link below to manage your listing, view stats, and increase your bid.
         </p>
         <a href="${safeUrl}" style="display: inline-block; background: #fbbf24; color: #0a0a0a; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 16px;">
@@ -76,27 +89,26 @@ export async function sendDethronedEmail({
   newRequiredBid: number;
   manageUrl: string;
 }) {
-  const resend = getResend();
   const safeProd = escapeHtml(productName);
   const safeCat = escapeHtml(categoryName);
   const safeKing = escapeHtml(newKingName);
   const safeUrl = escapeAttr(manageUrl);
   const bidDollars = (newRequiredBid / 100).toLocaleString("en-US");
 
-  await resend.emails.send({
+  await sendEmail({
     from: FROM_EMAIL,
     to,
     subject: `👑 You've been dethroned in ${categoryName.replace(/[<>"]/g, "")}!`,
     html: `
-      <div style="font-family: system-ui, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+      <div style="font-family: system-ui, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; color: #171717;">
         <h1 style="color: #fbbf24; font-size: 24px;">👑 KINGOF</h1>
-        <h2 style="color: #f5f5f5; margin-top: 24px;">You've been dethroned!</h2>
-        <p style="color: #888; line-height: 1.6;">
-          <strong style="color: #f5f5f5;">${safeKing}</strong> has outbid
-          <strong style="color: #f5f5f5;">${safeProd}</strong> in
-          <strong style="color: #f5f5f5;">${safeCat}</strong>.
+        <h2 style="color: #171717; margin-top: 24px; font-size: 20px;">You've been dethroned!</h2>
+        <p style="color: #525252; line-height: 1.6;">
+          <strong style="color: #171717;">${safeKing}</strong> has outbid
+          <strong style="color: #171717;">${safeProd}</strong> in
+          <strong style="color: #171717;">${safeCat}</strong>.
         </p>
-        <p style="color: #888; line-height: 1.6;">
+        <p style="color: #525252; line-height: 1.6;">
           To reclaim your crown, you need to bid at least <strong style="color: #fbbf24;">$${bidDollars}</strong>.
         </p>
         <a href="${safeUrl}" style="display: inline-block; background: #fbbf24; color: #0a0a0a; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 16px;">

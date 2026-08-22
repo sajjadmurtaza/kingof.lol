@@ -89,7 +89,9 @@
     "invalidLinkTitle": "잘못된 링크",
     "invalidLinkDesc": "이 관리 링크가 유효하지 않거나 만료되었습니다.",
     "notFoundError": "제품을 찾을 수 없거나 관리 링크가 유효하지 않습니다.",
-    "rankLabel": "순위",
+    "rankLabel": "전체",
+    "categoryRankLabel": "카테고리 내",
+    "rankAtBid": "총 입찰 {amount} 기준",
     "clicksLabel": "클릭",
     "paymentFailed": "Payment could not be started. Please try again.",
     "paymentConfirmed": "Payment confirmed — your bid is now {amount}."
@@ -204,6 +206,7 @@
     "overall": "종합",
     "compete": "경쟁하기",
     "listFree": "무료 등록",
+    "freeListingLimit": "이 네트워크에서 무료 등록을 이미 사용했습니다. 다른 제품은 유료 입찰(최소 $5)로 등록하세요.",
     "almostThere": "거의 다 됐어요!",
     "emailExplainer": "이메일을 입력하여 관리 링크를 받으세요.",
     "continueBtn": "계속 →",

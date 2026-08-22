@@ -842,6 +842,18 @@ function toActivityItem(row: {
   };
 }
 
+/** Sort key for activity feed: newest first; bids before joins at the same timestamp. */
+export function compareRecentActivityEvents(
+  a: { type: "bid" | "joined"; at: Date },
+  b: { type: "bid" | "joined"; at: Date },
+): number {
+  const byTime = b.at.getTime() - a.at.getTime();
+  if (byTime !== 0) return byTime;
+  if (a.type === "bid" && b.type === "joined") return -1;
+  if (a.type === "joined" && b.type === "bid") return 1;
+  return 0;
+}
+
 export async function getRecentActivity(limit = 5): Promise<ActivityItem[]> {
   const db = getDb();
   const activities: {
@@ -924,13 +936,7 @@ export async function getRecentActivity(limit = 5): Promise<ActivityItem[]> {
     });
   }
 
-  activities.sort((a, b) => {
-    const byTime = b.at.getTime() - a.at.getTime();
-    if (byTime !== 0) return byTime;
-    if (a.type === "bid" && b.type === "joined") return -1;
-    if (a.type === "joined" && b.type === "bid") return 1;
-    return 0;
-  });
+  activities.sort(compareRecentActivityEvents);
 
   const seenSlugs = new Set<string>();
   const unique = activities.filter((item) => {

@@ -89,7 +89,9 @@
     "invalidLinkTitle": "Enlace no válido",
     "invalidLinkDesc": "Este enlace de gestión no es válido o ha expirado.",
     "notFoundError": "Producto no encontrado o enlace de gestión no válido.",
-    "rankLabel": "Posición",
+    "rankLabel": "General",
+    "categoryRankLabel": "En categoría",
+    "rankAtBid": "Con puja total de {amount}",
     "clicksLabel": "Clics",
     "paymentFailed": "Payment could not be started. Please try again.",
     "paymentConfirmed": "Payment confirmed — your bid is now {amount}."
@@ -204,6 +206,7 @@
     "overall": "General",
     "compete": "COMPETIR",
     "listFree": "LISTAR GRATIS",
+    "freeListingLimit": "Ya usaste tu listado gratuito desde esta red. Lista otro producto con una puja de pago (mínimo 5 $).",
     "almostThere": "¡Ya casi!",
     "emailExplainer": "Ingresa tu email para gestionar tu listado.",
     "continueBtn": "CONTINUAR →",

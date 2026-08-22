@@ -144,6 +144,19 @@ export const metadataCache = pgTable("metadata_cache", {
   fetchedAt: timestamp("fetched_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const freeListingClaims = pgTable(
+  "free_listing_claims",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    ipHash: text("ip_hash").notNull(),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => products.id),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex("free_listing_claims_ip_hash_idx").on(table.ipHash)],
+);
+
 // --- Relations ---
 
 export const categoriesRelations = relations(categories, ({ many }) => ({
@@ -159,6 +172,17 @@ export const productsRelations = relations(products, ({ one, many }) => ({
   clicks: many(clicks),
   rankingSnapshots: many(rankingSnapshots),
   hiddenGemPicks: many(hiddenGemPicks),
+  freeListingClaim: one(freeListingClaims, {
+    fields: [products.id],
+    references: [freeListingClaims.productId],
+  }),
+}));
+
+export const freeListingClaimsRelations = relations(freeListingClaims, ({ one }) => ({
+  product: one(products, {
+    fields: [freeListingClaims.productId],
+    references: [products.id],
+  }),
 }));
 
 export const bidsRelations = relations(bids, ({ one }) => ({

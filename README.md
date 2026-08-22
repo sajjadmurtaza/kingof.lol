@@ -22,20 +22,21 @@ This document is written for **everyone on the team** — product, design, ops, 
 9. [Database](#database)
 10. [Running the app](#running-the-app)
 11. [Payments & webhooks (Stripe)](#payments--webhooks-stripe)
-12. [Internationalization (i18n)](#internationalization-i18n)
-13. [Scripts & npm commands](#scripts--npm-commands)
-14. [API routes](#api-routes)
-15. [Background jobs (cron)](#background-jobs-cron)
-16. [Data model](#data-model)
-17. [What is live vs demo data?](#what-is-live-vs-demo-data)
-18. [Release checklist (before production)](#release-checklist-before-production)
-19. [Deployment](#deployment)
-20. [After deploying to production](#after-deploying-to-production)
-21. [Keeping README & docs up to date](#keeping-readme--docs-up-to-date)
-22. [Testing & quality checks](#testing--quality-checks)
-23. [Appearance (dark / light mode)](#appearance-dark--light-mode)
-24. [Troubleshooting](#troubleshooting)
-25. [Useful links](#useful-links)
+12. [Email (Resend)](#email-resend)
+13. [Internationalization (i18n)](#internationalization-i18n)
+14. [Scripts & npm commands](#scripts--npm-commands)
+15. [API routes](#api-routes)
+16. [Background jobs (cron)](#background-jobs-cron)
+17. [Data model](#data-model)
+18. [What is live vs demo data?](#what-is-live-vs-demo-data)
+19. [Release checklist (before production)](#release-checklist-before-production)
+20. [Deployment](#deployment)
+21. [After deploying to production](#after-deploying-to-production)
+22. [Keeping README & docs up to date](#keeping-readme--docs-up-to-date)
+23. [Testing & quality checks](#testing--quality-checks)
+24. [Appearance (dark / light mode)](#appearance-dark--light-mode)
+25. [Troubleshooting](#troubleshooting)
+26. [Useful links](#useful-links)
 
 ---
 
@@ -67,7 +68,9 @@ KINGOF is a public leaderboard where **software products compete for visibility*
 2. We **fetch metadata** (name, tagline, logo, suggested category).
 3. Owner confirms details, chooses **free listing** or a **bid amount** (min $5).
 4. If paying: **Stripe Checkout** → webhook confirms payment → rank updates.
-5. Owner receives a **private management link** by email to increase bids later.
+5. Owner receives a **private management link** by email (sent on submit; requires verified Resend domain).
+
+**Free vs paid:** Free listings (`$0` bid) appear on the board immediately but rank below any paid bid. Only the **highest total bid** can be King overall or in a category.
 
 ### For the team
 
@@ -79,17 +82,18 @@ KINGOF is a public leaderboard where **software products compete for visibility*
 
 ## Key concepts (glossary)
 
-| Term                | Meaning                                                                                                       |
-| ------------------- | ------------------------------------------------------------------------------------------------------------- |
-| **Bid**             | Payment in **cents** (e.g. `500` = $5). Stored in `bids` table; confirmed bids increase `products.total_bid`. |
-| **King**            | #1 product overall or in a category.                                                                          |
-| **Category king**   | Highest-bid product within one category.                                                                      |
-| **Manage token**    | Secret URL token (`/manage/{token}`) — hashed in DB; never expose the hash.                                   |
-| **Latest activity** | Recent confirmed bids + new product joins (up to **5** items, refreshes every **45s** in the browser).        |
-| **Trending**        | Products with high click velocity (up to **5** items).                                                        |
-| **Random pick**     | Rotating spotlight product; cron picks a new one hourly.                                                      |
-| **Hidden gem**      | Lower-ranked product featured for discovery; cron picks daily.                                                |
-| **Demo data**       | Fallback fake activity/trending only when the DB has **zero** activity — not used for rankings.               |
+| Term                | Meaning                                                                                                        |
+| ------------------- | -------------------------------------------------------------------------------------------------------------- |
+| **Bid**             | Payment in **cents** (e.g. `500` = $5). Stored in `bids` table; confirmed bids increase `products.total_bid`.  |
+| **King**            | #1 product overall or in a category.                                                                           |
+| **Category king**   | Highest-bid product within one category.                                                                       |
+| **Manage token**    | Secret URL token (`/manage/{token}`) — hashed in DB; one token per product listing.                            |
+| **Free listing**    | `$0` bid — approved immediately; **one per IP** (hashed); appears on board but cannot beat paid bids for King. |
+| **Latest activity** | Recent confirmed bids + new product joins (up to **5** items, refreshes every **45s** in the browser).         |
+| **Trending**        | Products with high click velocity (up to **5** items).                                                         |
+| **Random pick**     | Rotating spotlight product; cron picks a new one hourly.                                                       |
+| **Hidden gem**      | Lower-ranked product featured for discovery; cron picks daily.                                                 |
+| **Demo data**       | Fallback fake activity/trending only when the DB has **zero** activity — not used for rankings.                |
 
 ---
 
@@ -231,21 +235,21 @@ kingof/
 
 ### Main pages
 
-| Path                       | Purpose                                             |
-| -------------------------- | --------------------------------------------------- |
-| `/[locale]`                | Homepage — king, activity, category kings, discover |
-| `/[locale]/submit`         | Full submission flow                                |
-| `/[locale]/[category]`     | Category leaderboard (e.g. `/en/ai`)                |
-| `/[locale]/product/[slug]` | Product detail page                                 |
-| `/[locale]/categories`     | All categories                                      |
-| `/[locale]/discover`       | Random pick + hidden gems                           |
-| `/[locale]/products`       | All products (paginated, sorted by bid)             |
-| `/[locale]/new`            | Products listed in the last 5 minutes               |
-| `/[locale]/most-clicked`   | Top clicked products                                |
-| `/[locale]/by-country`     | Clicks by country                                   |
-| `/[locale]/how-it-works`   | Explainer                                           |
-| `/[locale]/rules`          | Rules & legal fine print                            |
-| `/manage/[token]`          | Owner dashboard (increase bid, edit listing)        |
+| Path                       | Purpose                                                                   |
+| -------------------------- | ------------------------------------------------------------------------- |
+| `/[locale]`                | Homepage — king, activity, category kings, discover                       |
+| `/[locale]/submit`         | Full submission flow                                                      |
+| `/[locale]/[category]`     | Category leaderboard (e.g. `/en/ai`)                                      |
+| `/[locale]/product/[slug]` | Product detail page                                                       |
+| `/[locale]/categories`     | All categories                                                            |
+| `/[locale]/discover`       | Random pick + hidden gems                                                 |
+| `/[locale]/products`       | All products (paginated, sorted by bid)                                   |
+| `/[locale]/new`            | Products listed in the last 5 minutes                                     |
+| `/[locale]/most-clicked`   | Top clicked products                                                      |
+| `/[locale]/by-country`     | Clicks by country                                                         |
+| `/[locale]/how-it-works`   | Explainer                                                                 |
+| `/[locale]/rules`          | Rules & legal fine print                                                  |
+| `/manage/[token]`          | Owner dashboard — overall + category rank, bid increase with rank preview |
 
 ---
 
@@ -375,18 +379,19 @@ UNION ALL SELECT 'clicks', count(*) FROM clicks;
 
 ### Tables (summary)
 
-| Table               | Purpose                                          |
-| ------------------- | ------------------------------------------------ |
-| `categories`        | 15 product categories                            |
-| `products`          | Listings, bids totals, status, manage token hash |
-| `bids`              | Individual payments (pending → confirmed)        |
-| `clicks`            | Outbound click tracking (IP hashed)              |
-| `random_picks`      | Current random spotlight rotation                |
-| `hidden_gem_picks`  | Current hidden gem feature                       |
-| `ranking_snapshots` | Hourly rank history                              |
-| `webhook_events`    | Stripe idempotency log                           |
-| `metadata_cache`    | Cached URL metadata fetches                      |
-| `sponsors`          | Sponsored placement windows                      |
+| Table                 | Purpose                                          |
+| --------------------- | ------------------------------------------------ |
+| `categories`          | 15 product categories                            |
+| `products`            | Listings, bids totals, status, manage token hash |
+| `bids`                | Individual payments (pending → confirmed)        |
+| `clicks`              | Outbound click tracking (IP hashed)              |
+| `random_picks`        | Current random spotlight rotation                |
+| `hidden_gem_picks`    | Current hidden gem feature                       |
+| `ranking_snapshots`   | Hourly rank history                              |
+| `webhook_events`      | Stripe idempotency log                           |
+| `metadata_cache`      | Cached URL metadata fetches                      |
+| `free_listing_claims` | One free listing per hashed submitter IP         |
+| `sponsors`            | Sponsored placement windows                      |
 
 Schema source of truth: `src/db/schema.ts`.
 
@@ -394,13 +399,14 @@ Schema source of truth: `src/db/schema.ts`.
 
 ## Running the app
 
-| Command             | Description                                            |
-| ------------------- | ------------------------------------------------------ |
-| `npm run dev`       | Development server (Turbopack)                         |
-| `npm run dev:fresh` | Clear `.next` + dev (fixes cache issues)               |
-| `npm run build`     | Production build                                       |
-| `npm run start`     | Run production build locally                           |
-| `npm run verify`    | Full CI check: format, lint, types, tests, i18n, build |
+| Command             | Description                                          |
+| ------------------- | ---------------------------------------------------- |
+| `npm run dev`       | Development server (Turbopack)                       |
+| `npm run dev:fresh` | Clear `.next` + dev (fixes cache issues)             |
+| `npm run build`     | Production build                                     |
+| `npm run start`     | Run production build locally                         |
+| `npm run precommit` | Pre-commit hook: format, lint, types, coverage, i18n |
+| `npm run verify`    | Full CI check: precommit + build + SEO tests         |
 
 ---
 
@@ -421,9 +427,56 @@ stripe listen --forward-to localhost:3000/api/webhooks/stripe
 ### Payment rules (product)
 
 - Minimum bid: **$5** (`500` cents).
-- Free listing: bid `0` — product is approved without Stripe.
+- Free listing: bid `0` — product is approved without Stripe; **one free listing per IP address** (hashed with `IP_HASH_SALT`; MAC addresses are not available on the web).
 - Bids are **non-refundable**; rules may change (see `/rules`).
 - Adult/sexual sites are banned without refund.
+
+### Production webhook URL
+
+Use **`https://www.kingof.lol/api/webhooks/stripe`** (not the apex URL). Vercel redirects `kingof.lol` → `www.kingof.lol`, and Stripe counts **308 redirects as webhook failures**.
+
+---
+
+## Email (Resend)
+
+Transactional email is sent via [Resend](https://resend.com) from `KINGOF <noreply@kingof.lol>`.
+
+### When emails are sent
+
+| Email               | Trigger                                                                     |
+| ------------------- | --------------------------------------------------------------------------- |
+| **Management link** | On successful `POST /api/submit` (before Stripe redirect for paid listings) |
+| **Dethroned**       | When another product outbids yours and you were category king               |
+
+There is no separate “payment confirmed” email — the management link is sent at submit time.
+
+### Production setup
+
+1. Add domain **`kingof.lol`** in [Resend → Domains](https://resend.com/domains).
+2. Add DNS records at your registrar (e.g. GoDaddy): DKIM TXT (`resend._domainkey`), MX + SPF on `send` subdomain.
+3. Wait for **Verified** status in Resend.
+4. Set live `RESEND_API_KEY` in Vercel → redeploy.
+
+### Troubleshooting email
+
+| Symptom                                  | Likely cause                                         |
+| ---------------------------------------- | ---------------------------------------------------- |
+| Resend log **403** “Domain not verified” | DNS records missing or domain not verified           |
+| No log at all                            | `RESEND_API_KEY` missing in Vercel Production        |
+| Log **delivered** but no inbox           | Check spam; search for `noreply@kingof.lol`          |
+| Submit succeeds, no email                | Check Resend logs + Sentry (`email_send_failed` tag) |
+
+Email templates use **dark text on white** (`#171717`) for Gmail/Outlook compatibility.
+
+### Manage page ranks
+
+`/manage/[token]` shows:
+
+- **Overall rank** — position among all approved products by `total_bid`
+- **Category rank** — position within the product's category
+- **Rank preview** — estimated ranks if you pay the increase amount shown
+
+One email can have **multiple manage links** (one per product listed). Re-bidding the same domain reuses the original token.
 
 ---
 
@@ -447,47 +500,50 @@ stripe listen --forward-to localhost:3000/api/webhooks/stripe
 
 ## Scripts & npm commands
 
-| Script                  | Description                 |
-| ----------------------- | --------------------------- |
-| `npm run dev`           | Start dev server            |
-| `npm run dev:fresh`     | Clear cache + dev           |
-| `npm run build`         | Production build            |
-| `npm run test`          | Vitest unit tests           |
-| `npm run lint`          | ESLint                      |
-| `npm run typecheck`     | TypeScript check            |
-| `npm run format`        | Prettier write              |
-| `npm run format:check`  | Prettier check              |
-| `npm run db:setup`      | Push schema + seed          |
-| `npm run db:push`       | Sync schema to DB           |
-| `npm run db:seed`       | Insert/update sample data   |
-| `npm run db:studio`     | Open Drizzle Studio         |
-| `npm run db:generate`   | Generate Drizzle migrations |
-| `npm run db:migrate`    | Run migrations              |
-| `npm run validate:i18n` | Check all locale files      |
-| `npm run verify`        | Run everything before merge |
+| Script                  | Description                                 |
+| ----------------------- | ------------------------------------------- |
+| `npm run dev`           | Start dev server                            |
+| `npm run dev:fresh`     | Clear cache + dev                           |
+| `npm run build`         | Production build                            |
+| `npm run test`          | Vitest unit tests                           |
+| `npm run lint`          | ESLint                                      |
+| `npm run typecheck`     | TypeScript check                            |
+| `npm run format`        | Prettier write                              |
+| `npm run format:check`  | Prettier check                              |
+| `npm run db:setup`      | Push schema + seed                          |
+| `npm run db:push`       | Sync schema to DB                           |
+| `npm run db:seed`       | Insert/update sample data                   |
+| `npm run db:studio`     | Open Drizzle Studio                         |
+| `npm run db:generate`   | Generate Drizzle migrations                 |
+| `npm run db:migrate`    | Run migrations                              |
+| `npm run validate:i18n` | Check all locale files                      |
+| `npm run brand:export`  | Export social PNGs from `public/brand/svg/` |
+| `npm run verify`        | Run everything before merge                 |
+
+**Brand assets:** two files in [`public/brand/`](public/brand/README.md) — wide `cover` + square `logo-square`. Run `brand:export` after editing SVGs.
 
 ---
 
 ## API routes
 
-| Method     | Path                               | Purpose                                  |
-| ---------- | ---------------------------------- | ---------------------------------------- |
-| `GET`      | `/api/products/list`               | Paginated product list (`sort=bid\|new`) |
-| `GET`      | `/api/activity`                    | Trending + latest activity (JSON)        |
-| `GET`      | `/api/categories`                  | Category list                            |
-| `POST`     | `/api/submit`                      | Create product + Stripe session          |
-| `POST`     | `/api/products/preview`            | Fetch URL metadata                       |
-| `GET`      | `/api/products/random`             | Next random pick                         |
-| `GET`      | `/api/products/hidden-gem`         | Current hidden gem                       |
-| `GET`      | `/api/products/rank-preview`       | Estimate rank for bid amount             |
-| `GET`      | `/api/click/[productId]`           | Track click + redirect                   |
-| `GET`      | `/api/top-by-country`              | Leaderboard by visitor country           |
-| `GET/POST` | `/api/manage/[token]`              | Owner read/update listing                |
-| `POST`     | `/api/manage/[token]/increase-bid` | New Stripe session for top-up            |
-| `POST`     | `/api/webhooks/stripe`             | Stripe payment confirmation              |
-| `GET`      | `/api/cron/snapshots`              | Daily rank snapshots                     |
-| `GET`      | `/api/cron/random-picks`           | Daily random pick rotation               |
-| `GET`      | `/api/cron/hidden-gems`            | Daily hidden gem pick                    |
+| Method | Path                               | Purpose                                  |
+| ------ | ---------------------------------- | ---------------------------------------- |
+| `GET`  | `/api/products/list`               | Paginated product list (`sort=bid\|new`) |
+| `GET`  | `/api/activity`                    | Trending + latest activity (JSON)        |
+| `GET`  | `/api/categories`                  | Category list                            |
+| `POST` | `/api/submit`                      | Create product + Stripe session          |
+| `POST` | `/api/products/preview`            | Fetch URL metadata                       |
+| `GET`  | `/api/products/random`             | Next random pick                         |
+| `GET`  | `/api/products/hidden-gem`         | Current hidden gem                       |
+| `POST` | `/api/products/rank-preview`       | Estimate rank for bid amount             |
+| `GET`  | `/api/click/[productId]`           | Track click + redirect                   |
+| `GET`  | `/api/top-by-country`              | Leaderboard by visitor country           |
+| `GET`  | `/api/manage/[token]`              | Owner read listing stats + ranks         |
+| `POST` | `/api/manage/[token]/increase-bid` | New Stripe session for top-up            |
+| `POST` | `/api/webhooks/stripe`             | Stripe payment confirmation              |
+| `GET`  | `/api/cron/snapshots`              | Daily rank snapshots                     |
+| `GET`  | `/api/cron/random-picks`           | Daily random pick rotation               |
+| `GET`  | `/api/cron/hidden-gems`            | Daily hidden gem pick                    |
 
 Cron routes require `Authorization: Bearer {CRON_SECRET}` when the secret is set.
 
@@ -583,16 +639,16 @@ DATABASE_URL="postgresql://..." npm run db:migrate
 ### 4. Stripe (live mode)
 
 1. [Stripe Dashboard → Developers → Webhooks](https://dashboard.stripe.com/webhooks) → **Add endpoint**
-2. URL: `https://kingof.lol/api/webhooks/stripe`
+2. URL: `https://www.kingof.lol/api/webhooks/stripe`
 3. Events: at minimum `checkout.session.completed`
 4. Copy the **Signing secret** → `STRIPE_WEBHOOK_SECRET` in Vercel
 5. Confirm live API keys are in Vercel (not test keys)
 
 ### 5. Resend (email)
 
-1. Verify your sending domain in [Resend](https://resend.com/domains)
+1. Add and verify **`kingof.lol`** in [Resend → Domains](https://resend.com/domains) (DKIM + SPF/MX on `send` subdomain — see [Email (Resend)](#email-resend))
 2. Set live `RESEND_API_KEY` in Vercel
-3. Test after deploy: submit a product and confirm the management-link email arrives
+3. Redeploy, then test: submit a product and confirm Resend logs show **200** (not 403)
 
 ### 6. Cron
 
@@ -657,13 +713,13 @@ You can deploy the **same Git repo** to both Vercel and [Netlify](https://app.ne
 
 #### Dual-deploy rules
 
-|                  | Vercel (production)                                    | Netlify (staging)                                                    |
-| ---------------- | ------------------------------------------------------ | -------------------------------------------------------------------- |
-| Domain           | `kingof.lol`                                           | `*.netlify.app` or staging subdomain                                 |
-| Stripe           | Live keys + webhook → `kingof.lol/api/webhooks/stripe` | Test keys, or a **second** webhook for the Netlify URL               |
-| Database         | Production Postgres                                    | Staging DB recommended (or same DB only if you accept shared data)   |
-| Cron             | `vercel.json` (automatic)                              | `netlify/functions/cron-*.mts` (automatic when `CRON_SECRET` is set) |
-| Geo / by-country | `x-vercel-ip-country`                                  | `x-country` (supported in code)                                      |
+|                  | Vercel (production)                                        | Netlify (staging)                                                    |
+| ---------------- | ---------------------------------------------------------- | -------------------------------------------------------------------- |
+| Domain           | `kingof.lol`                                               | `*.netlify.app` or staging subdomain                                 |
+| Stripe           | Live keys + webhook → `www.kingof.lol/api/webhooks/stripe` | Test keys, or a **second** webhook for the Netlify URL               |
+| Database         | Production Postgres                                        | Staging DB recommended (or same DB only if you accept shared data)   |
+| Cron             | `vercel.json` (automatic)                                  | `netlify/functions/cron-*.mts` (automatic when `CRON_SECRET` is set) |
+| Geo / by-country | `x-vercel-ip-country`                                      | `x-country` (supported in code)                                      |
 
 #### If Netlify build fails
 
@@ -696,6 +752,7 @@ curl -s -o /dev/null -w "%{http_code}" https://kingof.lol/en/products
 | Submit flow    | `/en/submit` → paste URL → free list | Success; management email received           |
 | Paid bid       | Submit with $5+ bid                  | Redirects to Stripe **live** Checkout        |
 | Stripe webhook | Complete a live/test payment         | Product rank updates; bid `confirmed` in DB  |
+| Manage page    | Open link from management email      | Overall + category rank; bid preview works   |
 | Product page   | Click through from leaderboard       | `/en/product/{slug}` loads                   |
 | Click tracking | Click a product outbound link        | Row in `clicks` table; geo on Vercel         |
 | By country     | `/en/by-country`                     | Country picker works; data after real clicks |
@@ -786,10 +843,21 @@ npm run verify            # Full CI pipeline locally (format → lint → types 
 
 **CI:** GitHub Actions (`.github/workflows/ci.yml`) runs on every push/PR to `main`: Prettier → ESLint → TypeScript → `test:coverage` → i18n → production build → SEO tests. Coverage artifact uploaded for 7 days.
 
+**Git hooks (Husky):** After `npm install`, hooks run automatically:
+
+| Hook         | Command              | What runs                                     |
+| ------------ | -------------------- | --------------------------------------------- |
+| `pre-commit` | `npm run precommit`  | format → lint → types → coverage tests → i18n |
+| `pre-push`   | `build` + `test:seo` | production build + post-build SEO checks      |
+
+Together these match `npm run verify` and CI. Skip once with `git commit --no-verify` or `git push --no-verify` if you need to (not recommended before merge).
+
 **Deploy builds:** Vercel and Netlify run `npm run build` only — no tests in deploy. Test files are excluded via `.vercelignore` and are never part of the Next.js bundle.
 
 | When                     | Command                                                        |
 | ------------------------ | -------------------------------------------------------------- |
+| Every commit (automatic) | Husky `pre-commit` → `npm run precommit`                       |
+| Every push (automatic)   | Husky `pre-push` → build + SEO tests                           |
 | Every PR                 | `npm run verify` (or rely on GitHub Actions)                   |
 | Quick iteration          | `npm run typecheck` + `npm run test`                           |
 | Copy changes only        | `npm run validate:i18n`                                        |
@@ -821,6 +889,9 @@ Before opening a PR, run `npm run verify` locally. Before deploying to productio
 | Activity not updating live              | Polls every **45s** — not WebSockets; refresh or wait                             |
 | i18n validation fails                   | Add missing keys to all locale files or run fill script                           |
 | Submit shows success but 404 on product | API may have failed — check Stripe/DB; paid listings stay `pending` until webhook |
+| Email not received (403 in Resend)      | Verify `kingof.lol` domain in Resend; add DNS records at registrar                |
+| Manage page shows wrong #1 rank         | Fixed: shows overall + category rank separately (deploy latest)                   |
+| Stripe webhooks failing with 308        | Use `https://www.kingof.lol/api/webhooks/stripe` as endpoint URL                  |
 | By country empty locally                | Normal — needs Vercel geo headers + real clicks with `country_code`               |
 | Console logs in production              | Client `console.*` is stripped in prod builds; use Sentry for errors              |
 

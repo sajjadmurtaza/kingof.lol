@@ -37,12 +37,10 @@ describe("resend email templates", () => {
       manageUrl: "https://kingof.lol/manage/token",
     });
 
-    expect(sendMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        to: "user@example.com",
-        html: expect.stringContaining("&lt;script&gt;"),
-      }),
-    );
+    const call = sendMock.mock.calls[0]![0] as { html: string; to: string };
+    expect(call.to).toBe("user@example.com");
+    expect(call.html).toContain("&lt;script&gt;");
+    expect(call.html).toContain("color: #171717");
   });
 
   it("sends dethroned email with formatted bid", async () => {
@@ -64,6 +62,22 @@ describe("resend email templates", () => {
         html: expect.stringContaining("$50"),
       }),
     );
+  });
+
+  it("throws when Resend returns an API error", async () => {
+    sendMock.mockResolvedValue({
+      data: null,
+      error: { message: "Domain not verified" },
+    });
+    const { sendManagementLinkEmail } = await import("./resend");
+
+    await expect(
+      sendManagementLinkEmail({
+        to: "user@example.com",
+        productName: "Acme",
+        manageUrl: "https://kingof.lol/manage/token",
+      }),
+    ).rejects.toThrow("Domain not verified");
   });
 
   it("reuses the Resend client singleton", async () => {

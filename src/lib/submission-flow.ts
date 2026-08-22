@@ -60,9 +60,18 @@ export function resolveSubmitOutcome(
     ok: boolean;
     data: { error?: string; reason?: string; slug?: string; checkoutUrl?: string };
   },
-  opts: { bidCents: number; productName: string; fallbackError: string },
+  opts: {
+    bidCents: number;
+    productName: string;
+    fallbackError: string;
+    freeListingLimitError?: string;
+  },
 ): SubmitOutcome {
   if (!response.ok) {
+    if (response.data.error === "FREE_LISTING_LIMIT" && opts.freeListingLimitError) {
+      return { type: "error", message: opts.freeListingLimitError };
+    }
+
     const message =
       typeof response.data.reason === "string"
         ? response.data.reason

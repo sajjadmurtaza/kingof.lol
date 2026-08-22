@@ -189,7 +189,12 @@ export function SubmissionFlow({
 
       const outcome = resolveSubmitOutcome(
         { ok: res.ok, data },
-        { bidCents, productName, fallbackError: tManage("paymentFailed") },
+        {
+          bidCents,
+          productName,
+          fallbackError: tManage("paymentFailed"),
+          freeListingLimitError: t("freeListingLimit"),
+        },
       );
 
       if (outcome.type === "error") {

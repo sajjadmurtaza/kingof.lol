@@ -8,6 +8,13 @@ import { normalizeUrl } from "@/lib/url";
 import { createPaidBidCheckout } from "@/domains/payments/create-paid-bid-checkout";
 import { sendManagementLinkEmail } from "@/domains/email/resend";
 import { getProductRanks } from "@/domains/leaderboard/queries";
+import { getClientIp, hashIp } from "@/domains/clicks/tracking";
+import {
+  FREE_LISTING_LIMIT_ERROR,
+  hasFreeListingFromIp,
+  recordFreeListingClaim,
+  shouldEnforceFreeListingLimit,
+} from "@/domains/submissions/free-listing-limit";
 import { notifySlack } from "@/lib/slack";
 import { getSiteUrl } from "@/lib/site-url";
 
@@ -149,6 +156,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid category" }, { status: 400 });
     }
 
+    const clientIp = getClientIp(request);
+    const submitterIpHash = hashIp(clientIp);
+
+    if (isFree && shouldEnforceFreeListingLimit(clientIp)) {
+      if (await hasFreeListingFromIp(submitterIpHash)) {
+        return NextResponse.json({ error: FREE_LISTING_LIMIT_ERROR }, { status: 403 });
+      }
+    }
+
     const rawToken = randomBytes(32).toString("hex");
     const tokenHash = createHash("sha256").update(rawToken).digest("hex");
 
@@ -234,6 +250,10 @@ export async function POST(request: Request) {
         checkoutUrl: checkout.checkoutUrl,
         ...(ranks ?? {}),
       });
+    }
+
+    if (isFree && shouldEnforceFreeListingLimit(clientIp)) {
+      await recordFreeListingClaim(submitterIpHash, product.id);
     }
 
     sendManagementLinkEmail({

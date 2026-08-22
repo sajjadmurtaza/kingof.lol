@@ -89,7 +89,9 @@
     "invalidLinkTitle": "無効なリンク",
     "invalidLinkDesc": "この管理リンクは無効か期限切れです。",
     "notFoundError": "製品が見つからないか、管理リンクが無効です。",
-    "rankLabel": "順位",
+    "rankLabel": "総合",
+    "categoryRankLabel": "カテゴリ内",
+    "rankAtBid": "合計入札 {amount} で",
     "clicksLabel": "クリック",
     "paymentFailed": "Payment could not be started. Please try again.",
     "paymentConfirmed": "Payment confirmed — your bid is now {amount}."
@@ -204,6 +206,7 @@
     "overall": "総合",
     "compete": "競争する",
     "listFree": "無料で掲載",
+    "freeListingLimit": "このネットワークからの無料掲載はすでに使用済みです。別の製品は有料入札（最低$5）で掲載してください。",
     "almostThere": "もうすぐ！",
     "emailExplainer": "メールアドレスを入力して管理リンクを受け取りましょう。",
     "continueBtn": "続ける →",

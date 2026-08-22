@@ -22,6 +22,7 @@
     "overall": "Overall",
     "compete": "COMPETE",
     "listFree": "LIST FOR FREE",
+    "freeListingLimit": "You already used your one free listing from this network. List another product with a paid bid ($5 minimum).",
     "almostThere": "Almost there!",
     "emailExplainer": "Enter your email to manage your listing. We'll send you a private management link. Never shared publicly.",
     "continueBtn": "CONTINUE →",
@@ -163,7 +164,9 @@
     "invalidLinkTitle": "Invalid link",
     "invalidLinkDesc": "This management link isn't valid or has expired.",
     "notFoundError": "Product not found or invalid management link.",
-    "rankLabel": "Rank",
+    "rankLabel": "Overall",
+    "categoryRankLabel": "In category",
+    "rankAtBid": "At {amount} total bid",
     "clicksLabel": "Clicks",
     "paymentFailed": "Payment could not be started. Please try again.",
     "paymentConfirmed": "Payment confirmed — your bid is now {amount}."

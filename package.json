@@ -28,7 +28,10 @@
     "db:setup": "npm run db:push && npm run db:seed:demo",
     "db:studio": "drizzle-kit studio",
     "validate:i18n": "tsx --tsconfig tsconfig.scripts.json scripts/validate-i18n.ts",
-    "verify": "npm run format:check && npm run lint && npm run typecheck && npm run test:coverage && npm run validate:i18n && npm run build && npm run test:seo"
+    "brand:export": "node scripts/generate-brand-assets.mjs",
+    "precommit": "npm run format:check && npm run lint && npm run typecheck && npm run test:coverage && npm run validate:i18n",
+    "verify": "npm run precommit && npm run build && npm run test:seo",
+    "prepare": "husky"
   },
   "dependencies": {
     "@sentry/nextjs": "^10.70.0",
@@ -60,8 +63,10 @@
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.3.2",
     "happy-dom": "^20.11.6",
+    "husky": "^9.1.7",
     "postcss": "^8.5.26",
     "prettier": "^3.9.6",
+    "sharp": "^0.34.5",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.23.12",
     "typescript": "~5.9.3",

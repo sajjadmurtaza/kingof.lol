@@ -89,7 +89,9 @@
     "invalidLinkTitle": "رابط غير صالح",
     "invalidLinkDesc": "رابط الإدارة هذا غير صالح أو منتهي الصلاحية.",
     "notFoundError": "المنتج غير موجود أو رابط الإدارة غير صالح.",
-    "rankLabel": "الترتيب",
+    "rankLabel": "الإجمالي",
+    "categoryRankLabel": "داخل الفئة",
+    "rankAtBid": "عند إجمالي مزايدة {amount}",
     "clicksLabel": "النقرات",
     "paymentFailed": "Payment could not be started. Please try again.",
     "paymentConfirmed": "Payment confirmed — your bid is now {amount}."
@@ -204,6 +206,7 @@
     "overall": "الترتيب العام",
     "compete": "نافس",
     "listFree": "أدرج مجاناً",
+    "freeListingLimit": "لقد استخدمت بالفعل الإدراج المجاني الواحد من هذه الشبكة. أدرج منتجاً آخر بمزايدة مدفوعة (5 دولارات كحد أدنى).",
     "almostThere": "اقتربت!",
     "emailExplainer": "أدخل بريدك لإدارة منتجك. سنرسل رابط إدارة خاص.",
     "continueBtn": "متابعة →",

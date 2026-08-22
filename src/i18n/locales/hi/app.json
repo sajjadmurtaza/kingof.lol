@@ -89,7 +89,9 @@
     "invalidLinkTitle": "अमान्य लिंक",
     "invalidLinkDesc": "यह प्रबंधन लिंक अमान्य है या समाप्त हो गया है।",
     "notFoundError": "प्रोडक्ट नहीं मिला या प्रबंधन लिंक अमान्य है।",
-    "rankLabel": "रैंक",
+    "rankLabel": "समग्र",
+    "categoryRankLabel": "श्रेणी में",
+    "rankAtBid": "{amount} कुल बोली पर",
     "clicksLabel": "क्लिक",
     "paymentFailed": "Payment could not be started. Please try again.",
     "paymentConfirmed": "Payment confirmed — your bid is now {amount}."
@@ -204,6 +206,7 @@
     "overall": "समग्र",
     "compete": "प्रतिस्पर्धा करें",
     "listFree": "मुफ्त सूची",
+    "freeListingLimit": "आप इस नेटवर्क से अपनी एक मुफ्त लिस्टिंग पहले ही उपयोग कर चुके हैं। भुगतान वाली बोली ($5 न्यूनतम) के साथ दूसरा उत्पाद सूचीबद्ध करें।",
     "almostThere": "लगभग हो गया!",
     "emailExplainer": "अपना ईमेल दर्ज करें। हम प्रबंधन लिंक भेजेंगे।",
     "continueBtn": "आगे बढ़ें →",

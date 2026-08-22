@@ -89,7 +89,9 @@
     "invalidLinkTitle": "链接无效",
     "invalidLinkDesc": "此管理链接无效或已过期。",
     "notFoundError": "未找到产品或管理链接无效。",
-    "rankLabel": "排名",
+    "rankLabel": "总排名",
+    "categoryRankLabel": "分类内",
+    "rankAtBid": "总出价 {amount}",
     "clicksLabel": "点击",
     "paymentFailed": "Payment could not be started. Please try again.",
     "paymentConfirmed": "Payment confirmed — your bid is now {amount}."
@@ -204,6 +206,7 @@
     "overall": "总排名",
     "compete": "竞争",
     "listFree": "免费上榜",
+    "freeListingLimit": "您已在此网络使用过免费上架名额。请通过付费出价（最低 $5）上架其他产品。",
     "almostThere": "就快好了！",
     "emailExplainer": "输入邮箱来管理你的产品。我们会发送私密管理链接。",
     "continueBtn": "继续 →",

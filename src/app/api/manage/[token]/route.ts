@@ -1,8 +1,9 @@
 import { createHash } from "node:crypto";
-import { eq, sql, and, desc, gte } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { products, categories } from "@/db/schema";
+import { getProductRanks } from "@/domains/leaderboard/queries";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
@@ -21,8 +22,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tok
       ogImageUrl: products.ogImageUrl,
       normalizedDomain: products.normalizedDomain,
       totalBid: products.totalBid,
-      categoryId: products.categoryId,
       categoryName: categories.name,
+      categorySlug: categories.slug,
+      categoryEmoji: categories.emoji,
       clickCount:
         sql<number>`(SELECT count(*) FROM clicks WHERE clicks.product_id = ${products.id} AND clicks.created_at >= ${sevenDaysAgo})`.as(
           "click_count",
@@ -37,20 +39,10 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tok
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  // Calculate category rank
-  const ranked = await db
-    .select({ id: products.id })
-    .from(products)
-    .where(
-      and(
-        eq(products.categoryId, product.categoryId),
-        eq(products.status, "approved"),
-        gte(products.totalBid, product.totalBid),
-      ),
-    )
-    .orderBy(desc(products.totalBid));
-
-  const rank = ranked.findIndex((r) => r.id === product.id) + 1;
+  const ranks = await getProductRanks(product.id);
+  if (!ranks) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
 
   return NextResponse.json({
     name: product.name,
@@ -60,8 +52,11 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tok
     normalizedDomain: product.normalizedDomain,
     totalBid: product.totalBid,
     clickCount: Number(product.clickCount),
-    rank: rank || 1,
+    overallRank: ranks.overallRank,
+    categoryRank: ranks.categoryRank,
     categoryName: product.categoryName,
+    categorySlug: product.categorySlug,
+    categoryEmoji: product.categoryEmoji,
     slug: product.slug,
   });
 }

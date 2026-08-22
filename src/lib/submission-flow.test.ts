@@ -82,6 +82,20 @@ describe("resolveSubmitOutcome", () => {
     ).toEqual({ type: "error", message: fallback });
   });
 
+  it("returns friendly message for free listing IP limit", () => {
+    expect(
+      resolveSubmitOutcome(
+        { ok: false, data: { error: "FREE_LISTING_LIMIT" } },
+        {
+          bidCents: 0,
+          productName: "Acme",
+          fallbackError: fallback,
+          freeListingLimitError: "One free listing per network.",
+        },
+      ),
+    ).toEqual({ type: "error", message: "One free listing per network." });
+  });
+
   it("redirects free listings to product page (regression: no inline success card)", () => {
     expect(
       resolveSubmitOutcome(

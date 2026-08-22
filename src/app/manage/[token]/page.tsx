@@ -16,19 +16,32 @@ type ProductData = {
   normalizedDomain: string;
   totalBid: number;
   clickCount: number;
-  rank: number;
+  overallRank: number;
+  categoryRank: number;
   categoryName: string;
+  categorySlug: string;
+  categoryEmoji: string;
   slug: string;
 } | null;
+
+type RankPreview = {
+  overallRank: number;
+  categoryRank: number;
+  categoryName: string;
+  categoryEmoji: string;
+};
 
 export default function ManagePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = use(params);
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
   const t = useTranslations("app.manage");
+  const tOnboard = useTranslations("app.onboard");
   const [bidIncrease, setBidIncrease] = useState(500);
   const [product, setProduct] = useState<ProductData>(null);
   const [displayBidCents, setDisplayBidCents] = useState<number | null>(null);
+  const [rankPreview, setRankPreview] = useState<RankPreview | null>(null);
+  const [rankPreviewLoading, setRankPreviewLoading] = useState(false);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -82,6 +95,34 @@ export default function ManagePage({ params }: { params: Promise<{ token: string
     };
   }, [token, sessionId, loadProduct, t]);
 
+  useEffect(() => {
+    if (!product) return;
+
+    const projectedBidCents = (displayBidCents ?? product.totalBid) + bidIncrease;
+    const timer = setTimeout(async () => {
+      setRankPreviewLoading(true);
+      try {
+        const res = await fetch("/api/products/rank-preview", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            bidCents: projectedBidCents,
+            categorySlug: product.categorySlug,
+          }),
+        });
+        if (res.ok) {
+          setRankPreview(await res.json());
+        }
+      } catch {
+        // Rank preview is non-critical
+      } finally {
+        setRankPreviewLoading(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [product, bidIncrease, displayBidCents]);
+
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
@@ -127,10 +168,17 @@ export default function ManagePage({ params }: { params: Promise<{ token: string
             </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-3 gap-4">
+          <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
             <div className="rounded-lg bg-surface p-3 text-center">
               <p className="text-xs text-text-dim">{t("rankLabel")}</p>
-              <p className="text-lg font-bold">#{product.rank}</p>
+              <p className="text-lg font-bold">#{product.overallRank}</p>
+            </div>
+            <div className="rounded-lg bg-surface p-3 text-center">
+              <p className="text-xs text-text-dim">{t("categoryRankLabel")}</p>
+              <p className="text-lg font-bold text-gold">#{product.categoryRank}</p>
+              <p className="mt-0.5 truncate text-[10px] text-text-dim">
+                {product.categoryEmoji} {product.categoryName}
+              </p>
             </div>
             <div className="rounded-lg bg-surface p-3 text-center">
               <p className="text-xs text-text-dim">{t("currentBid")}</p>
@@ -162,6 +210,30 @@ export default function ManagePage({ params }: { params: Promise<{ token: string
                 />
               </div>
             </div>
+            {rankPreview && !rankPreviewLoading ? (
+              <div className="rounded-lg border border-gold/20 bg-gold/5 p-4">
+                <p className="text-xs font-medium uppercase tracking-wider text-text-dim">
+                  {tOnboard("putsYouAt")}
+                </p>
+                <p className="mt-1 text-xs text-text-muted">
+                  {t("rankAtBid", {
+                    amount: formatBid((displayBidCents ?? product.totalBid) + bidIncrease),
+                  })}
+                </p>
+                <div className="mt-3 flex justify-center gap-6">
+                  <div className="text-center">
+                    <p className="text-2xl font-black text-text">#{rankPreview.overallRank}</p>
+                    <p className="text-xs text-text-dim">{tOnboard("overall")}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-black text-gold">#{rankPreview.categoryRank}</p>
+                    <p className="text-xs text-text-dim">
+                      {rankPreview.categoryEmoji} {rankPreview.categoryName}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : null}
             <button
               type="button"
               disabled={paying}

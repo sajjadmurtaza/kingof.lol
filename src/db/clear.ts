@@ -31,6 +31,7 @@ async function main() {
       sponsors,
       ranking_snapshots,
       hidden_gem_picks,
+      free_listing_claims,
       products
     RESTART IDENTITY CASCADE
   `);

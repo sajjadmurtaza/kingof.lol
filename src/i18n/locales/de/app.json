@@ -89,7 +89,9 @@
     "invalidLinkTitle": "Ungültiger Link",
     "invalidLinkDesc": "Dieser Verwaltungslink ist ungültig oder abgelaufen.",
     "notFoundError": "Produkt nicht gefunden oder Verwaltungslink ungültig.",
-    "rankLabel": "Rang",
+    "rankLabel": "Gesamt",
+    "categoryRankLabel": "In Kategorie",
+    "rankAtBid": "Bei {amount} Gesamtgebot",
     "clicksLabel": "Klicks",
     "paymentFailed": "Payment could not be started. Please try again.",
     "paymentConfirmed": "Payment confirmed — your bid is now {amount}."
@@ -204,6 +206,7 @@
     "overall": "Gesamt",
     "compete": "KONKURRIEREN",
     "listFree": "KOSTENLOS LISTEN",
+    "freeListingLimit": "Du hast dein kostenloses Listing von diesem Netzwerk bereits genutzt. Liste ein weiteres Produkt mit einem bezahlten Gebot (mindestens 5 $) ein.",
     "almostThere": "Fast geschafft!",
     "emailExplainer": "E-Mail eingeben um dein Listing zu verwalten.",
     "continueBtn": "WEITER →",

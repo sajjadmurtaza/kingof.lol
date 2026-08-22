@@ -89,7 +89,9 @@
     "invalidLinkTitle": "Link inválido",
     "invalidLinkDesc": "Este link de gestão não é válido ou expirou.",
     "notFoundError": "Produto não encontrado ou link de gestão inválido.",
-    "rankLabel": "Posição",
+    "rankLabel": "Geral",
+    "categoryRankLabel": "Na categoria",
+    "rankAtBid": "Com lance total de {amount}",
     "clicksLabel": "Cliques",
     "paymentFailed": "Payment could not be started. Please try again.",
     "paymentConfirmed": "Payment confirmed — your bid is now {amount}."
@@ -204,6 +206,7 @@
     "overall": "Geral",
     "compete": "COMPETIR",
     "listFree": "LISTAR GRÁTIS",
+    "freeListingLimit": "Você já usou seu cadastro gratuito nesta rede. Liste outro produto com um lance pago (mínimo de US$ 5).",
     "almostThere": "Quase lá!",
     "emailExplainer": "Digite seu email para gerenciar seu listing.",
     "continueBtn": "CONTINUAR →",

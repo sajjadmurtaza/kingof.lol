@@ -89,7 +89,9 @@
     "invalidLinkTitle": "Lien invalide",
     "invalidLinkDesc": "Ce lien de gestion n'est pas valide ou a expiré.",
     "notFoundError": "Produit introuvable ou lien de gestion invalide.",
-    "rankLabel": "Rang",
+    "rankLabel": "Général",
+    "categoryRankLabel": "Dans la catégorie",
+    "rankAtBid": "Avec une enchère totale de {amount}",
     "clicksLabel": "Clics",
     "paymentFailed": "Payment could not be started. Please try again.",
     "paymentConfirmed": "Payment confirmed — your bid is now {amount}."
@@ -204,6 +206,7 @@
     "overall": "Général",
     "compete": "COMPÉTITIONNER",
     "listFree": "LISTER GRATUITEMENT",
+    "freeListingLimit": "Vous avez déjà utilisé votre inscription gratuite depuis ce réseau. Listez un autre produit avec une enchère payante (5 $ minimum).",
     "almostThere": "Presque fini !",
     "emailExplainer": "Entrez votre email pour gérer votre listing.",
     "continueBtn": "CONTINUER →",
