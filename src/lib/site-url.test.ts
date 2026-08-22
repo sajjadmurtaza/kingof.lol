@@ -6,15 +6,15 @@ describe("SITE_URL", () => {
     vi.resetModules();
   });
 
-  it("uses www as the default canonical host", async () => {
+  it("uses apex kingof.lol as the default canonical host", async () => {
     vi.stubEnv("NEXT_PUBLIC_SITE_URL", "");
     const { SITE_URL } = await import("./site-url");
-    expect(SITE_URL).toBe("https://www.kingof.lol");
+    expect(SITE_URL).toBe("https://kingof.lol");
   });
 
   it("uses NEXT_PUBLIC_SITE_URL and strips trailing slash", async () => {
-    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://www.kingof.lol/");
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://kingof.lol/");
     const { SITE_URL } = await import("./site-url");
-    expect(SITE_URL).toBe("https://www.kingof.lol");
+    expect(SITE_URL).toBe("https://kingof.lol");
   });
 });

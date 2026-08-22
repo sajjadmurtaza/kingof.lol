@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { useTranslations } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { JsonLd } from "@/components/json-ld";
+import { ListedWelcomeBanner } from "@/components/listed-welcome-banner";
 import { ProductLogo } from "@/components/product-logo";
 import { getProductBySlug } from "@/domains/leaderboard/queries";
 import type { RankedProduct } from "@/domains/leaderboard/queries";
@@ -93,6 +95,9 @@ export default async function ProductPage({
   return (
     <div className="py-12">
       <JsonLd data={breadcrumb} />
+      <Suspense fallback={null}>
+        <ListedWelcomeBanner />
+      </Suspense>
       <ProductDetail product={product} locale={locale} />
     </div>
   );

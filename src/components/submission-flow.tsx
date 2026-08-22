@@ -2,69 +2,38 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 import type { ProductPreview } from "@/lib/metadata";
+import {
+  emptyPreview,
+  looksLikeUrl,
+  resolvePreviewPhase,
+  resolveSubmitOutcome,
+  type SubmissionFlowPhase,
+} from "@/lib/submission-flow";
 import { BidSelector } from "./bid-selector";
 import { EmailStep } from "./email-step";
 import { ExistingProductFlow } from "./existing-product-flow";
 import { FallbackForm } from "./fallback-form";
 import { ProductPreviewCard } from "./product-preview-card";
-import { SuccessState } from "./success-state";
 
-type Phase = "idle" | "loading" | "preview" | "existing" | "fallback" | "bid" | "email" | "success";
-
-function looksLikeUrl(input: string): boolean {
-  const trimmed = input.trim();
-  if (trimmed.length < 4) return false;
-  if (/^https?:\/\/.+\..+/i.test(trimmed)) return true;
-  if (/^[a-z0-9-]+\.[a-z]{2,}/i.test(trimmed)) return true;
-  return false;
-}
-
-function extractDomain(url: string): string {
-  try {
-    let input = url.trim();
-    if (!/^https?:\/\//i.test(input)) input = `https://${input}`;
-    const u = new URL(input);
-    let host = u.hostname.toLowerCase();
-    if (host.startsWith("www.")) host = host.slice(4);
-    return host;
-  } catch {
-    return url;
-  }
-}
-
-function emptyPreview(input: string): ProductPreview {
-  const domain = extractDomain(input);
-  return {
-    url: input,
-    normalizedUrl: input,
-    domain,
-    name: domain,
-    title: null,
-    description: "",
-    siteName: null,
-    icon: null,
-    faviconUrl: null,
-    appleTouchIconUrl: null,
-    logoUrl: null,
-    ogImage: null,
-    suggestedCategory: null,
-    categoryConfidence: "low",
-    existing: null,
-  };
-}
+type Phase = SubmissionFlowPhase;
 
 export function SubmissionFlow({
   locale,
   autoFocus = false,
   compact = false,
+  onPhaseChange,
 }: {
   locale: string;
   autoFocus?: boolean;
   compact?: boolean;
+  onPhaseChange?: (phase: Phase) => void;
 }) {
   const t = useTranslations("app.onboard");
+  const tManage = useTranslations("app.manage");
   const tUi = useTranslations("app.ui");
+  const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -75,16 +44,20 @@ export function SubmissionFlow({
   const [category, setCategory] = useState("");
   const [bidCents, setBidCents] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [manualData, setManualData] = useState<{
     name: string;
     tagline: string;
     category: string;
   } | null>(null);
-  const [resultSlug, setResultSlug] = useState("");
 
   useEffect(() => {
     if (autoFocus && inputRef.current) inputRef.current.focus();
   }, [autoFocus]);
+
+  useEffect(() => {
+    onPhaseChange?.(phase);
+  }, [phase, onPhaseChange]);
 
   const fetchPreview = useCallback(async (input: string) => {
     abortRef.current?.abort();
@@ -117,14 +90,11 @@ export function SubmissionFlow({
       setPreview(data);
       setCategory(data.suggestedCategory ?? "saas");
 
-      if (data.existing) {
-        setPhase("existing");
-      } else if (!data.name || data.name === data.domain || data.name === "") {
-        setPhase("fallback");
-      } else {
-        if (!data.description) data.description = data.name;
-        setPhase("preview");
+      const nextPhase = resolvePreviewPhase(data);
+      if (nextPhase === "preview" && !data.description) {
+        data.description = data.name;
       }
+      setPhase(nextPhase);
     } catch (err: unknown) {
       if (err instanceof DOMException && err.name === "AbortError") return;
       setPreview(emptyPreview(input));
@@ -184,6 +154,7 @@ export function SubmissionFlow({
 
   async function handleEmailSubmit(email: string) {
     setSubmitting(true);
+    setSubmitError("");
     try {
       const productName = manualData?.name ?? preview?.name ?? tUi("defaultProductName");
       const productUrl = preview?.normalizedUrl ?? preview?.url ?? "";
@@ -205,17 +176,30 @@ export function SubmissionFlow({
         }),
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        setResultSlug(data.slug ?? productName.toLowerCase().replace(/[^a-z0-9]+/g, "-"));
-        if (data.checkoutUrl && bidCents > 0) {
-          window.location.href = data.checkoutUrl;
-          return;
-        }
+      const data = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        slug?: string;
+        checkoutUrl?: string;
+      };
+
+      const outcome = resolveSubmitOutcome(
+        { ok: res.ok, data },
+        { bidCents, productName, fallbackError: tManage("paymentFailed") },
+      );
+
+      if (outcome.type === "error") {
+        setSubmitError(outcome.message);
+        return;
       }
-      setPhase("success");
+
+      if (outcome.type === "redirect_checkout") {
+        window.location.href = outcome.url;
+        return;
+      }
+
+      router.replace(`/product/${outcome.slug}?listed=1`);
     } catch {
-      setPhase("success");
+      setSubmitError(tManage("paymentFailed"));
     } finally {
       setSubmitting(false);
     }
@@ -259,22 +243,12 @@ export function SubmissionFlow({
       <div className="space-y-4">
         <BackButton onClick={handleBack} />
         <EmailStep onSubmit={handleEmailSubmit} loading={submitting} />
+        {submitError ? (
+          <p className="text-center text-sm text-red-400" role="alert">
+            {submitError}
+          </p>
+        ) : null}
       </div>
-    );
-  }
-
-  if (phase === "success") {
-    return (
-      <SuccessState
-        name={manualData?.name ?? preview?.name ?? tUi("defaultProductName")}
-        slug={resultSlug}
-        overallRank={26}
-        categoryRank={7}
-        categoryEmoji=""
-        categoryName={category}
-        icon={preview?.icon ?? null}
-        locale={locale}
-      />
     );
   }
 

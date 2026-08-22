@@ -88,7 +88,7 @@ export function parseHtmlMetadata(html: string, pageUrl: string, domain: string)
   const logoUrl = appleTouchIconUrl || faviconUrl;
 
   let nameSource = "domain";
-  let name =
+  const name =
     cleanProductName(ogSiteName) ||
     cleanProductName(appName) ||
     cleanProductName(ogTitle) ||
@@ -103,7 +103,7 @@ export function parseHtmlMetadata(html: string, pageUrl: string, domain: string)
   else if (titleTag) nameSource = "title";
 
   let descriptionSource = "none";
-  let description = normalizeDescription(ogDesc || twitterDesc || metaDesc || "");
+  const description = normalizeDescription(ogDesc || twitterDesc || metaDesc || "");
   if (ogDesc) descriptionSource = "og:description";
   else if (twitterDesc) descriptionSource = "twitter:description";
   else if (metaDesc) descriptionSource = "meta:description";

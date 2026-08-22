@@ -22,12 +22,12 @@ describe("buildPageMetadata", () => {
       description: "Test",
       path: "/en/categories",
     });
-    expect(meta.alternates?.canonical).toBe("https://www.kingof.lol/en/categories");
+    expect(meta.alternates?.canonical).toBe("https://kingof.lol/en/categories");
   });
 
   it("defaults to root URL when no path", () => {
     const meta = buildPageMetadata({ title: "Test", description: "Test" });
-    expect(meta.alternates?.canonical).toBe("https://www.kingof.lol");
+    expect(meta.alternates?.canonical).toBe("https://kingof.lol");
   });
 
   it("sets OG metadata", () => {
@@ -39,7 +39,7 @@ describe("buildPageMetadata", () => {
     const og = meta.openGraph as Record<string, unknown>;
     expect(og.title).toBe("Test Page");
     expect(og.description).toBe("A test");
-    expect(og.url).toBe("https://www.kingof.lol/en");
+    expect(og.url).toBe("https://kingof.lol/en");
     expect(og.siteName).toBe("KINGOF");
     expect(og.type).toBe("website");
   });
@@ -110,8 +110,8 @@ describe("buildPageMetadata", () => {
       hreflangPath: "/categories",
     });
     const languages = meta.alternates?.languages as Record<string, string>;
-    expect(languages.en).toBe("https://www.kingof.lol/en/categories");
-    expect(languages["x-default"]).toBe("https://www.kingof.lol/en/categories");
+    expect(languages.en).toBe("https://kingof.lol/en/categories");
+    expect(languages["x-default"]).toBe("https://kingof.lol/en/categories");
   });
 });
 
@@ -121,7 +121,7 @@ describe("websiteJsonLd", () => {
     expect(data["@context"]).toBe("https://schema.org");
     expect(data["@type"]).toBe("WebSite");
     expect(data.name).toBe("KINGOF");
-    expect(data.url).toBe("https://www.kingof.lol");
+    expect(data.url).toBe("https://kingof.lol");
     expect(data.description).toBeTruthy();
   });
 
@@ -137,8 +137,8 @@ describe("organizationJsonLd", () => {
     expect(data["@context"]).toBe("https://schema.org");
     expect(data["@type"]).toBe("Organization");
     expect(data.name).toBe("KINGOF");
-    expect(data.url).toBe("https://www.kingof.lol");
-    expect(data.logo).toBe("https://www.kingof.lol/icon.svg");
+    expect(data.url).toBe("https://kingof.lol");
+    expect(data.logo).toBe("https://kingof.lol/icon.svg");
   });
 });
 
@@ -156,11 +156,11 @@ describe("breadcrumbJsonLd", () => {
 
     expect(data.itemListElement[0].position).toBe(1);
     expect(data.itemListElement[0].name).toBe("KINGOF");
-    expect(data.itemListElement[0].item).toBe("https://www.kingof.lol/");
+    expect(data.itemListElement[0].item).toBe("https://kingof.lol/");
 
     expect(data.itemListElement[1].position).toBe(2);
     expect(data.itemListElement[1].name).toBe("Categories");
-    expect(data.itemListElement[1].item).toBe("https://www.kingof.lol/en/categories");
+    expect(data.itemListElement[1].item).toBe("https://kingof.lol/en/categories");
 
     expect(data.itemListElement[2].position).toBe(3);
     expect(data.itemListElement[2].name).toBe("AI");

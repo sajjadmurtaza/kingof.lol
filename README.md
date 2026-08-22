@@ -314,7 +314,7 @@ Copy `.env.local.example` → `.env.local`.
 | `STRIPE_SECRET_KEY` | For payments | `sk_test_…` | `sk_live_…` (live mode) |
 | `STRIPE_WEBHOOK_SECRET` | For payments | From Stripe CLI (`whsec_…`) | From Stripe dashboard → live webhook endpoint |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | For payments | `pk_test_…` | `pk_live_…` |
-| `NEXT_PUBLIC_SITE_URL` | **Yes in prod** | `http://localhost:3000` | `https://www.kingof.lol` (no trailing slash) |
+| `NEXT_PUBLIC_SITE_URL` | **Yes in prod** | `http://localhost:3000` | `https://kingof.lol` (no trailing slash) |
 | `RESEND_API_KEY` | For email | `re_test_…` | `re_…` (live key; domain verified in Resend) |
 | `IP_HASH_SALT` | **Yes in prod** | Any dev string | Long random secret (never reuse dev value) |
 | `CRON_SECRET` | **Yes in prod** | Any dev string | Long random secret; Vercel cron uses this |
@@ -331,7 +331,7 @@ Copy `.env.local.example` → `.env.local`.
 | Setting | Local | Production |
 |---------|-------|------------|
 | Stripe keys | Test mode (`sk_test_`, `pk_test_`) | Live mode (`sk_live_`, `pk_live_`) |
-| `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` | `https://www.kingof.lol` |
+| `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` | `https://kingof.lol` |
 | Resend | Test API key | Live key + verified sending domain |
 | `db:seed` | OK for local sample data | **Do not run** on production DB |
 | Console logs | Visible in terminal | Stripped from client bundles (`removeConsole` in prod build) |
@@ -625,7 +625,7 @@ Built for **Vercel** — the code assumes it: `vercel.json` defines cron schedul
 5. Deploy (automatic on push, or manual redeploy in Vercel).
 6. Run the [After deploying](#after-deploying-to-production) smoke tests.
 
-`www.kingof.lol` redirects to `kingof.lol` (configured in `vercel.json`).
+`www.kingof.lol` redirects to `kingof.lol` (configure in **Vercel → Domains**: apex = Production, www = permanent redirect to apex).
 
 ### What Vercel sets automatically
 

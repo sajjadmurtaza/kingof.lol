@@ -18,6 +18,7 @@ export async function createBidCheckoutSession({
   productId,
   bidId,
   manageToken,
+  email,
   locale = "en",
 }: {
   productName: string;
@@ -26,6 +27,7 @@ export async function createBidCheckoutSession({
   productId: string;
   bidId: string;
   manageToken: string;
+  email: string;
   locale?: string;
 }): Promise<string> {
   const stripe = getStripe();
@@ -33,6 +35,7 @@ export async function createBidCheckoutSession({
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
+    customer_email: email,
     line_items: [
       {
         price_data: {

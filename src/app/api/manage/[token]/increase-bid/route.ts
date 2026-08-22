@@ -28,6 +28,7 @@ export async function POST(
       id: products.id,
       slug: products.slug,
       name: products.name,
+      email: products.email,
     })
     .from(products)
     .where(eq(products.manageTokenHash, tokenHash))
@@ -55,6 +56,7 @@ export async function POST(
       productId: product.id,
       bidId: pendingBid.id,
       manageToken: token,
+      email: product.email,
       locale,
     });
 

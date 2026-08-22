@@ -7,6 +7,7 @@ import { products, categories, bids } from "@/db/schema";
 import { normalizeUrl } from "@/lib/url";
 import { createBidCheckoutSession } from "@/domains/payments/stripe";
 import { sendManagementLinkEmail } from "@/domains/email/resend";
+import { getProductRanks } from "@/domains/leaderboard/queries";
 import { notifySlack } from "@/lib/slack";
 
 export async function POST(request: Request) {
@@ -121,6 +122,7 @@ export async function POST(request: Request) {
           productId: product.id,
           bidId: pendingBid.id,
           manageToken: rawToken,
+          email,
           locale: typeof locale === "string" ? locale : "en",
         });
 
@@ -135,10 +137,13 @@ export async function POST(request: Request) {
           });
         });
 
+        const ranks = await getProductRanks(product.id);
+
         return NextResponse.json({
           success: true,
           slug,
           checkoutUrl,
+          ...(ranks ?? {}),
         });
       } catch (err) {
         Sentry.captureException(err, {
@@ -159,10 +164,13 @@ export async function POST(request: Request) {
       Sentry.captureException(err, { tags: { route: "api/submit", failure: "email_send_failed" } });
     });
 
+    const ranks = await getProductRanks(product.id);
+
     return NextResponse.json({
       success: true,
       slug,
       manageUrl: `${siteUrl}/manage/${rawToken}`,
+      ...(ranks ?? {}),
     });
   } catch (err) {
     Sentry.captureException(err, {

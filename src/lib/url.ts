@@ -51,7 +51,7 @@ export function normalizeUrl(raw: string): { normalized: string; domain: string 
     }
   }
 
-  let path = url.pathname.replace(/\/+$/, "") || "";
+  const path = url.pathname.replace(/\/+$/, "") || "";
   const search = url.searchParams.toString();
   const normalized = `https://${host}${path}${search ? `?${search}` : ""}`;
 

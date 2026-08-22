@@ -13,6 +13,7 @@ import {
   getCategoryKings,
   getCategoryProducts,
   getProductBySlug,
+  getProductRanks,
   getMostClicked,
   getRandomPicks,
   getHiddenGems,
@@ -71,6 +72,30 @@ describe("leaderboard queries", () => {
 
     mock.enqueue([]);
     await expect(getProductBySlug("missing")).resolves.toBeNull();
+  });
+
+  it("getProductRanks returns overall and category positions", async () => {
+    mock.enqueue([
+      {
+        id: "prod-1",
+        categoryId: "cat-1",
+        categoryName: "SaaS",
+        categoryEmoji: "☁️",
+      },
+    ]);
+    mock.enqueue([{ id: "prod-2" }, { id: "prod-1" }]);
+    mock.enqueue([{ id: "prod-1" }]);
+
+    const ranks = await getProductRanks("prod-1");
+    expect(ranks).toEqual({
+      overallRank: 2,
+      categoryRank: 1,
+      categoryName: "SaaS",
+      categoryEmoji: "☁️",
+    });
+
+    mock.enqueue([]);
+    await expect(getProductRanks("missing")).resolves.toBeNull();
   });
 
   it("getMostClicked maps click counts", async () => {

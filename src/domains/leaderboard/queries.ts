@@ -272,6 +272,49 @@ export async function getProductBySlug(slug: string): Promise<RankedProduct | nu
   return asRankedProduct(row, rank);
 }
 
+export type ProductRanks = {
+  overallRank: number;
+  categoryRank: number;
+  categoryName: string;
+  categoryEmoji: string;
+};
+
+export async function getProductRanks(productId: string): Promise<ProductRanks | null> {
+  const db = getDb();
+  const [row] = await db
+    .select({
+      id: products.id,
+      categoryId: products.categoryId,
+      categoryName: categories.name,
+      categoryEmoji: categories.emoji,
+    })
+    .from(products)
+    .innerJoin(categories, eq(products.categoryId, categories.id))
+    .where(eq(products.id, productId))
+    .limit(1);
+
+  if (!row) return null;
+
+  const allSorted = await db
+    .select({ id: products.id })
+    .from(products)
+    .where(eq(products.status, "approved"))
+    .orderBy(desc(products.totalBid), desc(products.createdAt));
+
+  const catSorted = await db
+    .select({ id: products.id })
+    .from(products)
+    .where(and(eq(products.categoryId, row.categoryId), eq(products.status, "approved")))
+    .orderBy(desc(products.totalBid), desc(products.createdAt));
+
+  return {
+    overallRank: allSorted.findIndex((p) => p.id === row.id) + 1,
+    categoryRank: catSorted.findIndex((p) => p.id === row.id) + 1,
+    categoryName: row.categoryName,
+    categoryEmoji: row.categoryEmoji,
+  };
+}
+
 export async function getMostClicked(limit = 10): Promise<RankedProduct[]> {
   const db = getDb();
   const rows = await db

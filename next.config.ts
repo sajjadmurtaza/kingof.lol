@@ -13,10 +13,6 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [{ protocol: "https", hostname: "**" }],
   },
-  // Fallback when edge proxy does not run (e.g. some hosts). Locales use /en, /de, …
-  async redirects() {
-    return [{ source: "/", destination: "/en", permanent: false }];
-  },
 };
 
 // Source map upload only runs when SENTRY_ORG/SENTRY_PROJECT/SENTRY_AUTH_TOKEN

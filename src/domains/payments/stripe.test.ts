@@ -38,12 +38,14 @@ describe("stripe payments", () => {
       productId: "prod-1",
       bidId: "bid-1",
       manageToken: "token-1",
+      email: "owner@example.com",
       locale: "de",
     });
 
     expect(url).toBe("https://checkout.stripe.com/pay/cs_test");
     expect(checkoutCreate).toHaveBeenCalledWith(
       expect.objectContaining({
+        customer_email: "owner@example.com",
         metadata: expect.objectContaining({
           productId: "prod-1",
           bidId: "bid-1",
@@ -66,6 +68,7 @@ describe("stripe payments", () => {
       productId: "prod-1",
       bidId: "bid-1",
       manageToken: "token-1",
+      email: "owner@example.com",
     });
 
     expect(checkoutCreate).toHaveBeenCalledWith(

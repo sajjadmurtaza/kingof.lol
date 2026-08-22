@@ -40,13 +40,14 @@ export function createMockDb() {
   const db = {
     select: vi.fn(() => buildChain()),
     insert: vi.fn(() => ({
-      values: vi.fn(() => {
-        const resolved = Promise.resolve();
-        return {
-          onConflictDoUpdate: vi.fn(() => resolved),
-          then: resolved.then.bind(resolved),
-        };
-      }),
+      values: vi.fn(() => ({
+      returning: vi.fn(() => buildChain()),
+      onConflictDoUpdate: vi.fn(() => Promise.resolve()),
+      then: (
+        onFulfilled: (value: unknown) => unknown,
+        onRejected?: (reason: unknown) => unknown,
+      ) => Promise.resolve(undefined).then(onFulfilled, onRejected),
+    })),
     })),
     execute: vi.fn(async () => ({ rows: dequeue() as unknown[] })),
   };
