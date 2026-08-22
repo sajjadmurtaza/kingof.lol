@@ -1,11 +1,24 @@
+import type { Metadata } from "next";
 import { useTranslations } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { buildPageMetadata } from "@/domains/marketing/seo-metadata";
 
-export default async function HowItWorksPage({
+export async function generateMetadata({
   params,
 }: {
   params: Promise<{ locale: string }>;
-}) {
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "app.meta" });
+  return buildPageMetadata({
+    title: t("howItWorksTitle"),
+    description: t("howItWorksDesc"),
+    path: `/${locale}/how-it-works`,
+    hreflangPath: "/how-it-works",
+  });
+}
+
+export default async function HowItWorksPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
 
@@ -35,10 +48,7 @@ function HowItWorksContent() {
 
       <div className="mt-12 space-y-8">
         {mechanisms.map((m, i) => (
-          <div
-            key={i}
-            className="flex gap-5 rounded-xl border border-border bg-bg-card p-6"
-          >
+          <div key={i} className="flex gap-5 rounded-xl border border-border bg-bg-card p-6">
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-surface text-2xl">
               {m.icon}
             </span>

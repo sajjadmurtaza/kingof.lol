@@ -1,5 +1,5 @@
 {
-  "nav": { "overall": "종합", "categories": "카테고리", "discover": "디스커버", "howItWorks": "이용 방법", "submit": "보드 참여", "mostClicked": "최다 클릭", "rules": "규칙" },
+  "nav": { "overall": "종합", "categories": "카테고리", "discover": "디스커버", "byCountry": "국가별", "howItWorks": "이용 방법", "submit": "보드 참여", "mostClicked": "최다 클릭", "rules": "규칙" },
   "footer": { "tagline": "제품이 왕관을 놓고 경쟁합니다.", "rights": "모든 권리 보유." },
   "locale": { "switch": "언어" }
 }

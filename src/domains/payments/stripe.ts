@@ -18,6 +18,7 @@ export async function createBidCheckoutSession({
   productId,
   bidId,
   manageToken,
+  locale = "en",
 }: {
   productName: string;
   bidAmountCents: number;
@@ -25,6 +26,7 @@ export async function createBidCheckoutSession({
   productId: string;
   bidId: string;
   manageToken: string;
+  locale?: string;
 }): Promise<string> {
   const stripe = getStripe();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -51,7 +53,7 @@ export async function createBidCheckoutSession({
       bidAmount: bidAmountCents.toString(),
     },
     success_url: `${siteUrl}/manage/${manageToken}?bid=success`,
-    cancel_url: `${siteUrl}/en/product/${productSlug}`,
+    cancel_url: `${siteUrl}/${locale}/product/${productSlug}`,
   });
 
   return session.url!;

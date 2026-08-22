@@ -1,7 +1,5 @@
 import type { MetadataRoute } from "next";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://kingof.lol";
-
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
@@ -11,6 +9,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/api/", "/manage/"],
       },
     ],
-    sitemap: `${SITE_URL}/sitemap.xml`,
+    sitemap: "https://kingof.lol/sitemap.xml",
+    host: "https://kingof.lol",
   };
 }

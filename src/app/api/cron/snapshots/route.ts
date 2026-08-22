@@ -1,7 +1,9 @@
 import { eq, desc } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { getDb } from "@/db";
 import { products, rankingSnapshots } from "@/db/schema";
+import { notifySlack } from "@/lib/slack";
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
@@ -11,6 +13,18 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  try {
+    return await recordSnapshots();
+  } catch (err) {
+    Sentry.captureException(err, {
+      tags: { route: "api/cron/snapshots", failure: "cron_snapshots_failed" },
+    });
+    notifySlack("🟠 Ranking snapshots cron failed");
+    return NextResponse.json({ error: "Cron failed" }, { status: 500 });
+  }
+}
+
+async function recordSnapshots() {
   const db = getDb();
 
   const allProducts = await db

@@ -14,6 +14,7 @@ export async function POST(
 
   const body = await request.json();
   const amount = body.amount;
+  const locale = typeof body.locale === "string" ? body.locale : "en";
 
   if (typeof amount !== "number" || amount < 500) {
     return NextResponse.json({ error: "Minimum increase is $5" }, { status: 400 });
@@ -53,6 +54,7 @@ export async function POST(
       productId: product.id,
       bidId: pendingBid.id,
       manageToken: token,
+      locale,
     });
 
     return NextResponse.json({ checkoutUrl });

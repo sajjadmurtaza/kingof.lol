@@ -1,9 +1,11 @@
 import { eq, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { getDb } from "@/db";
 import { bids, products, webhookEvents } from "@/db/schema";
 import { getStripe } from "@/domains/payments/stripe";
 import { revalidatePath } from "next/cache";
+import { notifySlack } from "@/lib/slack";
 
 export async function POST(request: Request) {
   const body = await request.text();
@@ -15,7 +17,10 @@ export async function POST(request: Request) {
 
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!webhookSecret) {
-    console.error("STRIPE_WEBHOOK_SECRET not configured");
+    Sentry.captureMessage("STRIPE_WEBHOOK_SECRET not configured", "fatal");
+    notifySlack(
+      "🔴 STRIPE_WEBHOOK_SECRET is not configured — all Stripe webhooks are being rejected",
+    );
     return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
   }
 
@@ -24,7 +29,9 @@ export async function POST(request: Request) {
     const stripe = getStripe();
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
   } catch (err) {
-    console.error("Webhook signature verification failed:", err);
+    Sentry.captureException(err, {
+      tags: { route: "api/webhooks/stripe", failure: "stripe_webhook_failed" },
+    });
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
@@ -47,7 +54,14 @@ export async function POST(request: Request) {
       const { productId, bidId, bidAmount } = session.metadata ?? {};
 
       if (!productId || !bidId || !bidAmount) {
-        console.error("Missing metadata in checkout session:", session.id);
+        Sentry.captureMessage("Missing metadata in checkout session", {
+          level: "error",
+          tags: { route: "api/webhooks/stripe", failure: "stripe_webhook_failed" },
+          extra: { sessionId: session.id },
+        });
+        notifySlack(
+          `🔴 Stripe checkout session ${session.id} is missing metadata — bid could not be applied`,
+        );
         return NextResponse.json({ error: "Missing metadata" }, { status: 400 });
       }
 
@@ -84,16 +98,28 @@ export async function POST(request: Request) {
       revalidatePath("/[locale]/categories", "page");
 
       // 5. Check if someone was dethroned and send notification (async, non-blocking)
-      checkAndNotifyDethroned(productId).catch((err) =>
-        console.error("Dethroned check failed:", err),
-      );
+      checkAndNotifyDethroned(productId).catch((err) => {
+        Sentry.captureException(err, {
+          tags: { route: "api/webhooks/stripe", failure: "email_send_failed" },
+          extra: { productId },
+        });
+      });
 
       console.log("Bid confirmed:", { productId, bidId, bidAmountCents });
     }
 
     return NextResponse.json({ received: true });
   } catch (err) {
-    console.error("Webhook processing error:", err);
+    // The customer has already paid at this point (Stripe confirmed the
+    // checkout session) — a failure here means we took money but didn't
+    // apply the bid. This is the worst-case failure mode, hence the alert.
+    Sentry.captureException(err, {
+      tags: { route: "api/webhooks/stripe", failure: "database_transaction_failed" },
+      extra: { eventId: event.id, eventType: event.type },
+    });
+    notifySlack(
+      `🔴 Stripe webhook processing failed for event ${event.id} (${event.type}) — payment may have succeeded without the bid being applied`,
+    );
     return NextResponse.json({ error: "Processing failed" }, { status: 500 });
   }
 }
@@ -156,6 +182,11 @@ async function checkAndNotifyDethroned(productId: string) {
       newKingName: product.name,
       newRequiredBid: product.totalBid + 500,
       manageUrl: `${siteUrl}/manage/reauth`,
-    }).catch((err) => console.error("Dethroned email failed:", err));
+    }).catch((err) => {
+      Sentry.captureException(err, {
+        tags: { route: "api/webhooks/stripe", failure: "email_send_failed" },
+        extra: { productId: king.id },
+      });
+    });
   }
 }

@@ -1,16 +1,18 @@
 import { randomBytes, createHash } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { getDb } from "@/db";
 import { products, categories, bids } from "@/db/schema";
 import { normalizeUrl } from "@/lib/url";
 import { createBidCheckoutSession } from "@/domains/payments/stripe";
 import { sendManagementLinkEmail } from "@/domains/email/resend";
+import { notifySlack } from "@/lib/slack";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, url, tagline, category, email, bid, iconUrl, ogImageUrl } = body;
+    const { name, url, tagline, category, email, bid, iconUrl, ogImageUrl, locale } = body;
 
     if (!name || !url || !category || !email) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -118,6 +120,7 @@ export async function POST(request: Request) {
           productId: product.id,
           bidId: pendingBid.id,
           manageToken: rawToken,
+          locale: typeof locale === "string" ? locale : "en",
         });
 
         // Send management email (don't block on failure)
@@ -125,7 +128,11 @@ export async function POST(request: Request) {
           to: email,
           productName: name,
           manageUrl: `${siteUrl}/manage/${rawToken}`,
-        }).catch((err) => console.error("Email send failed:", err));
+        }).catch((err) => {
+          Sentry.captureException(err, {
+            tags: { route: "api/submit", failure: "email_send_failed" },
+          });
+        });
 
         return NextResponse.json({
           success: true,
@@ -133,7 +140,11 @@ export async function POST(request: Request) {
           checkoutUrl,
         });
       } catch (err) {
-        console.error("Stripe checkout creation failed:", err);
+        Sentry.captureException(err, {
+          tags: { route: "api/submit", failure: "stripe_checkout_failed" },
+          extra: { productId: product.id, slug },
+        });
+        notifySlack(`🔴 Stripe checkout creation failed for "${name}" (${slug})`);
         return NextResponse.json({ error: "Payment setup failed" }, { status: 500 });
       }
     }
@@ -143,7 +154,9 @@ export async function POST(request: Request) {
       to: email,
       productName: name,
       manageUrl: `${siteUrl}/manage/${rawToken}`,
-    }).catch((err) => console.error("Email send failed:", err));
+    }).catch((err) => {
+      Sentry.captureException(err, { tags: { route: "api/submit", failure: "email_send_failed" } });
+    });
 
     return NextResponse.json({
       success: true,
@@ -151,7 +164,9 @@ export async function POST(request: Request) {
       manageUrl: `${siteUrl}/manage/${rawToken}`,
     });
   } catch (err) {
-    console.error("Submit error:", err);
+    Sentry.captureException(err, {
+      tags: { route: "api/submit", failure: "database_transaction_failed" },
+    });
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

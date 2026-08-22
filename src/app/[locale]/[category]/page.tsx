@@ -1,12 +1,15 @@
+import type { Metadata } from "next";
 import { useTranslations } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { ProductCard, ProductCardCompact } from "@/components/product-card";
 import { Section } from "@/components/section";
+import { JsonLd } from "@/components/json-ld";
 import { Link } from "@/i18n/navigation";
 import { getAllCategories, getCategoryProducts } from "@/domains/leaderboard/queries";
 import type { RankedProduct } from "@/domains/leaderboard/queries";
 import { formatBid } from "@/lib/format";
+import { buildPageMetadata, breadcrumbJsonLd } from "@/domains/marketing/seo-metadata";
 
 export const revalidate = 60;
 
@@ -19,6 +22,30 @@ export async function generateStaticParams() {
   }
 }
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string; category: string }>;
+}): Promise<Metadata> {
+  const { locale, category } = await params;
+
+  let catName = category;
+  try {
+    const cats = await getAllCategories();
+    const found = cats.find((c) => c.slug === category);
+    if (found) catName = found.name;
+  } catch {
+    // fall back to slug
+  }
+
+  return buildPageMetadata({
+    title: `Top ${catName} Products Leaderboard`,
+    description: `Discover top ${catName} products competing on KINGOF. Explore category leaders, trending ${catName.toLowerCase()} tools and rising products.`,
+    path: `/${locale}/${category}`,
+    hreflangPath: `/${category}`,
+  });
+}
+
 export default async function CategoryPage({
   params,
 }: {
@@ -27,14 +54,37 @@ export default async function CategoryPage({
   const { locale, category } = await params;
   setRequestLocale(locale);
 
+  const KNOWN_CATEGORIES: Record<string, { id: string; slug: string; name: string; emoji: string; sortOrder: number }> = {
+    ai: { id: "ai", slug: "ai", name: "AI & Machine Learning", emoji: "🤖", sortOrder: 1 },
+    fintech: { id: "fintech", slug: "fintech", name: "Fintech", emoji: "💳", sortOrder: 2 },
+    devtools: { id: "devtools", slug: "devtools", name: "Developer Tools", emoji: "🛠️", sortOrder: 3 },
+    design: { id: "design", slug: "design", name: "Design", emoji: "🎨", sortOrder: 4 },
+    saas: { id: "saas", slug: "saas", name: "SaaS", emoji: "☁️", sortOrder: 5 },
+    health: { id: "health", slug: "health", name: "Health & Wellness", emoji: "💚", sortOrder: 6 },
+    education: { id: "education", slug: "education", name: "Education", emoji: "📚", sortOrder: 7 },
+    ecommerce: { id: "ecommerce", slug: "ecommerce", name: "E-Commerce", emoji: "🛒", sortOrder: 8 },
+    social: { id: "social", slug: "social", name: "Social", emoji: "💬", sortOrder: 9 },
+    productivity: { id: "productivity", slug: "productivity", name: "Productivity", emoji: "⚡", sortOrder: 10 },
+    marketing: { id: "marketing", slug: "marketing", name: "Marketing", emoji: "📣", sortOrder: 11 },
+    analytics: { id: "analytics", slug: "analytics", name: "Analytics", emoji: "📊", sortOrder: 12 },
+    security: { id: "security", slug: "security", name: "Security", emoji: "🔒", sortOrder: 13 },
+    nocode: { id: "nocode", slug: "nocode", name: "No-Code / Low-Code", emoji: "🧩", sortOrder: 14 },
+    gaming: { id: "gaming", slug: "gaming", name: "Gaming", emoji: "🎮", sortOrder: 15 },
+  };
+
   let categories: Awaited<ReturnType<typeof getAllCategories>> = [];
   try {
     categories = await getAllCategories();
   } catch {
-    notFound();
+    // DB unavailable — use known categories
   }
-  const cat = categories.find((c) => c.slug === category);
-  if (!cat) notFound();
+
+  let cat = categories.find((c) => c.slug === category);
+  if (!cat) {
+    const fallback = KNOWN_CATEGORIES[category];
+    if (!fallback) notFound();
+    cat = fallback;
+  }
 
   let products: RankedProduct[] = [];
   try {
@@ -46,8 +96,15 @@ export default async function CategoryPage({
   const runners = products.slice(1, 3);
   const rest = products.slice(3);
 
+  const breadcrumb = breadcrumbJsonLd([
+    { name: "KINGOF", path: "/" },
+    { name: "Categories", path: `/${locale}/categories` },
+    { name: cat.name },
+  ]);
+
   return (
     <div className="py-12 space-y-12">
+      <JsonLd data={breadcrumb} />
       <div>
         <h1 className="text-3xl font-black">{cat.name}</h1>
         <CategoryProducts king={king} runners={runners} rest={rest} locale={locale} />
@@ -79,9 +136,7 @@ function CategoryProducts({
               locale={locale}
               className="group block rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/10 to-transparent p-6 shadow-[var(--shadow-gold)] transition-all hover:border-gold/50"
             >
-              <p className="text-xs font-bold uppercase tracking-widest text-gold/70">
-                👑 King
-              </p>
+              <p className="text-xs font-bold uppercase tracking-widest text-gold/70">King</p>
               <h2 className="mt-2 text-2xl font-black text-gold">{king.name}</h2>
               <p className="mt-1 text-text-muted">{king.tagline}</p>
               <div className="mt-4 flex gap-6 text-sm">

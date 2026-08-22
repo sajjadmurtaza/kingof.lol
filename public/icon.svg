@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0f0f0f"/>
+      <stop offset="100%" stop-color="#1a1a1a"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="128" y1="96" x2="384" y2="384" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#fde68a"/>
+      <stop offset="50%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="200" y1="96" x2="312" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <!-- Crown body -->
+  <path d="M96 368 L128 160 L196 240 L256 128 L316 240 L384 160 L416 368 Z" fill="url(#gold)"/>
+  <!-- Crown band -->
+  <rect x="96" y="352" width="320" height="40" rx="8" fill="url(#gold)"/>
+  <!-- Crown gems -->
+  <circle cx="256" cy="312" r="18" fill="#0f0f0f" opacity="0.3"/>
+  <circle cx="256" cy="312" r="12" fill="#ef4444"/>
+  <circle cx="176" cy="320" r="10" fill="#0f0f0f" opacity="0.3"/>
+  <circle cx="176" cy="320" r="7" fill="#3b82f6"/>
+  <circle cx="336" cy="320" r="10" fill="#0f0f0f" opacity="0.3"/>
+  <circle cx="336" cy="320" r="7" fill="#3b82f6"/>
+  <!-- Crown peaks (balls) -->
+  <circle cx="128" cy="152" r="20" fill="url(#gold)"/>
+  <circle cx="256" cy="120" r="24" fill="url(#gold)"/>
+  <circle cx="384" cy="152" r="20" fill="url(#gold)"/>
+  <!-- Highlight/shine -->
+  <path d="M128 168 L172 232 L256 136 L200 200 Z" fill="url(#shine)"/>
+</svg>

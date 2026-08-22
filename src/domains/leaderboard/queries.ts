@@ -1,6 +1,7 @@
 import { and, count, desc, eq, gte, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import {
+  bids,
   categories,
   clicks,
   hiddenGemPicks,
@@ -51,6 +52,42 @@ const COUNTRY_FLAGS: Record<string, { flag: string; name: string }> = {
   ES: { flag: "🇪🇸", name: "Spain" },
   IT: { flag: "🇮🇹", name: "Italy" },
   MX: { flag: "🇲🇽", name: "Mexico" },
+  SG: { flag: "🇸🇬", name: "Singapore" },
+  PL: { flag: "🇵🇱", name: "Poland" },
+  CH: { flag: "🇨🇭", name: "Switzerland" },
+  AT: { flag: "🇦🇹", name: "Austria" },
+  PT: { flag: "🇵🇹", name: "Portugal" },
+  ID: { flag: "🇮🇩", name: "Indonesia" },
+  TH: { flag: "🇹🇭", name: "Thailand" },
+  PH: { flag: "🇵🇭", name: "Philippines" },
+  TW: { flag: "🇹🇼", name: "Taiwan" },
+  HK: { flag: "🇭🇰", name: "Hong Kong" },
+  IL: { flag: "🇮🇱", name: "Israel" },
+  AE: { flag: "🇦🇪", name: "United Arab Emirates" },
+  SA: { flag: "🇸🇦", name: "Saudi Arabia" },
+  TR: { flag: "🇹🇷", name: "Turkey" },
+  ZA: { flag: "🇿🇦", name: "South Africa" },
+  NG: { flag: "🇳🇬", name: "Nigeria" },
+  AR: { flag: "🇦🇷", name: "Argentina" },
+  CL: { flag: "🇨🇱", name: "Chile" },
+  CO: { flag: "🇨🇴", name: "Colombia" },
+  NO: { flag: "🇳🇴", name: "Norway" },
+  DK: { flag: "🇩🇰", name: "Denmark" },
+  FI: { flag: "🇫🇮", name: "Finland" },
+  IE: { flag: "🇮🇪", name: "Ireland" },
+  NZ: { flag: "🇳🇿", name: "New Zealand" },
+  BE: { flag: "🇧🇪", name: "Belgium" },
+  CZ: { flag: "🇨🇿", name: "Czech Republic" },
+  RO: { flag: "🇷🇴", name: "Romania" },
+  UA: { flag: "🇺🇦", name: "Ukraine" },
+  VN: { flag: "🇻🇳", name: "Vietnam" },
+  MY: { flag: "🇲🇾", name: "Malaysia" },
+  CN: { flag: "🇨🇳", name: "China" },
+  RU: { flag: "🇷🇺", name: "Russia" },
+  EG: { flag: "🇪🇬", name: "Egypt" },
+  KE: { flag: "🇰🇪", name: "Kenya" },
+  PK: { flag: "🇵🇰", name: "Pakistan" },
+  BD: { flag: "🇧🇩", name: "Bangladesh" },
 };
 
 export async function getTopProducts(limit = 3): Promise<RankedProduct[]> {
@@ -480,7 +517,136 @@ export async function getCountryLeaderboards(limit = 6): Promise<CountryLeaderbo
   return result;
 }
 
+export async function getTopProductsByCountry(
+  countryCode: string,
+  limit = 3,
+): Promise<{ name: string; slug: string; tagline: string; clicks: number; categoryName: string; categoryEmoji: string }[]> {
+  const db = getDb();
+  const rows = await db.execute(sql`
+    SELECT p.name, p.slug, p.tagline, c.name as category_name, c.emoji as category_emoji, count(*) as clicks
+    FROM clicks cl
+    JOIN products p ON p.id = cl.product_id
+    JOIN categories c ON c.id = p.category_id
+    WHERE cl.country_code = ${countryCode}
+      AND cl.created_at >= ${sevenDaysAgo()}
+      AND p.status = 'approved'
+    GROUP BY p.id, p.name, p.slug, p.tagline, c.name, c.emoji
+    ORDER BY clicks DESC
+    LIMIT ${limit}
+  `);
+
+  return (rows.rows as any[]).map((r) => ({
+    name: r.name,
+    slug: r.slug,
+    tagline: r.tagline,
+    clicks: Number(r.clicks),
+    categoryName: r.category_name,
+    categoryEmoji: r.category_emoji,
+  }));
+}
+
+export function getCountryMeta(code: string): { flag: string; name: string } | undefined {
+  return COUNTRY_FLAGS[code];
+}
+
+export function getAllCountries(): { code: string; flag: string; name: string }[] {
+  return Object.entries(COUNTRY_FLAGS)
+    .map(([code, meta]) => ({ code, ...meta }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
 export async function getAllCategories() {
   const db = getDb();
   return db.select().from(categories).orderBy(categories.sortOrder);
+}
+
+export async function getTodayClickCount(): Promise<number> {
+  const db = getDb();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const [result] = await db
+    .select({ count: count(clicks.id) })
+    .from(clicks)
+    .where(gte(clicks.createdAt, today));
+  return Number(result?.count ?? 0);
+}
+
+export async function getProductCount(): Promise<number> {
+  const db = getDb();
+  const [result] = await db
+    .select({ count: count(products.id) })
+    .from(products)
+    .where(eq(products.status, "approved"));
+  return Number(result?.count ?? 0);
+}
+
+export async function getCategoryCount(): Promise<number> {
+  const db = getDb();
+  const [result] = await db.select({ count: count(categories.id) }).from(categories);
+  return Number(result?.count ?? 0);
+}
+
+export type ActivityItem = {
+  message: string;
+  timeAgo: string;
+};
+
+export async function getRecentActivity(limit = 5): Promise<ActivityItem[]> {
+  const db = getDb();
+  const activities: { message: string; at: Date }[] = [];
+
+  const recentBids = await db
+    .select({
+      productName: products.name,
+      categoryName: categories.name,
+      amount: bids.amount,
+      totalBid: products.totalBid,
+      createdAt: bids.createdAt,
+    })
+    .from(bids)
+    .innerJoin(products, eq(bids.productId, products.id))
+    .innerJoin(categories, eq(products.categoryId, categories.id))
+    .where(eq(bids.status, "confirmed"))
+    .orderBy(desc(bids.createdAt))
+    .limit(limit);
+
+  for (const bid of recentBids) {
+    activities.push({
+      message: `${bid.productName} increased bid in ${bid.categoryName}`,
+      at: bid.createdAt,
+    });
+  }
+
+  const recentProducts = await db
+    .select({
+      name: products.name,
+      categoryName: categories.name,
+      createdAt: products.createdAt,
+    })
+    .from(products)
+    .innerJoin(categories, eq(products.categoryId, categories.id))
+    .where(eq(products.status, "approved"))
+    .orderBy(desc(products.createdAt))
+    .limit(limit);
+
+  for (const p of recentProducts) {
+    activities.push({
+      message: `${p.name} joined ${p.categoryName}`,
+      at: p.createdAt,
+    });
+  }
+
+  activities.sort((a, b) => b.at.getTime() - a.at.getTime());
+
+  const now = Date.now();
+  return activities.slice(0, limit).map((a) => {
+    const diffMs = now - a.at.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+    let timeAgo: string;
+    if (diffMin < 1) timeAgo = "just now";
+    else if (diffMin < 60) timeAgo = `${diffMin}m ago`;
+    else if (diffMin < 1440) timeAgo = `${Math.floor(diffMin / 60)}h ago`;
+    else timeAgo = `${Math.floor(diffMin / 1440)}d ago`;
+    return { message: a.message, timeAgo };
+  });
 }

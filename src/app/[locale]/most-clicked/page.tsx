@@ -1,15 +1,28 @@
+import type { Metadata } from "next";
 import { useTranslations } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ProductCard } from "@/components/product-card";
 import { getMostClicked } from "@/domains/leaderboard/queries";
+import { buildPageMetadata } from "@/domains/marketing/seo-metadata";
 
-export const revalidate = 60;
-
-export default async function MostClickedPage({
+export async function generateMetadata({
   params,
 }: {
   params: Promise<{ locale: string }>;
-}) {
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "app.meta" });
+  return buildPageMetadata({
+    title: t("mostClickedTitle"),
+    description: t("mostClickedDesc"),
+    path: `/${locale}/most-clicked`,
+    hreflangPath: "/most-clicked",
+  });
+}
+
+export const revalidate = 60;
+
+export default async function MostClickedPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
 
@@ -51,7 +64,9 @@ function MostClickedList({
         </div>
       ) : (
         <div className="mt-8 rounded-xl border border-border bg-bg-card p-8 text-center">
-          <p className="text-text-muted">No click data yet. Products will appear here once they start getting visits.</p>
+          <p className="text-text-muted">
+            No click data yet. Products will appear here once they start getting visits.
+          </p>
         </div>
       )}
     </>

@@ -1,7 +1,8 @@
-import type { Metadata, Viewport } from "next";
+import type { Viewport } from "next";
 import { hasLocale } from "next-intl";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
+import { Analytics } from "@vercel/analytics/next";
 import { Inter } from "next/font/google";
 import { notFound } from "next/navigation";
 import { Nav } from "@/components/nav";
@@ -11,12 +12,6 @@ import { routing } from "@/i18n/routing";
 import "../globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
-
-export const metadata: Metadata = {
-  title: { default: "KINGOF — Competitive Product Leaderboard", template: "%s | KINGOF" },
-  description:
-    "Products compete for the crown. Bid to rank. Discover the best products across categories.",
-};
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -52,6 +47,7 @@ export default async function LocaleLayout({
           <Nav locale={locale} />
           <main className="mx-auto max-w-[1200px] px-5">{children}</main>
           <Footer locale={locale} />
+          <Analytics />
         </NextIntlClientProvider>
       </body>
     </html>

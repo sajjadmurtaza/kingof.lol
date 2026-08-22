@@ -1,13 +1,10 @@
 import { eq, desc, and, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import type { ProductPreview } from "@/lib/metadata";
-import {
-  detectCategory,
-  extractNameFromDomain,
-  resolveRelativeUrl,
-} from "@/lib/metadata";
+import { detectCategory, extractNameFromDomain, resolveRelativeUrl } from "@/lib/metadata";
 import { normalizeUrl, validateFetchUrl } from "@/lib/url";
-import { getDb } from "@/db";
+import { tryGetDb } from "@/db";
 import { products, categories } from "@/db/schema";
 
 const FETCH_TIMEOUT_MS = 8000;
@@ -32,64 +29,66 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid URL" }, { status: 400 });
     }
 
-    const db = getDb();
+    // DB lookup is optional — preview works without a database
+    const db = tryGetDb();
 
-    // Check for existing product by normalized URL or domain
-    const [existing] = await db
-      .select({
-        id: products.id,
-        slug: products.slug,
-        name: products.name,
-        tagline: products.tagline,
-        totalBid: products.totalBid,
-        categoryId: products.categoryId,
-        categorySlug: categories.slug,
-        categoryName: categories.name,
-        categoryEmoji: categories.emoji,
-      })
-      .from(products)
-      .innerJoin(categories, eq(products.categoryId, categories.id))
-      .where(eq(products.normalizedDomain, norm.domain))
-      .orderBy(desc(products.totalBid))
-      .limit(1);
+    if (db) {
+      try {
+        const [existing] = await db
+          .select({
+            id: products.id,
+            slug: products.slug,
+            name: products.name,
+            tagline: products.tagline,
+            totalBid: products.totalBid,
+            categoryId: products.categoryId,
+            categorySlug: categories.slug,
+            categoryName: categories.name,
+            categoryEmoji: categories.emoji,
+          })
+          .from(products)
+          .innerJoin(categories, eq(products.categoryId, categories.id))
+          .where(eq(products.normalizedDomain, norm.domain))
+          .orderBy(desc(products.totalBid))
+          .limit(1);
 
-    if (existing) {
-      // Calculate rank
-      const ranked = await db
-        .select({ id: products.id })
-        .from(products)
-        .where(
-          and(
-            eq(products.categoryId, existing.categoryId),
-            eq(products.status, "approved"),
-          ),
-        )
-        .orderBy(desc(products.totalBid));
+        if (existing) {
+          const ranked = await db
+            .select({ id: products.id })
+            .from(products)
+            .where(
+              and(eq(products.categoryId, existing.categoryId), eq(products.status, "approved")),
+            )
+            .orderBy(desc(products.totalBid));
 
-      const rank = ranked.findIndex((r) => r.id === existing.id) + 1;
+          const rank = ranked.findIndex((r) => r.id === existing.id) + 1;
 
-      const preview: ProductPreview = {
-        url: rawUrl,
-        normalizedUrl: norm.normalized,
-        domain: norm.domain,
-        name: existing.name,
-        description: existing.tagline,
-        icon: null,
-        ogImage: null,
-        suggestedCategory: existing.categorySlug,
-        categoryConfidence: "high",
-        existing: {
-          slug: existing.slug,
-          name: existing.name,
-          totalBid: existing.totalBid,
-          rank,
-          categorySlug: existing.categorySlug,
-          categoryName: existing.categoryName,
-          categoryEmoji: existing.categoryEmoji,
-        },
-      };
+          const preview: ProductPreview = {
+            url: rawUrl,
+            normalizedUrl: norm.normalized,
+            domain: norm.domain,
+            name: existing.name,
+            description: existing.tagline,
+            icon: null,
+            ogImage: null,
+            suggestedCategory: existing.categorySlug,
+            categoryConfidence: "high",
+            existing: {
+              slug: existing.slug,
+              name: existing.name,
+              totalBid: existing.totalBid,
+              rank,
+              categorySlug: existing.categorySlug,
+              categoryName: existing.categoryName,
+              categoryEmoji: existing.categoryEmoji,
+            },
+          };
 
-      return NextResponse.json(preview);
+          return NextResponse.json(preview);
+        }
+      } catch {
+        // DB query failed — continue with metadata extraction
+      }
     }
 
     // Fetch page metadata
@@ -133,9 +132,7 @@ export async function POST(request: Request) {
           }
           reader.cancel();
           html = new TextDecoder().decode(
-            new Uint8Array(
-              chunks.reduce((acc, c) => [...acc, ...c], [] as number[]),
-            ),
+            new Uint8Array(chunks.reduce((acc, c) => [...acc, ...c], [] as number[])),
           );
           fetchSuccess = true;
         }
@@ -154,8 +151,7 @@ export async function POST(request: Request) {
       const ogTitle = extractMeta(html, "og:title");
       const titleTag = extractTitle(html);
       const ogDesc = extractMeta(html, "og:description");
-      const metaDesc =
-        extractMetaName(html, "description") ?? extractMetaName(html, "Description");
+      const metaDesc = extractMetaName(html, "description") ?? extractMetaName(html, "Description");
       const ogImg = extractMeta(html, "og:image");
 
       name = ogSiteName || ogTitle || titleTag || name;
@@ -199,7 +195,10 @@ export async function POST(request: Request) {
     };
 
     return NextResponse.json(preview);
-  } catch {
+  } catch (err) {
+    Sentry.captureException(err, {
+      tags: { route: "api/products/preview", failure: "metadata_preview_failed" },
+    });
     return NextResponse.json({ error: "Failed to process URL" }, { status: 500 });
   }
 }
@@ -221,17 +220,11 @@ function extractMeta(html: string, property: string): string {
 }
 
 function extractMetaName(html: string, name: string): string {
-  const regex = new RegExp(
-    `<meta[^>]+name=["']${name}["'][^>]+content=["']([^"']+)["']`,
-    "i",
-  );
+  const regex = new RegExp(`<meta[^>]+name=["']${name}["'][^>]+content=["']([^"']+)["']`, "i");
   const match = html.match(regex);
   if (match) return decodeEntities(match[1]);
 
-  const alt = new RegExp(
-    `<meta[^>]+content=["']([^"']+)["'][^>]+name=["']${name}["']`,
-    "i",
-  );
+  const alt = new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+name=["']${name}["']`, "i");
   const altMatch = html.match(alt);
   return altMatch ? decodeEntities(altMatch[1]) : "";
 }
@@ -249,10 +242,7 @@ function extractLinkHref(html: string, rel: string): string {
   const match = html.match(regex);
   if (match) return match[1];
 
-  const alt = new RegExp(
-    `<link[^>]+href=["']([^"']+)["'][^>]+rel=["'][^"']*${rel}[^"']*["']`,
-    "i",
-  );
+  const alt = new RegExp(`<link[^>]+href=["']([^"']+)["'][^>]+rel=["'][^"']*${rel}[^"']*["']`, "i");
   const altMatch = html.match(alt);
   return altMatch ? altMatch[1] : "";
 }

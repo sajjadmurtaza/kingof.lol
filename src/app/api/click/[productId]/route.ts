@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { getDb } from "@/db";
 import { clicks, products } from "@/db/schema";
 import { getClientIp, hashIp, isBot, isRateLimited } from "@/domains/clicks/tracking";
@@ -18,7 +19,7 @@ export async function GET(
   const ip = getClientIp(request);
   const ipHash = hashIp(ip);
 
-  if (isRateLimited(ipHash, productId)) {
+  if (await isRateLimited(ipHash, productId)) {
     return NextResponse.json({ error: "Rate limited" }, { status: 429 });
   }
 
@@ -44,7 +45,10 @@ export async function GET(
       countryCode,
     });
   } catch (err) {
-    console.error("Click insert failed:", err);
+    Sentry.captureException(err, {
+      tags: { route: "api/click", failure: "click_redirect_failed" },
+      extra: { productId },
+    });
   }
 
   return NextResponse.redirect(product.url, 302);

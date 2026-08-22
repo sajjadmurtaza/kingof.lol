@@ -1,4 +1,7 @@
 import { createHash } from "node:crypto";
+import { and, eq, gte } from "drizzle-orm";
+import { tryGetDb } from "@/db";
+import { clicks } from "@/db/schema";
 
 const BOT_PATTERNS = [
   /bot/i,
@@ -43,25 +46,35 @@ export function hashIp(ip: string): string {
   return createHash("sha256").update(`${salt}:${ip}`).digest("hex");
 }
 
-const rateCache = new Map<string, number>();
 const RATE_LIMIT_MS = 60 * 60 * 1000; // 1 hour
 
-export function isRateLimited(ipHash: string, productId: string): boolean {
-  const key = `${ipHash}:${productId}`;
-  const lastClick = rateCache.get(key);
-  if (lastClick && Date.now() - lastClick < RATE_LIMIT_MS) {
-    return true;
-  }
-  rateCache.set(key, Date.now());
+/**
+ * DB-backed rate limiting: checks the clicks table for a recent click
+ * from the same ipHash + productId within the rate window.
+ * Works correctly across serverless cold starts and multiple instances.
+ */
+export async function isRateLimited(ipHash: string, productId: string): Promise<boolean> {
+  const db = tryGetDb();
+  if (!db) return false;
 
-  if (rateCache.size > 100_000) {
-    const cutoff = Date.now() - RATE_LIMIT_MS;
-    for (const [k, v] of rateCache) {
-      if (v < cutoff) rateCache.delete(k);
-    }
-  }
+  try {
+    const cutoff = new Date(Date.now() - RATE_LIMIT_MS);
+    const [recent] = await db
+      .select({ id: clicks.id })
+      .from(clicks)
+      .where(
+        and(
+          eq(clicks.ipHash, ipHash),
+          eq(clicks.productId, productId),
+          gte(clicks.createdAt, cutoff),
+        ),
+      )
+      .limit(1);
 
-  return false;
+    return !!recent;
+  } catch {
+    return false;
+  }
 }
 
 export function getClientIp(request: Request): string {

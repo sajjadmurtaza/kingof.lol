@@ -18,7 +18,16 @@ export function Footer({ locale }: { locale: string }) {
             </Link>
             <p className="mt-1 text-sm text-text-muted">{t("footer.tagline")}</p>
           </div>
-          <div className="flex gap-6 text-sm text-text-muted">
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-text-muted">
+            <Link href="/categories" locale={locale} className="hover:text-text">
+              {t("nav.categories")}
+            </Link>
+            <Link href="/discover" locale={locale} className="hover:text-text">
+              {t("nav.discover")}
+            </Link>
+            <Link href="/by-country" locale={locale} className="hover:text-text">
+              {t("nav.byCountry")}
+            </Link>
             <Link href="/how-it-works" locale={locale} className="hover:text-text">
               {t("nav.howItWorks")}
             </Link>

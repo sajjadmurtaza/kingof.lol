@@ -1,11 +1,24 @@
+import type { Metadata } from "next";
 import { useTranslations } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { buildPageMetadata } from "@/domains/marketing/seo-metadata";
 
-export default async function RulesPage({
+export async function generateMetadata({
   params,
 }: {
   params: Promise<{ locale: string }>;
-}) {
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "app.meta" });
+  return buildPageMetadata({
+    title: t("rulesTitle"),
+    description: t("rulesDesc"),
+    path: `/${locale}/rules`,
+    hreflangPath: "/rules",
+  });
+}
+
+export default async function RulesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
 
@@ -19,14 +32,7 @@ export default async function RulesPage({
 function RulesContent() {
   const t = useTranslations("app.rules");
 
-  const rules = [
-    t("rule1"),
-    t("rule2"),
-    t("rule3"),
-    t("rule4"),
-    t("rule5"),
-    t("rule6"),
-  ];
+  const rules = [t("rule1"), t("rule2"), t("rule3"), t("rule4"), t("rule5"), t("rule6")];
 
   return (
     <div className="mx-auto max-w-3xl">
