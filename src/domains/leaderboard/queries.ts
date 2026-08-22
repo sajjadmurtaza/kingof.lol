@@ -924,9 +924,22 @@ export async function getRecentActivity(limit = 5): Promise<ActivityItem[]> {
     });
   }
 
-  activities.sort((a, b) => b.at.getTime() - a.at.getTime());
+  activities.sort((a, b) => {
+    const byTime = b.at.getTime() - a.at.getTime();
+    if (byTime !== 0) return byTime;
+    if (a.type === "bid" && b.type === "joined") return -1;
+    if (a.type === "joined" && b.type === "bid") return 1;
+    return 0;
+  });
 
-  return activities.slice(0, limit).map((a) => toActivityItem(a));
+  const seenSlugs = new Set<string>();
+  const unique = activities.filter((item) => {
+    if (seenSlugs.has(item.slug)) return false;
+    seenSlugs.add(item.slug);
+    return true;
+  });
+
+  return unique.slice(0, limit).map((a) => toActivityItem(a));
 }
 
 export type HappeningNowData = {

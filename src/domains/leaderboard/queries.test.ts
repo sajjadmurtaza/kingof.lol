@@ -315,6 +315,41 @@ describe("leaderboard queries", () => {
     expect(activity.some((a) => a.type === "joined")).toBe(true);
   });
 
+  it("getRecentActivity dedupes bid and join for the same product", async () => {
+    const at = new Date("2026-01-02T00:00:00.000Z");
+    mock.enqueue([
+      {
+        slug: "kingof",
+        name: "KINGOF",
+        iconUrl: null,
+        ogImageUrl: null,
+        normalizedDomain: "kingof.lol",
+        totalBid: 2500,
+        rank: 1,
+        categoryName: "SaaS",
+        createdAt: at,
+      },
+    ]);
+    mock.enqueue([
+      {
+        slug: "kingof",
+        name: "KINGOF",
+        iconUrl: null,
+        ogImageUrl: null,
+        normalizedDomain: "kingof.lol",
+        totalBid: 2500,
+        rank: 1,
+        categoryName: "SaaS",
+        createdAt: at,
+      },
+    ]);
+
+    const activity = await getRecentActivity(5);
+    expect(activity).toHaveLength(1);
+    expect(activity[0]!.slug).toBe("kingof");
+    expect(activity[0]!.type).toBe("bid");
+  });
+
   it("getHappeningNow combines trending and activity", async () => {
     mock.enqueue([
       {
