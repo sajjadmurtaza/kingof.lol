@@ -1,30 +1,111 @@
 @import "tailwindcss";
 
-:root {
-  --bg: #0a0a0a;
+/* ─── Dark theme (default) ─────────────────────────────────────────── */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0b0b0d;
   --bg-card: #131316;
-  --bg-elevated: #1c1c20;
-  --surface: #1c1c20;
-  --border: #222226;
-  --border-bright: #3a3a3e;
-  --text: #ededef;
-  --text-muted: #8a8a8e;
-  --text-dim: #555558;
-  --gold: #fbbf24;
-  --gold-dim: #92711a;
-  --silver: #c0c0c0;
-  --bronze: #cd7f32;
-  --accent: #fbbf24;
-  --accent-hover: #f59e0b;
-  --danger: #ef4444;
-  --success: #22c55e;
+  --bg-elevated: #1a1a1f;
+  --surface: #1f1f24;
+  --border: #2a2a30;
+  --border-bright: #3f3f46;
+  --text: #eeedf0;
+  --text-muted: #a1a1a8;
+  --text-dim: #71717a;
+  --gold: #e8b84a;
+  --gold-dim: #a67c1a;
+  --silver: #c8c8cc;
+  --bronze: #d4925c;
+  --accent: #f0c14d;
+  --accent-hover: #ddb23d;
+  --on-gold: #141416;
+  --danger: #f87171;
+  --success: #4ade80;
+  --product-name: #6ecf9a;
+  --surface-ivory: #1e1d1a;
+  --surface-ivory-border: rgba(200, 185, 155, 0.38);
+  --surface-ivory-text: #d4cdc3;
+  --surface-gem: rgba(234, 196, 110, 0.12);
+  --surface-gem-border: rgba(234, 196, 110, 0.28);
+  --surface-gem-text: #e8d5a8;
+  --surface-lavender: rgba(167, 148, 210, 0.12);
+  --surface-lavender-border: rgba(167, 148, 210, 0.28);
+  --surface-lavender-text: #c9bde8;
   --radius: 0.75rem;
   --radius-lg: 1rem;
-  --shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
-  --shadow-gold: 0 0 24px rgba(251, 191, 36, 0.1);
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.32);
+  --shadow-panel: 0 8px 28px rgba(0, 0, 0, 0.28);
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.04);
+  --shadow-gold: 0 0 0 1px rgba(232, 184, 74, 0.18), 0 10px 28px rgba(232, 184, 74, 0.14);
+  --shadow-silver: 0 0 0 1px rgba(200, 200, 204, 0.14), 0 8px 24px rgba(200, 200, 204, 0.1);
+  --shadow-bronze: 0 0 0 1px rgba(212, 146, 92, 0.16), 0 8px 24px rgba(212, 146, 92, 0.12);
+  --divider-subtle: rgba(255, 255, 255, 0.07);
+  --overlay-scrim: rgba(0, 0, 0, 0.62);
+  --surface-hover: rgba(255, 255, 255, 0.04);
+  --surface-hover-strong: rgba(255, 255, 255, 0.06);
+  --runner-base: rgba(255, 255, 255, 0.045);
+  --runner-border: rgba(255, 255, 255, 0.1);
+  --runner-grad-end: rgba(255, 255, 255, 0.03);
+  --king-glow: rgba(232, 184, 74, 0.12);
+  --king-card-shadow: 0 8px 28px rgba(0, 0, 0, 0.38);
+  --bubble-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
+  --gem-shadow: 0 8px 24px rgba(0, 0, 0, 0.32);
+}
+
+/* ─── Light theme ─────────────────────────────────────────────────── */
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #e7e2d9;
+  --bg-card: #faf7f2;
+  --bg-elevated: #fffdf9;
+  --surface: #e0d9ce;
+  --border: #cfc6b8;
+  --border-bright: #b5aa9a;
+  --text: #1c1917;
+  --text-muted: #44403c;
+  --text-dim: #706961;
+  --gold: #9a5f08;
+  --gold-dim: #7c4f08;
+  --silver: #57534e;
+  --bronze: #9a3412;
+  --accent: #b45309;
+  --accent-hover: #92400e;
+  --on-gold: #fffcf7;
+  --danger: #dc2626;
+  --success: #15803d;
+  --product-name: #14532d;
+  --surface-ivory: #f0e8da;
+  --surface-ivory-border: #c4b49a;
+  --surface-ivory-text: #292524;
+  --surface-gem: rgba(245, 224, 160, 0.62);
+  --surface-gem-border: rgba(168, 132, 48, 0.42);
+  --surface-gem-text: #3d3018;
+  --surface-lavender: rgba(196, 181, 253, 0.38);
+  --surface-lavender-border: rgba(124, 95, 200, 0.34);
+  --surface-lavender-text: #3b2f5c;
+  --shadow: 0 4px 24px rgba(28, 25, 23, 0.08);
+  --shadow-panel: 0 8px 28px rgba(28, 25, 23, 0.06);
+  --shadow-card: 0 1px 2px rgba(28, 25, 23, 0.05), 0 4px 14px rgba(28, 25, 23, 0.05);
+  --shadow-gold: 0 0 0 1px rgba(154, 95, 8, 0.14), 0 10px 28px rgba(154, 95, 8, 0.12);
+  --shadow-silver: 0 0 0 1px rgba(87, 83, 78, 0.12), 0 8px 24px rgba(87, 83, 78, 0.08);
+  --shadow-bronze: 0 0 0 1px rgba(154, 52, 18, 0.12), 0 8px 24px rgba(154, 52, 18, 0.08);
+  --divider-subtle: rgba(28, 25, 23, 0.08);
+  --overlay-scrim: rgba(28, 25, 23, 0.45);
+  --surface-hover: rgba(28, 25, 23, 0.05);
+  --surface-hover-strong: rgba(28, 25, 23, 0.08);
+  --runner-base: rgba(28, 25, 23, 0.04);
+  --runner-border: rgba(28, 25, 23, 0.1);
+  --runner-grad-end: rgba(28, 25, 23, 0.02);
+  --king-glow: rgba(154, 95, 8, 0.1);
+  --king-card-shadow: 0 4px 20px rgba(28, 25, 23, 0.09);
+  --bubble-shadow: 0 4px 16px rgba(28, 25, 23, 0.07);
+  --gem-shadow: 0 6px 20px rgba(28, 25, 23, 0.08);
 }
 
 @theme {
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   --color-bg: var(--bg);
   --color-bg-card: var(--bg-card);
   --color-bg-elevated: var(--bg-elevated);
@@ -40,8 +121,12 @@
   --color-bronze: var(--bronze);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
+  --color-on-gold: var(--on-gold);
   --color-danger: var(--danger);
   --color-success: var(--success);
+  --color-product-name: var(--product-name);
+  --color-lavender-text: var(--surface-lavender-text);
+  --color-gem-note-text: var(--surface-gem-text);
 }
 
 html {
@@ -51,16 +136,431 @@ html {
 
 body {
   min-height: 100dvh;
+  font-size: 0.9375rem;
+  line-height: 1.55;
   font-feature-settings: "rlig" 1, "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-display), var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.page-title {
+  font-family: var(--font-display), var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 1.875rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--text);
 }
 
 ::selection {
-  background-color: var(--gold);
-  color: var(--bg);
+  background-color: color-mix(in srgb, var(--gold) 32%, transparent);
+  color: var(--text);
 }
 
 a {
   text-decoration-skip-ink: auto;
+}
+
+.king-glow {
+  background: radial-gradient(ellipse 70% 55% at 50% 20%, var(--king-glow), transparent 70%);
+}
+
+.king-throne-card {
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--gold) 32%, transparent);
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--gold) 14%, transparent) 0%,
+    color-mix(in srgb, var(--gold) 4%, transparent) 45%,
+    transparent 100%
+  );
+  box-shadow:
+    0 0 32px color-mix(in srgb, var(--gold) 8%, transparent),
+    var(--king-card-shadow);
+  padding: 1.35rem 1.25rem 1.2rem;
+  overflow: hidden;
+}
+
+/* Rank pulse — adapted from dayline session-live */
+.rank-live-gold {
+  --rank-accent: var(--gold);
+  --rank-shadow: var(--shadow-gold);
+}
+
+.rank-live-silver {
+  --rank-accent: var(--silver);
+  --rank-shadow: var(--shadow-silver);
+}
+
+.rank-live-bronze {
+  --rank-accent: var(--bronze);
+  --rank-shadow: var(--shadow-bronze);
+}
+
+.rank-live {
+  animation: rank-live-ring 2.6s ease-in-out infinite;
+}
+
+.rank-live-dot {
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 99px;
+  background: var(--rank-accent, var(--gold));
+  animation: rank-live-dot 1.6s ease-in-out infinite;
+}
+
+.rank-nudge-once {
+  animation: rank-nudge 580ms ease-out 1;
+}
+
+.leaderboard-panel {
+  box-shadow: var(--shadow-panel);
+}
+
+.leaderboard-row--gold {
+  border-left: 3px solid color-mix(in srgb, var(--gold) 70%, transparent);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--gold) 9%, transparent),
+    transparent 58%
+  );
+}
+
+.leaderboard-row--silver {
+  border-left: 3px solid color-mix(in srgb, var(--silver) 65%, transparent);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--silver) 8%, transparent),
+    transparent 58%
+  );
+}
+
+.leaderboard-row--bronze {
+  border-left: 3px solid color-mix(in srgb, var(--bronze) 65%, transparent);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--bronze) 8%, transparent),
+    transparent 58%
+  );
+}
+
+.leaderboard-row--gold.rank-row-live {
+  box-shadow: var(--shadow-gold);
+}
+
+.leaderboard-row--silver.rank-row-live {
+  box-shadow: var(--shadow-silver);
+}
+
+.leaderboard-row--bronze.rank-row-live {
+  box-shadow: var(--shadow-bronze);
+}
+
+.rank-row-live {
+  animation: rank-row-glow 2.6s ease-in-out infinite;
+}
+
+@keyframes rank-live-dot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.72);
+  }
+}
+
+@keyframes rank-live-ring {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0 color-mix(in srgb, var(--rank-accent) 32%, transparent),
+      var(--rank-shadow);
+  }
+  50% {
+    box-shadow:
+      0 0 0 10px color-mix(in srgb, var(--rank-accent) 0%, transparent),
+      var(--rank-shadow);
+  }
+}
+
+@keyframes rank-row-glow {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.08);
+  }
+}
+
+@keyframes rank-nudge {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  35% {
+    transform: translateX(2px);
+  }
+  68% {
+    transform: translateX(-1px);
+  }
+}
+
+@keyframes rank-nudge-rtl {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  35% {
+    transform: translateX(-2px);
+  }
+  68% {
+    transform: translateX(1px);
+  }
+}
+
+.king-throne-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 90% 55% at 50% -10%,
+    color-mix(in srgb, var(--gold) 18%, transparent),
+    transparent 65%
+  );
+  pointer-events: none;
+}
+
+.king-logo-ring {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 14px;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--gold) 55%, transparent),
+    color-mix(in srgb, var(--gold) 12%, transparent)
+  );
+  box-shadow: 0 0 22px color-mix(in srgb, var(--gold) 22%, transparent);
+}
+
+/* KINGOF voice bubbles + editorial surfaces */
+.kingof-bubble {
+  display: inline-block;
+  max-width: 20rem;
+  padding: 0.85rem 1.15rem;
+  border-radius: 1rem;
+  text-align: left;
+  box-shadow: var(--bubble-shadow);
+}
+
+.kingof-bubble-brand {
+  font-family: var(--font-display), var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.kingof-bubble-message {
+  margin-top: 0.35rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.kingof-bubble--ivory {
+  background: var(--surface-ivory);
+  border: 2px solid var(--surface-ivory-border);
+  color: var(--surface-ivory-text);
+}
+
+.kingof-bubble--ivory .kingof-bubble-brand {
+  color: var(--gold);
+}
+
+.product-bubble-card {
+  display: block;
+  width: 100%;
+  padding: 1rem 1.15rem;
+  text-align: left;
+  background: var(--surface-ivory);
+  border: 2px solid var(--surface-ivory-border);
+  border-radius: 1rem 1.75rem 1.75rem 0.65rem;
+  box-shadow: var(--bubble-shadow);
+  color: var(--surface-ivory-text);
+}
+
+.product-bubble-card__name {
+  font-family: var(--font-display), var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 1.02rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--product-name);
+}
+
+.product-bubble-card__tagline {
+  margin-top: 0.35rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.5;
+  color: color-mix(in srgb, var(--surface-ivory-text) 88%, var(--text-dim));
+}
+
+.product-bubble-card__meta {
+  color: var(--text-dim);
+}
+
+.kingof-bubble--gem {
+  background: var(--surface-gem);
+  border: 1.5px solid var(--surface-gem-border);
+  color: var(--surface-gem-text);
+}
+
+.kingof-bubble--gem .kingof-bubble-brand {
+  color: var(--surface-gem-text);
+  opacity: 0.85;
+}
+
+.kingof-bubble--lavender {
+  background: var(--surface-lavender);
+  border: 1.5px solid var(--surface-lavender-border);
+  color: var(--surface-lavender-text);
+}
+
+.kingof-bubble--lavender .kingof-bubble-brand {
+  color: var(--surface-lavender-text);
+  opacity: 0.85;
+}
+
+.kingof-tilt-left {
+  transform: rotate(-1.5deg);
+}
+
+.kingof-tilt-right {
+  transform: rotate(1deg);
+}
+
+.gem-sticky-note {
+  transform: rotate(1deg);
+  padding: 1.1rem 1.25rem;
+  border-radius: var(--radius-lg);
+  background: var(--surface-gem);
+  border: 1px solid var(--surface-gem-border);
+  box-shadow: var(--gem-shadow);
+  transition: transform 0.45s ease;
+}
+
+.gem-sticky-note:hover {
+  transform: rotate(0.4deg) translateY(-1px);
+}
+
+.lavender-planner-card {
+  border-radius: var(--radius-lg);
+  background: var(--surface-lavender);
+  border: 1px solid var(--surface-lavender-border);
+  box-shadow: var(--bubble-shadow);
+}
+
+/* Happening Now — floating lists */
+.activity-float-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.activity-live-dot {
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 9999px;
+  background: var(--danger);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--danger) 60%, transparent);
+}
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.activity-list > li + li {
+  border-top: 1px solid var(--divider-subtle);
+}
+
+.activity-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.5rem 0;
+  transition: opacity 0.15s ease;
+}
+
+.activity-row:hover {
+  opacity: 0.92;
+}
+
+.runner-podium-card {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: var(--radius);
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
+  text-align: left;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.runner-podium-card:hover {
+  background: var(--surface-hover-strong);
+  border-color: var(--border-bright);
+}
+
+.runner-podium-card--silver {
+  border-left: 3px solid var(--silver);
+}
+
+.runner-podium-card--bronze {
+  border-left: 3px solid var(--bronze);
+}
+
+.runner-podium-card--prominent {
+  padding: 0.85rem 0.9rem;
+  background: var(--runner-base);
+  border-color: var(--runner-border);
+}
+
+.runner-podium-card--prominent.runner-podium-card--silver {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--silver) 8%, transparent), var(--runner-grad-end));
+  box-shadow: var(--shadow-silver);
+}
+
+.runner-podium-card--prominent.runner-podium-card--bronze {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--bronze) 8%, transparent), var(--runner-grad-end));
+  box-shadow: var(--shadow-bronze);
 }
 
 .scrollbar-none {
@@ -71,11 +571,66 @@ a {
   display: none;
 }
 
+/* Product / category panels */
+.product-panel {
+  box-shadow: var(--shadow-card);
+}
+
+[data-theme="dark"] .product-panel {
+  background: var(--bg-card);
+}
+
+[data-theme="light"] .product-panel {
+  background: var(--bg-elevated);
+}
+
+[data-theme="light"] .product-panel-inset {
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+@keyframes bid-leader-pulse {
+  0%,
+  100% {
+    box-shadow: var(--shadow-gold);
+    border-color: color-mix(in srgb, var(--gold) 40%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 10px color-mix(in srgb, var(--gold) 0%, transparent),
+      var(--shadow-gold);
+    border-color: color-mix(in srgb, var(--gold) 70%, transparent);
+  }
+}
+
+.bid-leader-flash {
+  animation: bid-leader-pulse 2.6s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .bid-leader-flash,
+  .rank-live,
+  .rank-row-live,
+  .rank-live-dot {
+    animation: none !important;
+  }
+
+  .rank-nudge-once {
+    animation: none;
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--rank-accent, var(--gold)) 45%, transparent);
+  }
+
+  .kingof-tilt-left,
+  .kingof-tilt-right,
+  .gem-sticky-note,
+  .gem-sticky-note:hover {
+    transform: none !important;
   }
 }

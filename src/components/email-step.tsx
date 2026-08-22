@@ -38,7 +38,7 @@ export function EmailStep({
         <button
           type="submit"
           disabled={loading || !email.trim()}
-          className="w-full rounded-xl bg-gold py-4 font-bold text-bg transition-colors hover:bg-accent-hover disabled:opacity-50"
+          className="w-full rounded-xl bg-gold py-4 font-bold text-on-gold transition-colors hover:bg-accent-hover disabled:opacity-50"
         >
           {loading ? (
             <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />

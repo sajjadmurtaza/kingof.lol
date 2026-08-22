@@ -15,6 +15,9 @@ export type RankedProduct = {
   name: string;
   tagline: string;
   url: string;
+  iconUrl: string | null;
+  ogImageUrl: string | null;
+  normalizedDomain: string;
   totalBid: number;
   status: string;
   categoryId: string;
@@ -23,6 +26,7 @@ export type RankedProduct = {
   categoryEmoji: string;
   clickCount: number;
   rank: number;
+  createdAt: string;
 };
 
 export type RisingProduct = RankedProduct & { positionsUp: number };
@@ -35,6 +39,66 @@ export type CountryLeaderboard = {
 };
 
 const sevenDaysAgo = () => new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+const rankedProductFields = {
+  id: products.id,
+  slug: products.slug,
+  name: products.name,
+  tagline: products.tagline,
+  url: products.url,
+  iconUrl: products.iconUrl,
+  ogImageUrl: products.ogImageUrl,
+  normalizedDomain: products.normalizedDomain,
+  totalBid: products.totalBid,
+  status: products.status,
+  categoryId: categories.id,
+  categorySlug: categories.slug,
+  categoryName: categories.name,
+  categoryEmoji: categories.emoji,
+  createdAt: products.createdAt,
+} as const;
+
+type RankedQueryRow = {
+  id: string;
+  slug: string;
+  name: string;
+  tagline: string;
+  url: string;
+  iconUrl: string | null;
+  ogImageUrl: string | null;
+  normalizedDomain: string;
+  totalBid: number;
+  status: string;
+  categoryId: string;
+  categorySlug: string;
+  categoryName: string;
+  categoryEmoji: string;
+  createdAt: Date | string;
+  clickCount: number | string;
+};
+
+function asRankedProduct(row: RankedQueryRow, rank: number): RankedProduct {
+  return {
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    tagline: row.tagline,
+    url: row.url,
+    iconUrl: row.iconUrl,
+    ogImageUrl: row.ogImageUrl,
+    normalizedDomain: row.normalizedDomain,
+    totalBid: row.totalBid,
+    status: row.status,
+    categoryId: row.categoryId,
+    categorySlug: row.categorySlug,
+    categoryName: row.categoryName,
+    categoryEmoji: row.categoryEmoji,
+    clickCount: Number(row.clickCount),
+    createdAt:
+      row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
+    rank,
+  };
+}
 
 const COUNTRY_FLAGS: Record<string, { flag: string; name: string }> = {
   US: { flag: "🇺🇸", name: "United States" },
@@ -94,17 +158,7 @@ export async function getTopProducts(limit = 3): Promise<RankedProduct[]> {
   const db = getDb();
   const rows = await db
     .select({
-      id: products.id,
-      slug: products.slug,
-      name: products.name,
-      tagline: products.tagline,
-      url: products.url,
-      totalBid: products.totalBid,
-      status: products.status,
-      categoryId: categories.id,
-      categorySlug: categories.slug,
-      categoryName: categories.name,
-      categoryEmoji: categories.emoji,
+      ...rankedProductFields,
       clickCount:
         sql<number>`(SELECT count(*) FROM clicks WHERE clicks.product_id = ${products.id} AND clicks.created_at >= ${sevenDaysAgo()})`.as(
           "click_count",
@@ -113,10 +167,10 @@ export async function getTopProducts(limit = 3): Promise<RankedProduct[]> {
     .from(products)
     .innerJoin(categories, eq(products.categoryId, categories.id))
     .where(eq(products.status, "approved"))
-    .orderBy(desc(products.totalBid))
+    .orderBy(desc(products.totalBid), desc(products.createdAt))
     .limit(limit);
 
-  return rows.map((r, i) => ({ ...r, clickCount: Number(r.clickCount), rank: i + 1 }));
+  return rows.map((r, i) => asRankedProduct(r, i + 1));
 }
 
 export async function getCategoryKings(): Promise<
@@ -138,17 +192,7 @@ export async function getCategoryKings(): Promise<
   for (const cat of cats) {
     const [king] = await db
       .select({
-        id: products.id,
-        slug: products.slug,
-        name: products.name,
-        tagline: products.tagline,
-        url: products.url,
-        totalBid: products.totalBid,
-        status: products.status,
-        categoryId: categories.id,
-        categorySlug: categories.slug,
-        categoryName: categories.name,
-        categoryEmoji: categories.emoji,
+        ...rankedProductFields,
         clickCount:
           sql<number>`(SELECT count(*) FROM clicks WHERE clicks.product_id = ${products.id} AND clicks.created_at >= ${sevenDaysAgo()})`.as(
             "click_count",
@@ -157,7 +201,7 @@ export async function getCategoryKings(): Promise<
       .from(products)
       .innerJoin(categories, eq(products.categoryId, categories.id))
       .where(and(eq(products.categoryId, cat.id), eq(products.status, "approved")))
-      .orderBy(desc(products.totalBid))
+      .orderBy(desc(products.totalBid), desc(products.createdAt))
       .limit(1);
 
     if (king) {
@@ -165,7 +209,7 @@ export async function getCategoryKings(): Promise<
         categorySlug: cat.slug,
         categoryName: cat.name,
         categoryEmoji: cat.emoji,
-        king: { ...king, clickCount: Number(king.clickCount), rank: 1 },
+        king: asRankedProduct(king, 1),
       });
     }
   }
@@ -180,17 +224,7 @@ export async function getCategoryProducts(
   const db = getDb();
   const rows = await db
     .select({
-      id: products.id,
-      slug: products.slug,
-      name: products.name,
-      tagline: products.tagline,
-      url: products.url,
-      totalBid: products.totalBid,
-      status: products.status,
-      categoryId: categories.id,
-      categorySlug: categories.slug,
-      categoryName: categories.name,
-      categoryEmoji: categories.emoji,
+      ...rankedProductFields,
       clickCount:
         sql<number>`(SELECT count(*) FROM clicks WHERE clicks.product_id = ${products.id} AND clicks.created_at >= ${sevenDaysAgo()})`.as(
           "click_count",
@@ -199,27 +233,17 @@ export async function getCategoryProducts(
     .from(products)
     .innerJoin(categories, eq(products.categoryId, categories.id))
     .where(and(eq(categories.slug, categorySlug), eq(products.status, "approved")))
-    .orderBy(desc(products.totalBid))
+    .orderBy(desc(products.totalBid), desc(products.createdAt))
     .limit(limit);
 
-  return rows.map((r, i) => ({ ...r, clickCount: Number(r.clickCount), rank: i + 1 }));
+  return rows.map((r, i) => asRankedProduct(r, i + 1));
 }
 
 export async function getProductBySlug(slug: string): Promise<RankedProduct | null> {
   const db = getDb();
   const [row] = await db
     .select({
-      id: products.id,
-      slug: products.slug,
-      name: products.name,
-      tagline: products.tagline,
-      url: products.url,
-      totalBid: products.totalBid,
-      status: products.status,
-      categoryId: categories.id,
-      categorySlug: categories.slug,
-      categoryName: categories.name,
-      categoryEmoji: categories.emoji,
+      ...rankedProductFields,
       clickCount:
         sql<number>`(SELECT count(*) FROM clicks WHERE clicks.product_id = ${products.id} AND clicks.created_at >= ${sevenDaysAgo()})`.as(
           "click_count",
@@ -227,7 +251,7 @@ export async function getProductBySlug(slug: string): Promise<RankedProduct | nu
     })
     .from(products)
     .innerJoin(categories, eq(products.categoryId, categories.id))
-    .where(eq(products.slug, slug))
+    .where(and(eq(products.slug, slug), eq(products.status, "approved")))
     .limit(1);
 
   if (!row) return null;
@@ -242,27 +266,17 @@ export async function getProductBySlug(slug: string): Promise<RankedProduct | nu
         gte(products.totalBid, row.totalBid),
       ),
     )
-    .orderBy(desc(products.totalBid));
+    .orderBy(desc(products.totalBid), desc(products.createdAt));
 
   const rank = rankRows.findIndex((r) => r.id === row.id) + 1;
-  return { ...row, clickCount: Number(row.clickCount), rank: rank || 1 };
+  return asRankedProduct(row, rank);
 }
 
 export async function getMostClicked(limit = 10): Promise<RankedProduct[]> {
   const db = getDb();
   const rows = await db
     .select({
-      id: products.id,
-      slug: products.slug,
-      name: products.name,
-      tagline: products.tagline,
-      url: products.url,
-      totalBid: products.totalBid,
-      status: products.status,
-      categoryId: categories.id,
-      categorySlug: categories.slug,
-      categoryName: categories.name,
-      categoryEmoji: categories.emoji,
+      ...rankedProductFields,
       clickCount: count(clicks.id).as("click_count"),
     })
     .from(products)
@@ -278,7 +292,7 @@ export async function getMostClicked(limit = 10): Promise<RankedProduct[]> {
     .orderBy(desc(count(clicks.id)))
     .limit(limit);
 
-  return rows.map((r, i) => ({ ...r, clickCount: Number(r.clickCount), rank: i + 1 }));
+  return rows.map((r, i) => asRankedProduct(r, i + 1));
 }
 
 export async function getRandomPicks(limit = 3): Promise<RankedProduct[]> {
@@ -286,17 +300,7 @@ export async function getRandomPicks(limit = 3): Promise<RankedProduct[]> {
   const now = new Date();
   const picks = await db
     .select({
-      id: products.id,
-      slug: products.slug,
-      name: products.name,
-      tagline: products.tagline,
-      url: products.url,
-      totalBid: products.totalBid,
-      status: products.status,
-      categoryId: categories.id,
-      categorySlug: categories.slug,
-      categoryName: categories.name,
-      categoryEmoji: categories.emoji,
+      ...rankedProductFields,
       clickCount:
         sql<number>`(SELECT count(*) FROM clicks WHERE clicks.product_id = ${products.id} AND clicks.created_at >= ${sevenDaysAgo()})`.as(
           "click_count",
@@ -311,22 +315,12 @@ export async function getRandomPicks(limit = 3): Promise<RankedProduct[]> {
     .limit(limit);
 
   if (picks.length > 0) {
-    return picks.map((r) => ({ ...r, clickCount: Number(r.clickCount), rank: 0 }));
+    return picks.map((r) => asRankedProduct(r, 0));
   }
 
   const fallback = await db
     .select({
-      id: products.id,
-      slug: products.slug,
-      name: products.name,
-      tagline: products.tagline,
-      url: products.url,
-      totalBid: products.totalBid,
-      status: products.status,
-      categoryId: categories.id,
-      categorySlug: categories.slug,
-      categoryName: categories.name,
-      categoryEmoji: categories.emoji,
+      ...rankedProductFields,
       clickCount:
         sql<number>`(SELECT count(*) FROM clicks WHERE clicks.product_id = ${products.id} AND clicks.created_at >= ${sevenDaysAgo()})`.as(
           "click_count",
@@ -338,7 +332,7 @@ export async function getRandomPicks(limit = 3): Promise<RankedProduct[]> {
     .orderBy(sql`RANDOM()`)
     .limit(limit);
 
-  return fallback.map((r) => ({ ...r, clickCount: Number(r.clickCount), rank: 0 }));
+  return fallback.map((r) => asRankedProduct(r, 0));
 }
 
 export async function getHiddenGems(limit = 3): Promise<RankedProduct[]> {
@@ -347,17 +341,7 @@ export async function getHiddenGems(limit = 3): Promise<RankedProduct[]> {
 
   const picks = await db
     .select({
-      id: products.id,
-      slug: products.slug,
-      name: products.name,
-      tagline: products.tagline,
-      url: products.url,
-      totalBid: products.totalBid,
-      status: products.status,
-      categoryId: categories.id,
-      categorySlug: categories.slug,
-      categoryName: categories.name,
-      categoryEmoji: categories.emoji,
+      ...rankedProductFields,
       clickCount:
         sql<number>`(SELECT count(*) FROM clicks WHERE clicks.product_id = ${products.id} AND clicks.created_at >= ${sevenDaysAgo()})`.as(
           "click_count",
@@ -370,22 +354,12 @@ export async function getHiddenGems(limit = 3): Promise<RankedProduct[]> {
     .limit(limit);
 
   if (picks.length > 0) {
-    return picks.map((r) => ({ ...r, clickCount: Number(r.clickCount), rank: 0 }));
+    return picks.map((r) => asRankedProduct(r, 0));
   }
 
   const fallback = await db
     .select({
-      id: products.id,
-      slug: products.slug,
-      name: products.name,
-      tagline: products.tagline,
-      url: products.url,
-      totalBid: products.totalBid,
-      status: products.status,
-      categoryId: categories.id,
-      categorySlug: categories.slug,
-      categoryName: categories.name,
-      categoryEmoji: categories.emoji,
+      ...rankedProductFields,
       clickCount:
         sql<number>`(SELECT count(*) FROM clicks WHERE clicks.product_id = ${products.id} AND clicks.created_at >= ${sevenDaysAgo()})`.as(
           "click_count",
@@ -397,7 +371,7 @@ export async function getHiddenGems(limit = 3): Promise<RankedProduct[]> {
     .orderBy(sql`(SELECT count(*) FROM clicks WHERE clicks.product_id = ${products.id} AND clicks.created_at >= ${sevenDaysAgo()}) ASC`, sql`RANDOM()`)
     .limit(limit);
 
-  return fallback.map((r) => ({ ...r, clickCount: Number(r.clickCount), rank: 0 }));
+  return fallback.map((r) => asRankedProduct(r, 0));
 }
 
 export async function getRising(limit = 5): Promise<RisingProduct[]> {
@@ -444,17 +418,7 @@ export async function getRising(limit = 5): Promise<RisingProduct[]> {
   for (const r of topRisers) {
     const [product] = await db
       .select({
-        id: products.id,
-        slug: products.slug,
-        name: products.name,
-        tagline: products.tagline,
-        url: products.url,
-        totalBid: products.totalBid,
-        status: products.status,
-        categoryId: categories.id,
-        categorySlug: categories.slug,
-        categoryName: categories.name,
-        categoryEmoji: categories.emoji,
+        ...rankedProductFields,
         clickCount: sql<number>`(SELECT count(*) FROM clicks WHERE clicks.product_id = ${products.id} AND clicks.created_at >= ${sevenDaysAgo()})`.as("click_count"),
       })
       .from(products)
@@ -463,7 +427,10 @@ export async function getRising(limit = 5): Promise<RisingProduct[]> {
       .limit(1);
 
     if (product) {
-      result.push({ ...product, clickCount: Number(product.clickCount), rank: result.length + 1, positionsUp: r.positionsUp });
+      result.push({
+        ...asRankedProduct(product, result.length + 1),
+        positionsUp: r.positionsUp,
+      });
     }
   }
 
@@ -520,17 +487,30 @@ export async function getCountryLeaderboards(limit = 6): Promise<CountryLeaderbo
 export async function getTopProductsByCountry(
   countryCode: string,
   limit = 3,
-): Promise<{ name: string; slug: string; tagline: string; clicks: number; categoryName: string; categoryEmoji: string }[]> {
+): Promise<
+  {
+    name: string;
+    slug: string;
+    tagline: string;
+    clicks: number;
+    categoryName: string;
+    categoryEmoji: string;
+    iconUrl: string | null;
+    ogImageUrl: string | null;
+    normalizedDomain: string;
+  }[]
+> {
   const db = getDb();
   const rows = await db.execute(sql`
-    SELECT p.name, p.slug, p.tagline, c.name as category_name, c.emoji as category_emoji, count(*) as clicks
+    SELECT p.name, p.slug, p.tagline, p.icon_url, p.og_image_url, p.normalized_domain,
+           c.name as category_name, c.emoji as category_emoji, count(*) as clicks
     FROM clicks cl
     JOIN products p ON p.id = cl.product_id
     JOIN categories c ON c.id = p.category_id
     WHERE cl.country_code = ${countryCode}
       AND cl.created_at >= ${sevenDaysAgo()}
       AND p.status = 'approved'
-    GROUP BY p.id, p.name, p.slug, p.tagline, c.name, c.emoji
+    GROUP BY p.id, p.name, p.slug, p.tagline, p.icon_url, p.og_image_url, p.normalized_domain, c.name, c.emoji
     ORDER BY clicks DESC
     LIMIT ${limit}
   `);
@@ -542,6 +522,9 @@ export async function getTopProductsByCountry(
     clicks: Number(r.clicks),
     categoryName: r.category_name,
     categoryEmoji: r.category_emoji,
+    iconUrl: r.icon_url ?? null,
+    ogImageUrl: r.og_image_url ?? null,
+    normalizedDomain: r.normalized_domain,
   }));
 }
 
@@ -562,8 +545,8 @@ export async function getAllCategories() {
 
 export async function getTodayClickCount(): Promise<number> {
   const db = getDb();
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const now = new Date();
+  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
   const [result] = await db
     .select({ count: count(clicks.id) })
     .from(clicks)
@@ -586,40 +569,179 @@ export async function getCategoryCount(): Promise<number> {
   return Number(result?.count ?? 0);
 }
 
-export type ActivityItem = {
-  message: string;
-  timeAgo: string;
+export type TrendingItem = {
+  slug: string;
+  name: string;
+  iconUrl: string | null;
+  ogImageUrl: string | null;
+  normalizedDomain: string;
+  clicksPerHour: number;
 };
+
+export type ActivityItem = {
+  type: "bid" | "joined";
+  slug: string;
+  name: string;
+  iconUrl: string | null;
+  ogImageUrl: string | null;
+  normalizedDomain: string;
+  totalBid: number;
+  rank: number;
+  categoryName: string;
+  occurredAt: string;
+};
+
+const oneHourAgo = () => new Date(Date.now() - 60 * 60 * 1000);
+const oneDayAgo = () => new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+const globalRankSql = sql<number>`(
+  SELECT count(*)::int + 1 FROM products p2
+  WHERE p2.status = 'approved' AND p2.total_bid > ${products.totalBid}
+)`.as("global_rank");
+
+async function queryTrendingSince(
+  since: Date,
+  limit: number,
+): Promise<TrendingItem[]> {
+  const db = getDb();
+  const hours = Math.max(1, (Date.now() - since.getTime()) / 3_600_000);
+
+  const rows = await db
+    .select({
+      slug: products.slug,
+      name: products.name,
+      iconUrl: products.iconUrl,
+      ogImageUrl: products.ogImageUrl,
+      normalizedDomain: products.normalizedDomain,
+      clicks: count(clicks.id).as("clicks"),
+    })
+    .from(clicks)
+    .innerJoin(products, eq(clicks.productId, products.id))
+    .where(and(eq(products.status, "approved"), gte(clicks.createdAt, since)))
+    .groupBy(
+      products.id,
+      products.slug,
+      products.name,
+      products.iconUrl,
+      products.ogImageUrl,
+      products.normalizedDomain,
+    )
+    .orderBy(desc(count(clicks.id)))
+    .limit(limit);
+
+  return rows.map((r) => ({
+    slug: r.slug,
+    name: r.name,
+    iconUrl: r.iconUrl,
+    ogImageUrl: r.ogImageUrl,
+    normalizedDomain: r.normalizedDomain,
+    clicksPerHour: Math.max(1, Math.round(Number(r.clicks) / hours)),
+  }));
+}
+
+export async function getTrendingNow(limit = 5): Promise<TrendingItem[]> {
+  let items = await queryTrendingSince(oneHourAgo(), limit);
+  if (items.length === 0) {
+    items = await queryTrendingSince(oneDayAgo(), limit);
+  }
+  if (items.length === 0) {
+    const top = await getMostClicked(limit);
+    return top.map((p) => ({
+      slug: p.slug,
+      name: p.name,
+      iconUrl: p.iconUrl,
+      ogImageUrl: p.ogImageUrl,
+      normalizedDomain: p.normalizedDomain,
+      clicksPerHour: Math.max(1, Math.round(p.clickCount / (7 * 24))),
+    }));
+  }
+  return items;
+}
+
+function toActivityItem(row: {
+  type: "bid" | "joined";
+  slug: string;
+  name: string;
+  iconUrl: string | null;
+  ogImageUrl: string | null;
+  normalizedDomain: string;
+  totalBid: number;
+  rank: number;
+  categoryName: string;
+  at: Date;
+}): ActivityItem {
+  return {
+    type: row.type,
+    slug: row.slug,
+    name: row.name,
+    iconUrl: row.iconUrl,
+    ogImageUrl: row.ogImageUrl,
+    normalizedDomain: row.normalizedDomain,
+    totalBid: row.totalBid,
+    rank: row.rank,
+    categoryName: row.categoryName,
+    occurredAt: row.at.toISOString(),
+  };
+}
 
 export async function getRecentActivity(limit = 5): Promise<ActivityItem[]> {
   const db = getDb();
-  const activities: { message: string; at: Date }[] = [];
+  const activities: {
+    type: "bid" | "joined";
+    slug: string;
+    name: string;
+    iconUrl: string | null;
+    ogImageUrl: string | null;
+    normalizedDomain: string;
+    totalBid: number;
+    rank: number;
+    categoryName: string;
+    at: Date;
+  }[] = [];
 
   const recentBids = await db
     .select({
-      productName: products.name,
-      categoryName: categories.name,
-      amount: bids.amount,
+      slug: products.slug,
+      name: products.name,
+      iconUrl: products.iconUrl,
+      ogImageUrl: products.ogImageUrl,
+      normalizedDomain: products.normalizedDomain,
       totalBid: products.totalBid,
+      rank: globalRankSql,
+      categoryName: categories.name,
       createdAt: bids.createdAt,
     })
     .from(bids)
     .innerJoin(products, eq(bids.productId, products.id))
     .innerJoin(categories, eq(products.categoryId, categories.id))
-    .where(eq(bids.status, "confirmed"))
+    .where(and(eq(bids.status, "confirmed"), eq(products.status, "approved")))
     .orderBy(desc(bids.createdAt))
     .limit(limit);
 
   for (const bid of recentBids) {
     activities.push({
-      message: `${bid.productName} increased bid in ${bid.categoryName}`,
+      type: "bid",
+      slug: bid.slug,
+      name: bid.name,
+      iconUrl: bid.iconUrl,
+      ogImageUrl: bid.ogImageUrl,
+      normalizedDomain: bid.normalizedDomain,
+      totalBid: bid.totalBid,
+      rank: Number(bid.rank),
+      categoryName: bid.categoryName,
       at: bid.createdAt,
     });
   }
 
   const recentProducts = await db
     .select({
+      slug: products.slug,
       name: products.name,
+      iconUrl: products.iconUrl,
+      ogImageUrl: products.ogImageUrl,
+      normalizedDomain: products.normalizedDomain,
+      totalBid: products.totalBid,
+      rank: globalRankSql,
       categoryName: categories.name,
       createdAt: products.createdAt,
     })
@@ -631,22 +753,135 @@ export async function getRecentActivity(limit = 5): Promise<ActivityItem[]> {
 
   for (const p of recentProducts) {
     activities.push({
-      message: `${p.name} joined ${p.categoryName}`,
+      type: "joined",
+      slug: p.slug,
+      name: p.name,
+      iconUrl: p.iconUrl,
+      ogImageUrl: p.ogImageUrl,
+      normalizedDomain: p.normalizedDomain,
+      totalBid: p.totalBid,
+      rank: Number(p.rank),
+      categoryName: p.categoryName,
       at: p.createdAt,
     });
   }
 
   activities.sort((a, b) => b.at.getTime() - a.at.getTime());
 
-  const now = Date.now();
-  return activities.slice(0, limit).map((a) => {
-    const diffMs = now - a.at.getTime();
-    const diffMin = Math.floor(diffMs / 60000);
-    let timeAgo: string;
-    if (diffMin < 1) timeAgo = "just now";
-    else if (diffMin < 60) timeAgo = `${diffMin}m ago`;
-    else if (diffMin < 1440) timeAgo = `${Math.floor(diffMin / 60)}h ago`;
-    else timeAgo = `${Math.floor(diffMin / 1440)}d ago`;
-    return { message: a.message, timeAgo };
-  });
+  return activities.slice(0, limit).map((a) => toActivityItem(a));
+}
+
+export type HappeningNowData = {
+  trending: TrendingItem[];
+  activity: ActivityItem[];
+};
+
+export async function getHappeningNow(
+  trendingLimit = 5,
+  activityLimit = 5,
+): Promise<HappeningNowData> {
+  const [trending, activity] = await Promise.all([
+    getTrendingNow(trendingLimit),
+    getRecentActivity(activityLimit),
+  ]);
+  return { trending, activity };
+}
+
+export type ProductListSort = "bid" | "new";
+
+export type PaginatedProductsResult = {
+  products: RankedProduct[];
+  total: number;
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
+};
+
+function mapRankedRows(rows: RankedQueryRow[], rankOffset = 0): RankedProduct[] {
+  return rows.map((r, i) => asRankedProduct(r, rankOffset + i + 1));
+}
+
+export async function getProductsPaginated({
+  sort = "bid",
+  page = 1,
+  pageSize = 10,
+  newWithinMinutes = 5,
+}: {
+  sort?: ProductListSort;
+  page?: number;
+  pageSize?: number;
+  newWithinMinutes?: number;
+}): Promise<PaginatedProductsResult> {
+  const db = getDb();
+  const safePage = Math.max(1, page);
+  const safePageSize = Math.min(50, Math.max(1, pageSize));
+  const offset = (safePage - 1) * safePageSize;
+
+  const clickCountSql =
+    sql<number>`(SELECT count(*) FROM clicks WHERE clicks.product_id = ${products.id} AND clicks.created_at >= ${sevenDaysAgo()})`.as(
+      "click_count",
+    );
+
+  if (sort === "new") {
+    const since = new Date(Date.now() - newWithinMinutes * 60 * 1000);
+    const whereClause = and(eq(products.status, "approved"), gte(products.createdAt, since));
+
+    const [totalRow] = await db
+      .select({ total: count() })
+      .from(products)
+      .where(whereClause);
+
+    const total = Number(totalRow?.total ?? 0);
+
+    const rows = await db
+      .select({
+        ...rankedProductFields,
+        clickCount: clickCountSql,
+      })
+      .from(products)
+      .innerJoin(categories, eq(products.categoryId, categories.id))
+      .where(whereClause)
+      .orderBy(desc(products.createdAt))
+      .offset(offset)
+      .limit(safePageSize);
+
+    const mapped = mapRankedRows(rows, offset);
+    return {
+      products: mapped,
+      total,
+      page: safePage,
+      pageSize: safePageSize,
+      hasMore: offset + mapped.length < total,
+    };
+  }
+
+  const whereClause = eq(products.status, "approved");
+
+  const [totalRow] = await db
+    .select({ total: count() })
+    .from(products)
+    .where(whereClause);
+
+  const total = Number(totalRow?.total ?? 0);
+
+  const rows = await db
+    .select({
+      ...rankedProductFields,
+      clickCount: clickCountSql,
+    })
+    .from(products)
+    .innerJoin(categories, eq(products.categoryId, categories.id))
+    .where(whereClause)
+    .orderBy(desc(products.totalBid), desc(products.createdAt))
+    .offset(offset)
+    .limit(safePageSize);
+
+  const mapped = mapRankedRows(rows, offset);
+  return {
+    products: mapped,
+    total,
+    page: safePage,
+    pageSize: safePageSize,
+    hasMore: offset + mapped.length < total,
+  };
 }

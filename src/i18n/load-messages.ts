@@ -55,7 +55,45 @@ const catalog: Record<
   },
 };
 
+function deepMerge(
+  base: Record<string, unknown>,
+  override: Record<string, unknown>,
+): Record<string, unknown> {
+  const result = { ...base };
+  for (const [key, value] of Object.entries(override)) {
+    if (
+      value &&
+      typeof value === "object" &&
+      !Array.isArray(value) &&
+      typeof result[key] === "object" &&
+      result[key] !== null &&
+      !Array.isArray(result[key])
+    ) {
+      result[key] = deepMerge(
+        result[key] as Record<string, unknown>,
+        value as Record<string, unknown>,
+      );
+    } else {
+      result[key] = value;
+    }
+  }
+  return result;
+}
+
 export async function loadMessages(locale: SupportedLocale): Promise<AppMessages> {
-  const [common, app] = await Promise.all([catalog[locale].common(), catalog[locale].app()]);
-  return { common: common.default, app: app.default };
+  const [enCommon, enApp, localeCommon, localeApp] = await Promise.all([
+    catalog.en.common(),
+    catalog.en.app(),
+    catalog[locale].common(),
+    catalog[locale].app(),
+  ]);
+
+  if (locale === "en") {
+    return { common: enCommon.default, app: enApp.default };
+  }
+
+  return {
+    common: deepMerge(enCommon.default, localeCommon.default) as Record<string, unknown>,
+    app: deepMerge(enApp.default, localeApp.default) as Record<string, unknown>,
+  };
 }

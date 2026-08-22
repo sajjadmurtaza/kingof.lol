@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
+import enApp from "@/i18n/locales/en/app.json";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "KINGOF",
     short_name: "KINGOF",
-    description: "Products Compete for the Crown — Product leaderboard and discovery platform.",
+    description: enApp.meta.websiteDesc,
     start_url: "/en",
     display: "standalone",
     background_color: "#0a0a0a",

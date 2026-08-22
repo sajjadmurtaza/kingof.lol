@@ -161,6 +161,12 @@ export const webhookEvents = pgTable("webhook_events", {
     .defaultNow(),
 });
 
+export const metadataCache = pgTable("metadata_cache", {
+  normalizedDomain: text("normalized_domain").primaryKey(),
+  payload: text("payload").notNull(),
+  fetchedAt: timestamp("fetched_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // --- Relations ---
 
 export const categoriesRelations = relations(categories, ({ many }) => ({

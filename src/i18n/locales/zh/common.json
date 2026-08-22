@@ -7,7 +7,9 @@
     "howItWorks": "运作方式",
     "submit": "登上排行榜",
     "mostClicked": "最多点击",
-    "rules": "规则"
+    "rules": "规则",
+    "openMenu": "打开菜单",
+    "closeMenu": "关闭菜单"
   },
   "footer": {
     "tagline": "产品争夺王冠。",
@@ -15,5 +17,10 @@
   },
   "locale": {
     "switch": "语言"
+  },
+  "theme": {
+    "label": "外观",
+    "switchToLight": "切换到浅色模式",
+    "switchToDark": "切换到深色模式"
   }
 }

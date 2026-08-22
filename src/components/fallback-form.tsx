@@ -101,7 +101,7 @@ export function FallbackForm({
 
         <button
           type="submit"
-          className="w-full rounded-xl bg-gold py-3 font-bold text-bg transition-colors hover:bg-accent-hover"
+          className="w-full rounded-xl bg-gold py-3 font-bold text-on-gold transition-colors hover:bg-accent-hover"
         >
           {t("continueBtn")}
         </button>

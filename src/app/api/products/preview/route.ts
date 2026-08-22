@@ -1,8 +1,10 @@
-import { eq, desc, and, sql } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 import type { ProductPreview } from "@/lib/metadata";
-import { detectCategory, extractNameFromDomain, resolveRelativeUrl } from "@/lib/metadata";
+import { extractNameFromDomain } from "@/lib/metadata";
+import { parseHtmlMetadata } from "@/lib/metadata-parser";
+import { getCachedMetadata, setCachedMetadata } from "@/lib/metadata-cache";
 import { normalizeUrl, validateFetchUrl } from "@/lib/url";
 import { tryGetDb } from "@/db";
 import { products, categories } from "@/db/schema";
@@ -29,7 +31,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid URL" }, { status: 400 });
     }
 
-    // DB lookup is optional — preview works without a database
     const db = tryGetDb();
 
     if (db) {
@@ -40,6 +41,8 @@ export async function POST(request: Request) {
             slug: products.slug,
             name: products.name,
             tagline: products.tagline,
+            iconUrl: products.iconUrl,
+            ogImageUrl: products.ogImageUrl,
             totalBid: products.totalBid,
             categoryId: products.categoryId,
             categorySlug: categories.slug,
@@ -68,11 +71,17 @@ export async function POST(request: Request) {
             normalizedUrl: norm.normalized,
             domain: norm.domain,
             name: existing.name,
+            title: existing.name,
             description: existing.tagline,
-            icon: null,
-            ogImage: null,
+            siteName: existing.name,
+            icon: existing.iconUrl,
+            faviconUrl: existing.iconUrl,
+            appleTouchIconUrl: existing.iconUrl,
+            logoUrl: existing.iconUrl,
+            ogImage: existing.ogImageUrl,
             suggestedCategory: existing.categorySlug,
             categoryConfidence: "high",
+            metadataSource: { name: "database", description: "database", logo: "database" },
             existing: {
               slug: existing.slug,
               name: existing.name,
@@ -87,13 +96,18 @@ export async function POST(request: Request) {
           return NextResponse.json(preview);
         }
       } catch {
-        // DB query failed — continue with metadata extraction
+        // Continue with metadata extraction
       }
     }
 
-    // Fetch page metadata
+    const cached = await getCachedMetadata(norm.domain);
+    if (cached) {
+      return NextResponse.json({ ...cached, url: rawUrl, normalizedUrl: norm.normalized });
+    }
+
     let html = "";
     let fetchSuccess = false;
+    let finalPageUrl = validation.url.href;
 
     try {
       const controller = new AbortController();
@@ -109,6 +123,7 @@ export async function POST(request: Request) {
       });
 
       clearTimeout(timeout);
+      finalPageUrl = res.url;
 
       const finalHost = new URL(res.url).hostname.toLowerCase();
       const { isPrivateOrBlocked } = await import("@/lib/url");
@@ -117,9 +132,7 @@ export async function POST(request: Request) {
       }
 
       const contentType = res.headers.get("content-type") ?? "";
-      if (!contentType.includes("text/html") && !contentType.includes("text/plain")) {
-        html = "";
-      } else {
+      if (contentType.includes("text/html") || contentType.includes("text/plain")) {
         const reader = res.body?.getReader();
         if (reader) {
           const chunks: Uint8Array[] = [];
@@ -141,58 +154,46 @@ export async function POST(request: Request) {
       fetchSuccess = false;
     }
 
-    let name = extractNameFromDomain(norm.domain);
-    let description = "";
-    let icon: string | null = null;
-    let ogImage: string | null = null;
-
+    let parsed;
     if (fetchSuccess && html) {
-      const ogSiteName = extractMeta(html, "og:site_name");
-      const ogTitle = extractMeta(html, "og:title");
-      const titleTag = extractTitle(html);
-      const ogDesc = extractMeta(html, "og:description");
-      const metaDesc = extractMetaName(html, "description") ?? extractMetaName(html, "Description");
-      const ogImg = extractMeta(html, "og:image");
-
-      name = ogSiteName || ogTitle || titleTag || name;
-      if (name.includes(" - ")) name = name.split(" - ")[0].trim();
-      if (name.includes(" | ")) name = name.split(" | ")[0].trim();
-      if (name.includes(" — ")) name = name.split(" — ")[0].trim();
-
-      description = ogDesc || metaDesc || "";
-      if (description.length > 120) description = description.slice(0, 117) + "...";
-
-      const appleTouchIcon = extractLinkHref(html, "apple-touch-icon");
-      const favicon = extractLinkHref(html, "icon") || extractLinkHref(html, "shortcut icon");
-
-      if (appleTouchIcon) {
-        icon = resolveRelativeUrl(validation.url.href, appleTouchIcon);
-      } else if (favicon) {
-        icon = resolveRelativeUrl(validation.url.href, favicon);
-      } else {
-        icon = `https://${norm.domain}/favicon.ico`;
-      }
-
-      if (ogImg) {
-        ogImage = resolveRelativeUrl(validation.url.href, ogImg);
-      }
+      parsed = parseHtmlMetadata(html, finalPageUrl, norm.domain);
+    } else {
+      const fallbackName = extractNameFromDomain(norm.domain);
+      parsed = {
+        name: fallbackName,
+        title: fallbackName,
+        description: null,
+        siteName: null,
+        faviconUrl: `https://${norm.domain}/favicon.ico`,
+        appleTouchIconUrl: null,
+        logoUrl: `https://${norm.domain}/favicon.ico`,
+        ogImageUrl: null,
+        suggestedCategory: "saas",
+        categoryConfidence: "low" as const,
+        metadataSource: { name: "domain", description: "none", logo: "domain-favicon" },
+      };
     }
-
-    const combinedText = `${name} ${description} ${norm.domain}`;
-    const { slug: catSlug, confidence } = detectCategory(combinedText);
 
     const preview: ProductPreview = {
       url: rawUrl,
       normalizedUrl: norm.normalized,
       domain: norm.domain,
-      name,
-      description,
-      icon,
-      ogImage,
-      suggestedCategory: catSlug,
-      categoryConfidence: confidence,
+      name: parsed.name,
+      title: parsed.title,
+      description: parsed.description ?? "",
+      siteName: parsed.siteName,
+      icon: parsed.logoUrl,
+      faviconUrl: parsed.faviconUrl,
+      appleTouchIconUrl: parsed.appleTouchIconUrl,
+      logoUrl: parsed.logoUrl,
+      ogImage: parsed.ogImageUrl,
+      suggestedCategory: parsed.suggestedCategory,
+      categoryConfidence: parsed.categoryConfidence,
+      metadataSource: parsed.metadataSource,
       existing: null,
     };
+
+    await setCachedMetadata(norm.domain, preview);
 
     return NextResponse.json(preview);
   } catch (err) {
@@ -201,59 +202,4 @@ export async function POST(request: Request) {
     });
     return NextResponse.json({ error: "Failed to process URL" }, { status: 500 });
   }
-}
-
-function extractMeta(html: string, property: string): string {
-  const regex = new RegExp(
-    `<meta[^>]+property=["']${property}["'][^>]+content=["']([^"']+)["']`,
-    "i",
-  );
-  const match = html.match(regex);
-  if (match) return decodeEntities(match[1]);
-
-  const alt = new RegExp(
-    `<meta[^>]+content=["']([^"']+)["'][^>]+property=["']${property}["']`,
-    "i",
-  );
-  const altMatch = html.match(alt);
-  return altMatch ? decodeEntities(altMatch[1]) : "";
-}
-
-function extractMetaName(html: string, name: string): string {
-  const regex = new RegExp(`<meta[^>]+name=["']${name}["'][^>]+content=["']([^"']+)["']`, "i");
-  const match = html.match(regex);
-  if (match) return decodeEntities(match[1]);
-
-  const alt = new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+name=["']${name}["']`, "i");
-  const altMatch = html.match(alt);
-  return altMatch ? decodeEntities(altMatch[1]) : "";
-}
-
-function extractTitle(html: string): string {
-  const match = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-  return match ? decodeEntities(match[1].trim()) : "";
-}
-
-function extractLinkHref(html: string, rel: string): string {
-  const regex = new RegExp(
-    `<link[^>]+rel=["'][^"']*${rel}[^"']*["'][^>]+href=["']([^"']+)["']`,
-    "i",
-  );
-  const match = html.match(regex);
-  if (match) return match[1];
-
-  const alt = new RegExp(`<link[^>]+href=["']([^"']+)["'][^>]+rel=["'][^"']*${rel}[^"']*["']`, "i");
-  const altMatch = html.match(alt);
-  return altMatch ? altMatch[1] : "";
-}
-
-function decodeEntities(str: string): string {
-  return str
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&#x27;/g, "'")
-    .replace(/&#x2F;/g, "/");
 }

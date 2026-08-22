@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { buildPageMetadata } from "@/domains/marketing/seo-metadata";
 import { CountryLeaderboardClient } from "@/components/country-leaderboard";
 
@@ -9,12 +9,13 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "app.meta" });
 
   return buildPageMetadata({
-    title: "Top Products by Country",
-    description:
-      "See which products are trending in your country. Explore top-clicked products by region on KINGOF — auto-detected from your location.",
+    title: t("byCountryTitle"),
+    description: t("byCountryDesc"),
     path: `/${locale}/by-country`,
+    hreflangPath: "/by-country",
   });
 }
 

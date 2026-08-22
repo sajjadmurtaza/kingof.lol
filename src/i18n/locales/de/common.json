@@ -1,5 +1,26 @@
 {
-  "nav": { "overall": "Gesamt", "categories": "Kategorien", "discover": "Entdecken", "byCountry": "Nach Land", "howItWorks": "So funktioniert's", "submit": "MITMACHEN", "mostClicked": "Meistgeklickt", "rules": "Regeln" },
-  "footer": { "tagline": "Produkte konkurrieren um die Krone.", "rights": "Alle Rechte vorbehalten." },
-  "locale": { "switch": "Sprache" }
+  "nav": {
+    "overall": "Gesamt",
+    "categories": "Kategorien",
+    "discover": "Entdecken",
+    "byCountry": "Nach Land",
+    "howItWorks": "So funktioniert's",
+    "submit": "MITMACHEN",
+    "mostClicked": "Meistgeklickt",
+    "rules": "Regeln",
+    "openMenu": "Menü öffnen",
+    "closeMenu": "Menü schließen"
+  },
+  "footer": {
+    "tagline": "Produkte konkurrieren um die Krone.",
+    "rights": "Alle Rechte vorbehalten."
+  },
+  "locale": {
+    "switch": "Sprache"
+  },
+  "theme": {
+    "label": "Darstellung",
+    "switchToLight": "Zum hellen Modus wechseln",
+    "switchToDark": "Zum dunklen Modus wechseln"
+  }
 }

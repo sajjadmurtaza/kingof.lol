@@ -7,7 +7,9 @@
     "howItWorks": "Cómo funciona",
     "submit": "ENTRAR AL RANKING",
     "mostClicked": "Más Clicados",
-    "rules": "Reglas"
+    "rules": "Reglas",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú"
   },
   "footer": {
     "tagline": "Los productos compiten por la corona.",
@@ -15,5 +17,10 @@
   },
   "locale": {
     "switch": "Idioma"
+  },
+  "theme": {
+    "label": "Apariencia",
+    "switchToLight": "Cambiar a modo claro",
+    "switchToDark": "Cambiar a modo oscuro"
   }
 }

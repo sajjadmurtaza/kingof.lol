@@ -1,44 +1,21 @@
 import Link from "next/link";
+import enApp from "@/i18n/locales/en/app.json";
 
 export default function NotFound() {
+  const t = enApp.notFound;
+
   return (
-    <html lang="en">
-      <body
-        style={{
-          margin: 0,
-          minHeight: "100dvh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "#0a0a0a",
-          color: "#f5f5f5",
-          fontFamily: "system-ui, sans-serif",
-        }}
-      >
-        <div style={{ textAlign: "center", padding: "2rem" }}>
-          <h1 style={{ fontSize: "4rem", fontWeight: 900, color: "#fbbf24", margin: 0 }}>
-            404
-          </h1>
-          <p style={{ fontSize: "1.25rem", color: "#888", marginTop: "0.5rem" }}>
-            This page doesn&apos;t exist on KINGOF.
-          </p>
-          <Link
-            href="/"
-            style={{
-              display: "inline-block",
-              marginTop: "2rem",
-              padding: "0.75rem 2rem",
-              background: "#fbbf24",
-              color: "#0a0a0a",
-              borderRadius: "0.75rem",
-              fontWeight: 700,
-              textDecoration: "none",
-            }}
-          >
-            Back to KINGOF
-          </Link>
-        </div>
-      </body>
-    </html>
+    <div className="flex min-h-dvh items-center justify-center bg-bg font-sans text-text">
+      <div className="px-8 text-center">
+        <h1 className="text-6xl font-black text-gold">404</h1>
+        <p className="mt-2 text-lg text-text-muted">{t.body}</p>
+        <Link
+          href="/en"
+          className="mt-8 inline-block rounded-xl bg-gold px-8 py-3 font-bold text-on-gold transition-colors hover:bg-accent-hover"
+        >
+          {t.cta}
+        </Link>
+      </div>
+    </div>
   );
 }

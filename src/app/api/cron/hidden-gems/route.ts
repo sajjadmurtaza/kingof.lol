@@ -4,6 +4,7 @@ import * as Sentry from "@sentry/nextjs";
 import { getDb } from "@/db";
 import { products, hiddenGemPicks } from "@/db/schema";
 import { notifySlack } from "@/lib/slack";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
@@ -36,7 +37,7 @@ export async function GET(request: Request) {
       });
     }
 
-    console.log(`Hidden gems selected: ${gems.length} products`);
+    logger.info("Hidden gems selected", { count: gems.length });
     return NextResponse.json({ success: true, count: gems.length });
   } catch (err) {
     Sentry.captureException(err, {

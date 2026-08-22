@@ -61,7 +61,7 @@ export function SuccessState({
       <Link
         href={`/product/${slug}`}
         locale={locale}
-        className="inline-block rounded-xl bg-gold px-8 py-3 font-bold text-bg transition-colors hover:bg-accent-hover"
+        className="inline-block rounded-xl bg-gold px-8 py-3 font-bold text-on-gold transition-colors hover:bg-accent-hover"
       >
         {t("viewListing")}
       </Link>

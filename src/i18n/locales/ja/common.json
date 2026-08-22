@@ -1,5 +1,26 @@
 {
-  "nav": { "overall": "総合", "categories": "カテゴリー", "discover": "ディスカバー", "byCountry": "国別", "howItWorks": "仕組み", "submit": "ボードに参加", "mostClicked": "最多クリック", "rules": "ルール" },
-  "footer": { "tagline": "プロダクトが王冠を争う。", "rights": "全著作権所有。" },
-  "locale": { "switch": "言語" }
+  "nav": {
+    "overall": "総合",
+    "categories": "カテゴリー",
+    "discover": "ディスカバー",
+    "byCountry": "国別",
+    "howItWorks": "仕組み",
+    "submit": "ボードに参加",
+    "mostClicked": "最多クリック",
+    "rules": "ルール",
+    "openMenu": "メニューを開く",
+    "closeMenu": "メニューを閉じる"
+  },
+  "footer": {
+    "tagline": "プロダクトが王冠を争う。",
+    "rights": "全著作権所有。"
+  },
+  "locale": {
+    "switch": "言語"
+  },
+  "theme": {
+    "label": "表示",
+    "switchToLight": "ライトモードに切り替え",
+    "switchToDark": "ダークモードに切り替え"
+  }
 }

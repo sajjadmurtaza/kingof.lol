@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { getTranslations } from "next-intl/server";
 import { getAllCategories, getCategoryProducts } from "@/domains/leaderboard/queries";
 
 export const runtime = "nodejs";
@@ -11,7 +12,8 @@ export default async function CategoryTwitterImage({
 }: {
   params: Promise<{ locale: string; category: string }>;
 }) {
-  const { category } = await params;
+  const { locale, category } = await params;
+  const t = await getTranslations({ locale, namespace: "app.ui" });
 
   let catName = category;
   let catEmoji = "";
@@ -86,10 +88,10 @@ export default async function CategoryTwitterImage({
 
         {/* Title */}
         <div style={{ display: "flex", fontSize: 52, fontWeight: 900, color: "#f5f5f5", marginTop: 32, lineHeight: 1.1 }}>
-          King of {catName}
+          {t("kingOfCategory", { category: catName })}
         </div>
         <div style={{ display: "flex", fontSize: 22, color: "#737373", marginTop: 8 }}>
-          Top products competing for the crown
+          {t("ogKingSubtitle")}
         </div>
 
         {/* Top products */}

@@ -149,7 +149,7 @@ export function BidSelector({
       <div className="space-y-3">
         <button
           onClick={() => onBid(bidCents)}
-          className="w-full rounded-2xl bg-gold py-4 text-lg font-bold text-bg transition-colors hover:bg-accent-hover"
+          className="w-full rounded-2xl bg-gold py-4 text-lg font-bold text-on-gold transition-colors hover:bg-accent-hover"
         >
           👑 {t("compete")} — {formatBid(bidCents)}
         </button>

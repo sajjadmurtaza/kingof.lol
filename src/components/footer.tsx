@@ -6,13 +6,13 @@ export function Footer({ locale }: { locale: string }) {
 
   return (
     <footer className="border-t border-border bg-bg-card mt-20">
-      <div className="mx-auto max-w-[1200px] px-5 py-10">
+      <div className="mx-auto max-w-[1200px] px-4 py-10 sm:px-5">
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
           <div>
             <Link
               href="/"
               locale={locale}
-              className="text-lg font-black text-gold"
+              className="font-display text-lg font-extrabold tracking-tight text-gold"
             >
               KINGOF
             </Link>

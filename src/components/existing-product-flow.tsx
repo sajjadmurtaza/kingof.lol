@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import type { ProductPreview } from "@/lib/metadata";
 import { formatBid } from "@/lib/format";
-import { LetterAvatar } from "./letter-avatar";
+import { ProductLogo } from "./product-logo";
 
 export function ExistingProductFlow({
   preview,
@@ -55,18 +55,16 @@ export function ExistingProductFlow({
 
       <div className="rounded-2xl border border-gold/20 bg-gradient-to-br from-gold/5 to-transparent p-6">
         <div className="flex items-start gap-4">
-          {preview.icon ? (
-            <img
-              src={preview.icon}
-              alt=""
-              className="h-12 w-12 shrink-0 rounded-xl bg-surface object-contain"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = "none";
-              }}
-            />
-          ) : (
-            <LetterAvatar name={existing.name} size={48} />
-          )}
+          <ProductLogo
+            name={existing.name}
+            iconUrl={preview.icon}
+            logoUrl={preview.logoUrl}
+            faviconUrl={preview.faviconUrl}
+            appleTouchIconUrl={preview.appleTouchIconUrl}
+            ogImageUrl={preview.ogImage}
+            domain={preview.domain}
+            size={48}
+          />
           <div>
             <h3 className="text-xl font-bold text-text">{existing.name}</h3>
             <p className="text-sm text-text-dim">{preview.domain}</p>
@@ -120,7 +118,7 @@ export function ExistingProductFlow({
       <button
         onClick={() => onIncreaseBid(newTotal * 100)}
         disabled={amountDue < 500}
-        className="w-full rounded-2xl bg-gold py-4 text-lg font-bold text-bg transition-colors hover:bg-accent-hover disabled:opacity-50"
+        className="w-full rounded-2xl bg-gold py-4 text-lg font-bold text-on-gold transition-colors hover:bg-accent-hover disabled:opacity-50"
       >
         {t("climbTo", { total: formatBid(newTotal * 100), pay: formatBid(amountDue) })}
       </button>

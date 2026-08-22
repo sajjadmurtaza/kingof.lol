@@ -1,13 +1,25 @@
+export type CategoryConfidence = "high" | "medium" | "low";
+
 export type ProductPreview = {
   url: string;
   normalizedUrl: string;
   domain: string;
   name: string;
+  title: string | null;
   description: string;
+  siteName: string | null;
   icon: string | null;
+  faviconUrl: string | null;
+  appleTouchIconUrl: string | null;
+  logoUrl: string | null;
   ogImage: string | null;
   suggestedCategory: string | null;
-  categoryConfidence: "high" | "medium" | "low";
+  categoryConfidence: CategoryConfidence;
+  metadataSource?: {
+    name: string;
+    description: string;
+    logo: string;
+  };
   existing: {
     slug: string;
     name: string;
@@ -127,9 +139,31 @@ const CATEGORY_KEYWORDS: Record<string, string[]> = {
   ],
 };
 
+const DOMAIN_CATEGORY_OVERRIDES: Record<string, string> = {
+  "instagram.com": "social",
+  "youtube.com": "social",
+  "tiktok.com": "social",
+  "twitter.com": "social",
+  "x.com": "social",
+  "facebook.com": "social",
+  "linkedin.com": "social",
+  "stripe.com": "fintech",
+  "github.com": "devtools",
+  "vercel.com": "devtools",
+  "cursor.com": "devtools",
+  "figma.com": "design",
+  "shopify.com": "ecommerce",
+  "duolingo.com": "education",
+};
+
 export function detectCategory(
   text: string,
-): { slug: string; confidence: "high" | "medium" | "low" } {
+  domain?: string,
+): { slug: string; confidence: CategoryConfidence } {
+  if (domain && DOMAIN_CATEGORY_OVERRIDES[domain]) {
+    return { slug: DOMAIN_CATEGORY_OVERRIDES[domain], confidence: "high" };
+  }
+
   const lower = text.toLowerCase();
   const scores: Record<string, number> = {};
 

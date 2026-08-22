@@ -94,13 +94,13 @@ export type JsonLdBreadcrumb = {
   }[];
 };
 
-export function websiteJsonLd(): JsonLdWebSite {
+export function websiteJsonLd(description = "Product leaderboard and discovery platform. Products compete for the crown."): JsonLdWebSite {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "KINGOF",
     url: SITE_URL,
-    description: "Product leaderboard and discovery platform. Products compete for the crown.",
+    description,
   };
 }
 

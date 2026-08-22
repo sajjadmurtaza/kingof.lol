@@ -233,7 +233,8 @@ describe.skipIf(!hasBuild)("sitemap.xml verification", () => {
 
 describe("security — no sensitive data leaks", () => {
   it("manage layout prevents indexing", async () => {
-    const { metadata } = await import("@/app/manage/layout");
+    const { generateMetadata } = await import("@/app/manage/layout");
+    const metadata = await generateMetadata();
     const robots = metadata.robots as Record<string, boolean>;
     expect(robots.index).toBe(false);
     expect(robots.follow).toBe(false);

@@ -1,4 +1,5 @@
 import type { RankedProduct } from "@/domains/leaderboard/queries";
+import type { ActivityItem, TrendingItem } from "@/domains/leaderboard/queries";
 
 const DEMO_CATEGORIES = [
   { id: "cat-ai", slug: "ai", name: "AI & Machine Learning", emoji: "🤖", sortOrder: 1 },
@@ -9,7 +10,7 @@ const DEMO_CATEGORIES = [
   { id: "cat-health", slug: "health", name: "Health & Wellness", emoji: "🏥", sortOrder: 6 },
 ];
 
-const ALL_PRODUCTS: RankedProduct[] = [
+const ALL_PRODUCTS_RAW = [
   { id: "p1", slug: "neuralforge", name: "NeuralForge", tagline: "Train models in minutes, not months", url: "https://neuralforge.ai", totalBid: 15000, status: "approved", categoryId: "cat-ai", categorySlug: "ai", categoryName: "AI & Machine Learning", categoryEmoji: "🤖", clickCount: 42, rank: 1 },
   { id: "p2", slug: "promptpilot", name: "PromptPilot", tagline: "Your AI copilot for prompt engineering", url: "https://promptpilot.dev", totalBid: 12000, status: "approved", categoryId: "cat-ai", categorySlug: "ai", categoryName: "AI & Machine Learning", categoryEmoji: "🤖", clickCount: 38, rank: 2 },
   { id: "p3", slug: "dataweave-ai", name: "DataWeave AI", tagline: "Automated data pipelines with AI", url: "https://dataweave.ai", totalBid: 8500, status: "approved", categoryId: "cat-ai", categorySlug: "ai", categoryName: "AI & Machine Learning", categoryEmoji: "🤖", clickCount: 22, rank: 3 },
@@ -41,6 +42,14 @@ const ALL_PRODUCTS: RankedProduct[] = [
   { id: "p24", slug: "nutriscan", name: "NutriScan", tagline: "Scan food, know nutrition instantly", url: "https://nutriscan.app", totalBid: 7000, status: "approved", categoryId: "cat-health", categorySlug: "health", categoryName: "Health & Wellness", categoryEmoji: "🏥", clickCount: 16, rank: 2 },
   { id: "p25", slug: "fitcoach-ai", name: "FitCoach AI", tagline: "Your personal AI fitness trainer", url: "https://fitcoach.ai", totalBid: 3500, status: "approved", categoryId: "cat-health", categorySlug: "health", categoryName: "Health & Wellness", categoryEmoji: "🏥", clickCount: 7, rank: 3 },
 ];
+
+const ALL_PRODUCTS: RankedProduct[] = ALL_PRODUCTS_RAW.map((p) => ({
+  ...p,
+  iconUrl: null,
+  ogImageUrl: null,
+  normalizedDomain: new URL(p.url).hostname.replace(/^www\./, ""),
+  createdAt: new Date(Date.now() - 86400000 * (p.rank + 1)).toISOString(),
+}));
 
 export function demoTopProducts(limit = 3): RankedProduct[] {
   return [...ALL_PRODUCTS]
@@ -187,3 +196,48 @@ export function demoCountryLeaderboards(): CountryLeaderboard[] {
 }
 
 export const DEMO_ALL_PRODUCTS = ALL_PRODUCTS;
+
+export function demoTrendingNow(limit = 5): TrendingItem[] {
+  return [...ALL_PRODUCTS]
+    .sort((a, b) => b.clickCount - a.clickCount)
+    .slice(0, limit)
+    .map((p) => ({
+      slug: p.slug,
+      name: p.name,
+      iconUrl: p.iconUrl,
+      ogImageUrl: p.ogImageUrl,
+      normalizedDomain: p.normalizedDomain,
+      clicksPerHour: Math.max(12, Math.round(p.clickCount * 2.4 + 40)),
+    }));
+}
+
+export function demoRecentActivity(limit = 5): ActivityItem[] {
+  const minutesAgo = [7, 11, 19, 34, 52];
+  const globalRanked = [...ALL_PRODUCTS].sort((a, b) => b.totalBid - a.totalBid);
+
+  return globalRanked.slice(0, limit).map((p, i) => {
+    const at = new Date(Date.now() - minutesAgo[i]! * 60_000);
+    return {
+      type: i % 2 === 0 ? "bid" : "joined",
+      slug: p.slug,
+      name: p.name,
+      iconUrl: p.iconUrl,
+      ogImageUrl: p.ogImageUrl,
+      normalizedDomain: p.normalizedDomain,
+      totalBid: p.totalBid,
+      rank: i + 1,
+      categoryName: p.categoryName,
+      occurredAt: at.toISOString(),
+    } satisfies ActivityItem;
+  });
+}
+
+export function demoHappeningNow(
+  trendingLimit = 5,
+  activityLimit = 5,
+): { trending: TrendingItem[]; activity: ActivityItem[] } {
+  return {
+    trending: demoTrendingNow(trendingLimit),
+    activity: demoRecentActivity(activityLimit),
+  };
+}

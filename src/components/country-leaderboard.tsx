@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { ProductLogo } from "@/components/product-logo";
 
 type CountryProduct = {
   name: string;
@@ -11,6 +12,9 @@ type CountryProduct = {
   clicks: number;
   categoryName: string;
   categoryEmoji: string;
+  iconUrl: string | null;
+  ogImageUrl: string | null;
+  normalizedDomain: string;
 };
 
 type CountryOption = {
@@ -28,6 +32,7 @@ type CountryData = {
 
 export function CountryLeaderboardClient({ locale }: { locale: string }) {
   const t = useTranslations("app.byCountry");
+  const tUi = useTranslations("app.ui");
   const [countries, setCountries] = useState<CountryOption[]>([]);
   const [selected, setSelected] = useState<string>("");
   const [detected, setDetected] = useState<string | null>(null);
@@ -110,7 +115,7 @@ export function CountryLeaderboardClient({ locale }: { locale: string }) {
       {loading ? (
         <div className="flex items-center gap-3 py-12">
           <span className="h-4 w-4 animate-spin rounded-full border-2 border-gold border-t-transparent" />
-          <span className="text-sm text-text-muted">Loading...</span>
+          <span className="text-sm text-text-muted">{tUi("loading")}</span>
         </div>
       ) : data ? (
         <div className="space-y-6">
@@ -126,9 +131,9 @@ export function CountryLeaderboardClient({ locale }: { locale: string }) {
                   key={product.slug}
                   href={`/product/${product.slug}`}
                   locale={locale}
-                  className={`group relative flex flex-col gap-3 rounded-xl border p-5 transition-all hover:border-border-bright ${
+                  className={`product-panel group relative flex flex-col gap-3 rounded-xl border p-5 transition-all hover:border-border-bright ${
                     i === 0
-                      ? "border-gold/30 bg-gradient-to-br from-gold/5 to-transparent shadow-[var(--shadow-gold)]"
+                      ? "border-gold/40 bg-gradient-to-br from-gold/10 to-transparent shadow-[var(--shadow-gold)]"
                       : "border-border bg-bg-card"
                   }`}
                 >
@@ -151,13 +156,22 @@ export function CountryLeaderboardClient({ locale }: { locale: string }) {
                   </div>
 
                   {/* Product info */}
-                  <div>
-                    <h3 className="text-lg font-bold text-text group-hover:text-gold transition-colors">
-                      {product.name}
-                    </h3>
-                    <p className="mt-1 line-clamp-2 text-sm text-text-muted">
-                      {product.tagline}
-                    </p>
+                  <div className="flex items-start gap-3">
+                    <ProductLogo
+                      name={product.name}
+                      iconUrl={product.iconUrl}
+                      ogImageUrl={product.ogImageUrl}
+                      domain={product.normalizedDomain}
+                      size={40}
+                    />
+                    <div className="min-w-0">
+                      <h3 className="text-lg font-bold text-text transition-colors group-hover:text-gold">
+                        {product.name}
+                      </h3>
+                      <p className="mt-1 line-clamp-2 text-sm text-text-muted">
+                        {product.tagline}
+                      </p>
+                    </div>
                   </div>
 
                   {/* Clicks */}

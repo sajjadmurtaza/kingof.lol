@@ -3,7 +3,9 @@ import { useTranslations } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { JsonLd } from "@/components/json-ld";
+import { ProductLogo } from "@/components/product-logo";
 import { getAllCategories, getCategoryProducts } from "@/domains/leaderboard/queries";
+import type { RankedProduct } from "@/domains/leaderboard/queries";
 import { buildPageMetadata, breadcrumbJsonLd } from "@/domains/marketing/seo-metadata";
 
 export async function generateMetadata({
@@ -26,6 +28,7 @@ export const revalidate = 60;
 export default async function CategoriesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const tCategories = await getTranslations({ locale, namespace: "app.categories" });
 
   const FALLBACK_CATEGORIES = [
     { id: "ai", slug: "ai", name: "AI & Machine Learning", emoji: "🤖", sortOrder: 1 },
@@ -38,6 +41,11 @@ export default async function CategoriesPage({ params }: { params: Promise<{ loc
     { id: "ecommerce", slug: "ecommerce", name: "E-Commerce", emoji: "🛒", sortOrder: 8 },
     { id: "social", slug: "social", name: "Social", emoji: "💬", sortOrder: 9 },
     { id: "productivity", slug: "productivity", name: "Productivity", emoji: "⚡", sortOrder: 10 },
+    { id: "marketing", slug: "marketing", name: "Marketing", emoji: "📣", sortOrder: 11 },
+    { id: "analytics", slug: "analytics", name: "Analytics", emoji: "📊", sortOrder: 12 },
+    { id: "security", slug: "security", name: "Security", emoji: "🔒", sortOrder: 13 },
+    { id: "nocode", slug: "nocode", name: "No-Code / Low-Code", emoji: "🧩", sortOrder: 14 },
+    { id: "gaming", slug: "gaming", name: "Gaming", emoji: "🎮", sortOrder: 15 },
   ];
 
   let categories: Awaited<ReturnType<typeof getAllCategories>> = [];
@@ -62,7 +70,10 @@ export default async function CategoriesPage({ params }: { params: Promise<{ loc
     }),
   );
 
-  const breadcrumb = breadcrumbJsonLd([{ name: "KINGOF", path: "/" }, { name: "Categories" }]);
+  const breadcrumb = breadcrumbJsonLd([
+    { name: "KINGOF", path: "/" },
+    { name: tCategories("title") },
+  ]);
 
   return (
     <div className="py-12">
@@ -81,7 +92,7 @@ function CategoriesGrid({
     name: string;
     emoji: string;
     productCount: number;
-    king: { name: string } | null;
+    king: RankedProduct | null;
   }[];
   locale: string;
 }) {
@@ -96,7 +107,7 @@ function CategoriesGrid({
             key={cat.slug}
             href={`/${cat.slug}`}
             locale={locale}
-            className="group rounded-xl border border-border bg-bg-card p-6 transition-all hover:border-gold/30 hover:shadow-[var(--shadow-gold)]"
+            className="product-panel group rounded-xl border border-border bg-bg-card p-6 transition-all hover:border-gold/40 hover:shadow-[var(--shadow-gold)]"
           >
             <h2 className="text-xl font-bold text-text group-hover:text-gold transition-colors">
               {cat.emoji} {cat.name}
@@ -104,18 +115,26 @@ function CategoriesGrid({
             <p className="mt-1 text-sm text-text-muted">
               {cat.productCount > 0
                 ? t("products", { count: cat.productCount })
-                : "No products yet"}
+                : t("noProductsYet")}
             </p>
             {cat.king ? (
-              <div className="mt-4 flex items-center gap-2 rounded-lg bg-surface p-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-gold/60">
+              <div className="product-panel-inset mt-4 flex items-center gap-2 rounded-lg p-2.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-gold">
                   {t("king")}
                 </span>
-                <span className="text-sm font-medium text-text">{cat.king.name}</span>
+                <ProductLogo
+                  name={cat.king.name}
+                  iconUrl={cat.king.iconUrl}
+                  ogImageUrl={cat.king.ogImageUrl}
+                  domain={cat.king.normalizedDomain}
+                  size={24}
+                  rounded="md"
+                />
+                <span className="truncate text-sm font-medium text-text">{cat.king.name}</span>
               </div>
             ) : (
-              <div className="mt-4 flex items-center gap-2 rounded-lg border border-dashed border-border px-3 py-2">
-                <span className="text-xs text-text-dim">No king yet — be the first</span>
+              <div className="mt-4 flex items-center gap-2 rounded-lg border border-dashed border-border-bright bg-surface/50 px-3 py-2.5">
+                <span className="text-xs text-text-dim">{t("noKingYet")}</span>
               </div>
             )}
           </Link>

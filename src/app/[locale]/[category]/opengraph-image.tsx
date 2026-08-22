@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { getTranslations } from "next-intl/server";
 import { getAllCategories, getCategoryProducts } from "@/domains/leaderboard/queries";
 
 export const runtime = "nodejs";
@@ -11,7 +12,8 @@ export default async function CategoryOgImage({
 }: {
   params: Promise<{ locale: string; category: string }>;
 }) {
-  const { category } = await params;
+  const { locale, category } = await params;
+  const t = await getTranslations({ locale, namespace: "app.ui" });
 
   let catName = category;
   let catEmoji = "";
@@ -115,7 +117,7 @@ export default async function CategoryOgImage({
             lineHeight: 1.1,
           }}
         >
-          King of {catName}
+          {t("kingOfCategory", { category: catName })}
         </div>
         <div
           style={{
@@ -125,7 +127,7 @@ export default async function CategoryOgImage({
             marginTop: 8,
           }}
         >
-          Top products competing for the crown
+          {t("ogKingSubtitle")}
         </div>
 
         {/* Top products list */}

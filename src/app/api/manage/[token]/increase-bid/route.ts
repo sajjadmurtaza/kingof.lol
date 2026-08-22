@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { getDb } from "@/db";
+import { logger } from "@/lib/logger";
 import { products, bids } from "@/db/schema";
 import { createBidCheckoutSession } from "@/domains/payments/stripe";
 
@@ -59,7 +60,7 @@ export async function POST(
 
     return NextResponse.json({ checkoutUrl });
   } catch (err) {
-    console.error("Checkout creation failed:", err);
+    logger.error("Checkout creation failed", err, { productId: product.id });
     return NextResponse.json({ error: "Payment setup failed" }, { status: 500 });
   }
 }

@@ -6,6 +6,7 @@ import { bids, products, webhookEvents } from "@/db/schema";
 import { getStripe } from "@/domains/payments/stripe";
 import { revalidatePath } from "next/cache";
 import { notifySlack } from "@/lib/slack";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: Request) {
   const body = await request.text();
@@ -105,7 +106,7 @@ export async function POST(request: Request) {
         });
       });
 
-      console.log("Bid confirmed:", { productId, bidId, bidAmountCents });
+      logger.info("Bid confirmed", { productId, bidId, bidAmountCents });
     }
 
     return NextResponse.json({ received: true });

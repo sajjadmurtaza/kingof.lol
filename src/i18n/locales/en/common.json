@@ -7,7 +7,9 @@
     "howItWorks": "How it works",
     "submit": "GET ON THE BOARD",
     "mostClicked": "Most Clicked",
-    "rules": "Rules"
+    "rules": "Rules",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
   },
   "footer": {
     "tagline": "Products compete for the crown.",
@@ -15,5 +17,10 @@
   },
   "locale": {
     "switch": "Language"
+  },
+  "theme": {
+    "label": "Appearance",
+    "switchToLight": "Switch to light mode",
+    "switchToDark": "Switch to dark mode"
   }
 }

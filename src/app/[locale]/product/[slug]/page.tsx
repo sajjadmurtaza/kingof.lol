@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { useTranslations } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { JsonLd } from "@/components/json-ld";
+import { ProductLogo } from "@/components/product-logo";
 import { getProductBySlug } from "@/domains/leaderboard/queries";
 import type { RankedProduct } from "@/domains/leaderboard/queries";
 import { formatBid, formatClicks, rankLabel } from "@/lib/format";
@@ -17,14 +18,15 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
   const { locale, slug } = await params;
+  const t = await getTranslations({ locale, namespace: "app.meta" });
 
   let product: RankedProduct | null = null;
   try {
     product = await getProductBySlug(slug);
   } catch {
     return buildPageMetadata({
-      title: "Product Not Found",
-      description: "This product could not be found on KINGOF.",
+      title: t("productNotFoundTitle"),
+      description: t("productNotFoundDesc"),
       path: `/${locale}/product/${slug}`,
       noIndex: true,
     });
@@ -32,17 +34,29 @@ export async function generateMetadata({
 
   if (!product) {
     return buildPageMetadata({
-      title: "Product Not Found",
-      description: "This product could not be found on KINGOF.",
+      title: t("productNotFoundTitle"),
+      description: t("productNotFoundDesc"),
       path: `/${locale}/product/${slug}`,
       noIndex: true,
     });
   }
 
-  const title = `${product.name} — #${product.rank} ${product.categoryName}`;
+  const title = t("productTitle", {
+    name: product.name,
+    rank: product.rank,
+    category: product.categoryName,
+  });
   const description = product.tagline
-    ? `${product.tagline} — Ranked #${product.rank} in ${product.categoryName} on KINGOF.`
-    : `${product.name} is ranked #${product.rank} in ${product.categoryName} on KINGOF.`;
+    ? t("productDescWithTagline", {
+        tagline: product.tagline,
+        rank: product.rank,
+        category: product.categoryName,
+      })
+    : t("productDesc", {
+        name: product.name,
+        rank: product.rank,
+        category: product.categoryName,
+      });
 
   return buildPageMetadata({
     title,
@@ -86,15 +100,16 @@ export default async function ProductPage({
 
 function ProductDetail({ product, locale }: { product: RankedProduct; locale: string }) {
   const t = useTranslations("app.product");
+  const tUi = useTranslations("app.ui");
   const isKing = product.rank === 1;
 
   return (
     <article className="mx-auto max-w-2xl">
-      <nav aria-label="Breadcrumb" className="mb-4">
+      <nav aria-label={tUi("breadcrumb")} className="mb-4">
         <ol className="flex items-center gap-2 text-sm text-text-muted">
           <li>
             <Link href="/" locale={locale} className="hover:text-text">
-              KINGOF
+              {tUi("siteName")}
             </Link>
           </li>
           <li aria-hidden="true">/</li>
@@ -115,13 +130,20 @@ function ProductDetail({ product, locale }: { product: RankedProduct; locale: st
             : "border-border bg-bg-card"
         }`}
       >
-        <div className="flex items-start justify-between gap-4">
-          <div>
+        <div className="flex items-start gap-5">
+          <ProductLogo
+            name={product.name}
+            iconUrl={product.iconUrl}
+            ogImageUrl={product.ogImageUrl}
+            domain={product.normalizedDomain}
+            size={64}
+          />
+          <div className="min-w-0 flex-1">
             <h1 className="text-3xl font-black text-text">{product.name}</h1>
             <p className="mt-2 text-lg text-text-muted">{product.tagline}</p>
           </div>
           <span
-            className={`flex h-14 w-14 items-center justify-center rounded-xl text-2xl font-bold ${
+            className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl text-2xl font-bold ${
               isKing ? "bg-gold/15 text-gold" : "bg-surface text-text-muted"
             }`}
           >
@@ -156,7 +178,7 @@ function ProductDetail({ product, locale }: { product: RankedProduct; locale: st
           <Link
             href="/submit"
             locale={locale}
-            className="flex-1 rounded-lg bg-gold py-3 text-center font-bold text-bg transition-colors hover:bg-accent-hover"
+            className="flex-1 rounded-lg bg-gold py-3 text-center font-bold text-on-gold transition-colors hover:bg-accent-hover"
           >
             {t("challenge")}
           </Link>

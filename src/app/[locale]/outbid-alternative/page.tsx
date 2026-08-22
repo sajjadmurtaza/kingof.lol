@@ -134,7 +134,7 @@ function OutbidAlternativeContent({ locale }: { locale: string }) {
             <Link
               href="/submit"
               locale={locale}
-              className="rounded-xl bg-gold px-8 py-3 text-center font-bold text-bg transition-colors hover:bg-accent-hover"
+              className="rounded-xl bg-gold px-8 py-3 text-center font-bold text-on-gold transition-colors hover:bg-accent-hover"
             >
               {t("ctaSubmit")}
             </Link>

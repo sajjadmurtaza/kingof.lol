@@ -1,38 +1,35 @@
-const COLORS = [
-  "#374151",
-  "#4b5563",
-  "#6b7280",
-  "#52525b",
-  "#44403c",
-  "#57534e",
-  "#525252",
-  "#404040",
-];
+import { siteLabelForAvatar } from "@/lib/format";
 
-function hashStr(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash << 5) - hash + str.charCodeAt(i);
-    hash |= 0;
-  }
-  return Math.abs(hash);
-}
-
-export function LetterAvatar({ name, size = 48 }: { name: string; size?: number }) {
-  const letter = name.charAt(0).toUpperCase();
-  const color = COLORS[hashStr(name) % COLORS.length];
+export function LetterAvatar({
+  name,
+  domain,
+  size = 48,
+  className = "",
+  rounded = "lg",
+}: {
+  name: string;
+  domain?: string | null;
+  size?: number;
+  className?: string;
+  rounded?: "full" | "lg" | "md";
+}) {
+  const { text, fontSize } = siteLabelForAvatar(name, domain, size);
+  const radius =
+    rounded === "full" ? "rounded-full" : rounded === "md" ? "rounded-md" : "rounded-lg";
 
   return (
     <div
-      className="flex shrink-0 items-center justify-center rounded-lg font-medium text-white/80"
-      style={{
-        width: size,
-        height: size,
-        backgroundColor: color,
-        fontSize: size * 0.42,
-      }}
+      className={`flex shrink-0 items-center justify-center border border-border bg-bg-elevated text-center font-semibold leading-none text-text-muted ${radius} ${className}`}
+      style={{ width: size, height: size }}
+      title={domain ?? name}
+      aria-hidden
     >
-      {letter}
+      <span
+        className={`max-w-[92%] truncate px-0.5 tracking-tight ${text.length <= 3 ? "uppercase" : "lowercase"}`}
+        style={{ fontSize }}
+      >
+        {text}
+      </span>
     </div>
   );
 }

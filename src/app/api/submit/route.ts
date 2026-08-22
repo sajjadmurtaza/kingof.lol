@@ -97,6 +97,7 @@ export async function POST(request: Request) {
         status: isFree ? "approved" : "pending",
         iconUrl: iconUrl || null,
         ogImageUrl: ogImageUrl || null,
+        description: tagline || name,
       })
       .returning({ id: products.id, slug: products.slug });
 

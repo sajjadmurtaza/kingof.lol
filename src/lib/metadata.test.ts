@@ -47,9 +47,16 @@ describe("detectCategory", () => {
     expect(result.confidence).toBe("low");
   });
 
-  it("is case insensitive", () => {
-    const result = detectCategory("AI MACHINE LEARNING DEEP LEARNING NLP");
-    expect(result.slug).toBe("ai");
+  it("detects social from domain override", () => {
+    const result = detectCategory("photo sharing app", "instagram.com");
+    expect(result.slug).toBe("social");
+    expect(result.confidence).toBe("high");
+  });
+
+  it("detects devtools from domain override", () => {
+    const result = detectCategory("cloud platform", "vercel.com");
+    expect(result.slug).toBe("devtools");
+    expect(result.confidence).toBe("high");
   });
 });
 

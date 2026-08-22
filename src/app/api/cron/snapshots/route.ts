@@ -4,6 +4,7 @@ import * as Sentry from "@sentry/nextjs";
 import { getDb } from "@/db";
 import { products, rankingSnapshots } from "@/db/schema";
 import { notifySlack } from "@/lib/slack";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
@@ -64,6 +65,6 @@ async function recordSnapshots() {
     count++;
   }
 
-  console.log(`Ranking snapshots recorded: ${count} products`);
+  logger.info("Ranking snapshots recorded", { count });
   return NextResponse.json({ success: true, count });
 }

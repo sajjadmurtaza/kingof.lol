@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatBid, formatClicks, rankLabel, rankEmoji } from "./format";
+import { formatBid, formatClicks, rankLabel, rankEmoji, siteLabelForAvatar } from "./format";
 
 describe("formatBid", () => {
   it("formats zero cents", () => {
@@ -56,5 +56,26 @@ describe("rankEmoji", () => {
   it("returns empty string for other ranks", () => {
     expect(rankEmoji(2)).toBe("");
     expect(rankEmoji(50)).toBe("");
+  });
+});
+
+describe("siteLabelForAvatar", () => {
+  it("prefers domain stem over product name", () => {
+    expect(siteLabelForAvatar("ChatGPT", "openai.com", 40).text).toBe("openai");
+  });
+
+  it("shortens label for small avatars", () => {
+    expect(siteLabelForAvatar("Stripe", "stripe.com", 24).text).toBe("st");
+    expect(siteLabelForAvatar("Stripe", "stripe.com", 32).text).toBe("stri");
+  });
+
+  it("falls back to product name when domain is missing", () => {
+    expect(siteLabelForAvatar("NeuralForge", null, 44).text).toBe("neural");
+  });
+
+  it("scales font size down for longer labels", () => {
+    const small = siteLabelForAvatar("Example", "example.com", 28);
+    const large = siteLabelForAvatar("Example", "example.com", 64);
+    expect(small.fontSize).toBeLessThan(large.fontSize);
   });
 });

@@ -1,5 +1,26 @@
 {
-  "nav": { "overall": "Général", "categories": "Catégories", "discover": "Découvrir", "byCountry": "Par Pays", "howItWorks": "Comment ça marche", "submit": "REJOINDRE LE CLASSEMENT", "mostClicked": "Plus Cliqués", "rules": "Règles" },
-  "footer": { "tagline": "Les produits se battent pour la couronne.", "rights": "Tous droits réservés." },
-  "locale": { "switch": "Langue" }
+  "nav": {
+    "overall": "Général",
+    "categories": "Catégories",
+    "discover": "Découvrir",
+    "byCountry": "Par Pays",
+    "howItWorks": "Comment ça marche",
+    "submit": "REJOINDRE LE CLASSEMENT",
+    "mostClicked": "Plus Cliqués",
+    "rules": "Règles",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu"
+  },
+  "footer": {
+    "tagline": "Les produits se battent pour la couronne.",
+    "rights": "Tous droits réservés."
+  },
+  "locale": {
+    "switch": "Langue"
+  },
+  "theme": {
+    "label": "Apparence",
+    "switchToLight": "Passer en mode clair",
+    "switchToDark": "Passer en mode sombre"
+  }
 }

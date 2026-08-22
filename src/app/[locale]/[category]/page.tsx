@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { useTranslations } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { ProductCard, ProductCardCompact } from "@/components/product-card";
+import { ProductLogo } from "@/components/product-logo";
 import { Section } from "@/components/section";
 import { JsonLd } from "@/components/json-ld";
 import { Link } from "@/i18n/navigation";
@@ -38,9 +39,11 @@ export async function generateMetadata({
     // fall back to slug
   }
 
+  const t = await getTranslations({ locale, namespace: "app.meta" });
+
   return buildPageMetadata({
-    title: `Top ${catName} Products Leaderboard`,
-    description: `Discover top ${catName} products competing on KINGOF. Explore category leaders, trending ${catName.toLowerCase()} tools and rising products.`,
+    title: t("categoryTitle", { category: catName }),
+    description: t("categoryDesc", { category: catName }),
     path: `/${locale}/${category}`,
     hreflangPath: `/${category}`,
   });
@@ -96,9 +99,11 @@ export default async function CategoryPage({
   const runners = products.slice(1, 3);
   const rest = products.slice(3);
 
+  const tUi = await getTranslations({ locale, namespace: "app.ui" });
+
   const breadcrumb = breadcrumbJsonLd([
-    { name: "KINGOF", path: "/" },
-    { name: "Categories", path: `/${locale}/categories` },
+    { name: tUi("siteName"), path: "/" },
+    { name: tUi("categoriesLabel"), path: `/${locale}/categories` },
     { name: cat.name },
   ]);
 
@@ -125,6 +130,7 @@ function CategoryProducts({
   locale: string;
 }) {
   const t = useTranslations("app");
+  const tCat = useTranslations("app.categories");
 
   return (
     <>
@@ -136,12 +142,25 @@ function CategoryProducts({
               locale={locale}
               className="group block rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/10 to-transparent p-6 shadow-[var(--shadow-gold)] transition-all hover:border-gold/50"
             >
-              <p className="text-xs font-bold uppercase tracking-widest text-gold/70">King</p>
-              <h2 className="mt-2 text-2xl font-black text-gold">{king.name}</h2>
-              <p className="mt-1 text-text-muted">{king.tagline}</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-gold/70">{tCat("king")}</p>
+              <div className="mt-3 flex items-center gap-4">
+                <ProductLogo
+                  name={king.name}
+                  iconUrl={king.iconUrl}
+                  ogImageUrl={king.ogImageUrl}
+                  domain={king.normalizedDomain}
+                  size={56}
+                />
+                <div className="min-w-0">
+                  <h2 className="text-2xl font-black text-gold">{king.name}</h2>
+                  <p className="mt-1 text-text-muted">{king.tagline}</p>
+                </div>
+              </div>
               <div className="mt-4 flex gap-6 text-sm">
                 <span className="font-bold text-gold">{formatBid(king.totalBid)}</span>
-                <span className="text-text-muted">{king.clickCount} clicks</span>
+                <span className="text-text-muted">
+                  {t("sections.clicksLabel", { count: king.clickCount })}
+                </span>
               </div>
             </Link>
           </Section>
@@ -169,13 +188,13 @@ function CategoryProducts({
 
       {!king && (
         <div className="mt-8 rounded-xl border border-border bg-bg-card p-8 text-center">
-          <p className="text-text-muted">No products in this category yet.</p>
+          <p className="text-text-muted">{t("ui.noProductsInCategory")}</p>
           <Link
             href="/submit"
             locale={locale}
-            className="mt-4 inline-block rounded-lg bg-gold px-6 py-2 text-sm font-bold text-bg"
+            className="mt-4 inline-block rounded-lg bg-gold px-6 py-2 text-sm font-bold text-on-gold"
           >
-            Be the first →
+            {t("ui.beFirst")}
           </Link>
         </div>
       )}

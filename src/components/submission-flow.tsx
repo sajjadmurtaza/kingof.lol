@@ -33,6 +33,27 @@ function extractDomain(url: string): string {
   }
 }
 
+function emptyPreview(input: string): ProductPreview {
+  const domain = extractDomain(input);
+  return {
+    url: input,
+    normalizedUrl: input,
+    domain,
+    name: domain,
+    title: null,
+    description: "",
+    siteName: null,
+    icon: null,
+    faviconUrl: null,
+    appleTouchIconUrl: null,
+    logoUrl: null,
+    ogImage: null,
+    suggestedCategory: null,
+    categoryConfidence: "low",
+    existing: null,
+  };
+}
+
 export function SubmissionFlow({
   locale,
   autoFocus = false,
@@ -43,6 +64,7 @@ export function SubmissionFlow({
   compact?: boolean;
 }) {
   const t = useTranslations("app.onboard");
+  const tUi = useTranslations("app.ui");
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -83,18 +105,7 @@ export function SubmissionFlow({
       if (controller.signal.aborted) return;
 
       if (!res.ok) {
-        setPreview({
-          url: input,
-          normalizedUrl: input,
-          domain: extractDomain(input),
-          name: extractDomain(input),
-          description: "",
-          icon: null,
-          ogImage: null,
-          suggestedCategory: null,
-          categoryConfidence: "low",
-          existing: null,
-        });
+        setPreview(emptyPreview(input));
         setCategory("saas");
         setPhase("fallback");
         return;
@@ -116,18 +127,7 @@ export function SubmissionFlow({
       }
     } catch (err: unknown) {
       if (err instanceof DOMException && err.name === "AbortError") return;
-      setPreview({
-        url: input,
-        normalizedUrl: input,
-        domain: extractDomain(input),
-        name: extractDomain(input),
-        description: "",
-        icon: null,
-        ogImage: null,
-        suggestedCategory: null,
-        categoryConfidence: "low",
-        existing: null,
-      });
+      setPreview(emptyPreview(input));
       setCategory("saas");
       setPhase("fallback");
     }
@@ -185,7 +185,7 @@ export function SubmissionFlow({
   async function handleEmailSubmit(email: string) {
     setSubmitting(true);
     try {
-      const productName = manualData?.name ?? preview?.name ?? "Product";
+      const productName = manualData?.name ?? preview?.name ?? tUi("defaultProductName");
       const productUrl = preview?.normalizedUrl ?? preview?.url ?? "";
       const tagline = manualData?.tagline ?? preview?.description ?? "";
 
@@ -199,7 +199,7 @@ export function SubmissionFlow({
           category,
           email,
           bid: bidCents,
-          iconUrl: preview?.icon,
+          iconUrl: preview?.logoUrl ?? preview?.icon,
           ogImageUrl: preview?.ogImage,
           locale,
         }),
@@ -266,7 +266,7 @@ export function SubmissionFlow({
   if (phase === "success") {
     return (
       <SuccessState
-        name={manualData?.name ?? preview?.name ?? "Your Product"}
+        name={manualData?.name ?? preview?.name ?? tUi("defaultProductName")}
         slug={resultSlug}
         overallRank={26}
         categoryRank={7}
@@ -288,8 +288,13 @@ export function SubmissionFlow({
       {/* URL input — always visible */}
       <form onSubmit={handleSubmit} className={compact ? "flex gap-2" : "space-y-3"}>
         <div className={`relative ${compact ? "flex-1" : ""}`}>
-          <span className={`pointer-events-none absolute top-1/2 -translate-y-1/2 text-text-dim ${compact ? "left-4" : "left-5 text-xl"}`}>
-            🌐
+          <span
+            className={`pointer-events-none absolute top-1/2 -translate-y-1/2 text-text-dim ${
+              compact ? "left-3" : "left-5"
+            }`}
+            aria-hidden="true"
+          >
+            <GlobeIcon className={compact ? "h-4 w-4" : "h-5 w-5"} />
           </span>
           <input
             ref={inputRef}
@@ -300,7 +305,7 @@ export function SubmissionFlow({
             placeholder={t("placeholder")}
             className={
               compact
-                ? "w-full rounded-xl border border-border bg-bg-card py-3.5 pl-11 pr-4 text-text placeholder:text-text-dim focus:border-gold focus:outline-none"
+                ? "w-full rounded-xl border border-border bg-bg-card py-2.5 pl-10 pr-3 text-sm text-text placeholder:text-text-dim focus:border-gold focus:outline-none"
                 : "w-full rounded-2xl border-2 border-border bg-bg-card py-4 pl-14 pr-6 text-lg text-text placeholder:text-text-dim transition-colors focus:border-gold focus:outline-none"
             }
           />
@@ -309,7 +314,7 @@ export function SubmissionFlow({
           <button
             type="submit"
             disabled={phase === "loading" || !url.trim()}
-            className="shrink-0 rounded-xl bg-gold px-6 py-3.5 font-bold text-bg transition-colors hover:bg-accent-hover disabled:opacity-50"
+            className="shrink-0 rounded-xl bg-gold px-4 py-2.5 text-sm font-bold text-on-gold transition-colors hover:bg-accent-hover disabled:opacity-50"
           >
             {phase === "loading" ? <Spinner /> : "→"}
           </button>
@@ -317,7 +322,7 @@ export function SubmissionFlow({
           <button
             type="submit"
             disabled={phase === "loading" || !url.trim()}
-            className="w-full rounded-2xl bg-gold py-3.5 text-lg font-bold text-bg transition-colors hover:bg-accent-hover disabled:opacity-50"
+            className="w-full rounded-2xl bg-gold py-3.5 text-lg font-bold text-on-gold transition-colors hover:bg-accent-hover disabled:opacity-50"
           >
             {phase === "loading" ? (
               <span className="flex items-center justify-center gap-2">
@@ -348,7 +353,7 @@ export function SubmissionFlow({
           />
           <button
             onClick={handlePreviewContinue}
-            className="w-full rounded-2xl bg-gold py-4 text-lg font-bold text-bg transition-colors hover:bg-accent-hover"
+            className="w-full rounded-2xl bg-gold py-4 text-lg font-bold text-on-gold transition-colors hover:bg-accent-hover"
           >
             {t("looksGood")}
           </button>
@@ -380,13 +385,15 @@ export function SubmissionFlow({
 }
 
 function BackButton({ onClick }: { onClick: () => void }) {
+  const t = useTranslations("app.ui");
+
   return (
     <button
       type="button"
       onClick={onClick}
       className="flex items-center gap-1 text-sm text-text-muted transition-colors hover:text-text"
     >
-      ← Back
+      ← {t("back")}
     </button>
   );
 }
@@ -394,5 +401,25 @@ function BackButton({ onClick }: { onClick: () => void }) {
 function Spinner() {
   return (
     <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+  );
+}
+
+function GlobeIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18" />
+      <path d="M12 3c2.5 2.8 3.8 6 3.8 9s-1.3 6.2-3.8 9" />
+      <path d="M12 3c-2.5 2.8-3.8 6-3.8 9s1.3 6.2 3.8 9" />
+    </svg>
   );
 }
