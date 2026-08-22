@@ -22,6 +22,12 @@ describe("stripe payments", () => {
     expect(() => getStripe()).toThrow("STRIPE_SECRET_KEY not set");
   });
 
+  it("throws when STRIPE_SECRET_KEY is invalid", async () => {
+    process.env.STRIPE_SECRET_KEY = "not-a-stripe-key";
+    const { getStripe } = await import("./stripe");
+    expect(() => getStripe()).toThrow("STRIPE_SECRET_KEY is invalid");
+  });
+
   it("reuses stripe client singleton", async () => {
     const { getStripe } = await import("./stripe");
     expect(getStripe()).toBe(getStripe());
@@ -55,7 +61,7 @@ describe("stripe payments", () => {
     );
   });
 
-  it("defaults site URL when NEXT_PUBLIC_SITE_URL is unset", async () => {
+  it("uses canonical SITE_URL when NEXT_PUBLIC_SITE_URL is unset", async () => {
     delete process.env.NEXT_PUBLIC_SITE_URL;
     vi.resetModules();
     checkoutCreate.mockResolvedValue({ url: "https://checkout.stripe.com/pay/cs_test" });
@@ -73,7 +79,7 @@ describe("stripe payments", () => {
 
     expect(checkoutCreate).toHaveBeenCalledWith(
       expect.objectContaining({
-        success_url: "http://localhost:3000/manage/token-1?bid=success",
+        success_url: "https://kingof.lol/manage/token-1?bid=success",
       }),
     );
   });

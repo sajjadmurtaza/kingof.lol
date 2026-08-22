@@ -9,6 +9,7 @@ import { createBidCheckoutSession } from "@/domains/payments/stripe";
 import { sendManagementLinkEmail } from "@/domains/email/resend";
 import { getProductRanks } from "@/domains/leaderboard/queries";
 import { notifySlack } from "@/lib/slack";
+import { SITE_URL } from "@/lib/site-url";
 
 export async function POST(request: Request) {
   try {
@@ -79,8 +80,6 @@ export async function POST(request: Request) {
       slug = `${slug}-${randomBytes(3).toString("hex")}`;
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-
     // Insert product
     const [product] = await db
       .insert(products)
@@ -130,7 +129,7 @@ export async function POST(request: Request) {
         sendManagementLinkEmail({
           to: email,
           productName: name,
-          manageUrl: `${siteUrl}/manage/${rawToken}`,
+          manageUrl: `${SITE_URL}/manage/${rawToken}`,
         }).catch((err) => {
           Sentry.captureException(err, {
             tags: { route: "api/submit", failure: "email_send_failed" },
@@ -156,11 +155,12 @@ export async function POST(request: Request) {
           });
         }
 
+        const stripeMessage = err instanceof Error ? err.message : "Unknown Stripe error";
         Sentry.captureException(err, {
           tags: { route: "api/submit", failure: "stripe_checkout_failed" },
-          extra: { productId: product.id, slug },
+          extra: { productId: product.id, slug, stripeMessage },
         });
-        notifySlack(`🔴 Stripe checkout creation failed for "${name}" (${slug})`);
+        notifySlack(`🔴 Stripe checkout failed for "${name}" (${slug}): ${stripeMessage}`);
         return NextResponse.json({ error: "Payment setup failed" }, { status: 500 });
       }
     }
@@ -169,7 +169,7 @@ export async function POST(request: Request) {
     sendManagementLinkEmail({
       to: email,
       productName: name,
-      manageUrl: `${siteUrl}/manage/${rawToken}`,
+      manageUrl: `${SITE_URL}/manage/${rawToken}`,
     }).catch((err) => {
       Sentry.captureException(err, { tags: { route: "api/submit", failure: "email_send_failed" } });
     });
@@ -179,7 +179,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       slug,
-      manageUrl: `${siteUrl}/manage/${rawToken}`,
+      manageUrl: `${SITE_URL}/manage/${rawToken}`,
       ...(ranks ?? {}),
     });
   } catch (err) {

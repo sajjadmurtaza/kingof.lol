@@ -1,4 +1,5 @@
 import Stripe from "stripe";
+import { SITE_URL } from "@/lib/site-url";
 
 let _stripe: Stripe | null = null;
 
@@ -6,6 +7,9 @@ export function getStripe(): Stripe {
   if (!_stripe) {
     const key = process.env.STRIPE_SECRET_KEY;
     if (!key) throw new Error("STRIPE_SECRET_KEY not set");
+    if (!key.startsWith("sk_")) {
+      throw new Error("STRIPE_SECRET_KEY is invalid");
+    }
     _stripe = new Stripe(key);
   }
   return _stripe;
@@ -31,10 +35,10 @@ export async function createBidCheckoutSession({
   locale?: string;
 }): Promise<string> {
   const stripe = getStripe();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
+    payment_method_types: ["card"],
     customer_email: email,
     line_items: [
       {
@@ -55,9 +59,13 @@ export async function createBidCheckoutSession({
       bidId,
       bidAmount: bidAmountCents.toString(),
     },
-    success_url: `${siteUrl}/manage/${manageToken}?bid=success`,
-    cancel_url: `${siteUrl}/${locale}/product/${productSlug}`,
+    success_url: `${SITE_URL}/manage/${manageToken}?bid=success`,
+    cancel_url: `${SITE_URL}/${locale}/product/${productSlug}`,
   });
 
-  return session.url!;
+  if (!session.url) {
+    throw new Error("Stripe checkout session missing redirect URL");
+  }
+
+  return session.url;
 }

@@ -6,6 +6,7 @@ import { bids, products, webhookEvents } from "@/db/schema";
 import { getStripe } from "@/domains/payments/stripe";
 import { revalidatePath } from "next/cache";
 import { notifySlack } from "@/lib/slack";
+import { SITE_URL } from "@/lib/site-url";
 import { logger } from "@/lib/logger";
 
 export async function POST(request: Request) {
@@ -173,7 +174,7 @@ async function checkAndNotifyDethroned(productId: string) {
     )
     .limit(5);
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const siteUrl = SITE_URL;
 
   for (const king of previousKings) {
     sendDethronedEmail({
