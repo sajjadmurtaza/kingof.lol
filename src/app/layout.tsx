@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import { DataFastAnalytics } from "@/components/datafast-analytics";
+import { GoogleAnalytics } from "@/components/google-analytics";
 import { ThemeProvider } from "@/components/theme-provider";
 import { DEFAULT_THEME, THEME_INIT_SCRIPT } from "@/lib/theme";
 import enApp from "@/i18n/locales/en/app.json";
@@ -72,6 +74,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="min-h-full bg-bg font-sans text-text">
+        <GoogleAnalytics />
+        <DataFastAnalytics />
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

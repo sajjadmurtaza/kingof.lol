@@ -3,6 +3,7 @@ import * as Sentry from "@sentry/nextjs";
 import type { getDb } from "@/db";
 import { bids } from "@/db/schema";
 import { createBidCheckoutSession, formatStripeError } from "@/domains/payments/stripe";
+import type { DataFastAttribution } from "@/lib/datafast-attribution";
 
 type Db = ReturnType<typeof getDb>;
 
@@ -15,6 +16,7 @@ export async function createPaidBidCheckout({
   locale,
   manageToken,
   promoCodeId,
+  datafastAttribution,
 }: {
   db: Db;
   product: { id: string; slug: string; name: string };
@@ -24,6 +26,7 @@ export async function createPaidBidCheckout({
   locale: string;
   manageToken?: string;
   promoCodeId?: string;
+  datafastAttribution?: DataFastAttribution | null;
 }): Promise<{ checkoutUrl: string } | { error: string; reason?: string }> {
   const [pendingBid] = await db
     .insert(bids)
@@ -48,6 +51,7 @@ export async function createPaidBidCheckout({
       locale,
       manageToken,
       promoCodeId,
+      datafastAttribution,
     });
 
     return { checkoutUrl };

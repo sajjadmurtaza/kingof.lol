@@ -53,6 +53,10 @@ describe("stripe payments", () => {
       email: "owner@example.com",
       locale: "de",
       promoCodeId: "promo-1",
+      datafastAttribution: {
+        visitorId: "visitor-1",
+        sessionId: "session-1",
+      },
     });
 
     expect(url).toBe("https://checkout.stripe.com/pay/cs_test");
@@ -65,6 +69,8 @@ describe("stripe payments", () => {
           bidAmount: "5000",
           amountPaid: "2500",
           promoCodeId: "promo-1",
+          datafast_visitor_id: "visitor-1",
+          datafast_session_id: "session-1",
         }),
         cancel_url: "https://kingof.lol/de/product/acme",
       }),

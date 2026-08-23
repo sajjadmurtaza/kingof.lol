@@ -19,6 +19,7 @@ import {
 } from "@/domains/submissions/free-listing-limit";
 import { notifySlack } from "@/lib/slack";
 import { getSiteUrl } from "@/lib/site-url";
+import { parseDataFastAttributionFromRequest } from "@/lib/datafast-attribution";
 
 function paymentCentsForExisting({
   bidCents,
@@ -70,6 +71,7 @@ export async function POST(request: Request) {
     }
 
     const db = getDb();
+    const datafastAttribution = parseDataFastAttributionFromRequest(request);
 
     await ensureDefaultLaunchPromo(db);
 
@@ -134,6 +136,7 @@ export async function POST(request: Request) {
         email: existing.email,
         locale: resolvedLocale,
         promoCodeId: resolvedPayment.promoCodeId,
+        datafastAttribution,
       });
 
       if ("error" in checkout) {
@@ -252,6 +255,7 @@ export async function POST(request: Request) {
         locale: resolvedLocale,
         manageToken: rawToken,
         promoCodeId: resolvedPayment.promoCodeId,
+        datafastAttribution,
       });
 
       if ("error" in checkout) {

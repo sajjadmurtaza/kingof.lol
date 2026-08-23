@@ -5,6 +5,7 @@ import { getDb } from "@/db";
 import { logger } from "@/lib/logger";
 import { products, bids } from "@/db/schema";
 import { createBidCheckoutSession } from "@/domains/payments/stripe";
+import { parseDataFastAttributionFromRequest } from "@/lib/datafast-attribution";
 
 export async function POST(request: Request, { params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
@@ -62,6 +63,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ tok
       manageToken: token,
       email: product.email,
       locale,
+      datafastAttribution: parseDataFastAttributionFromRequest(request),
     });
 
     return NextResponse.json({ checkoutUrl });

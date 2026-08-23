@@ -1,4 +1,5 @@
 import Stripe from "stripe";
+import { datafastStripeMetadata, type DataFastAttribution } from "@/lib/datafast-attribution";
 import { getSiteUrl } from "@/lib/site-url";
 
 let _stripe: Stripe | null = null;
@@ -40,6 +41,7 @@ export async function createBidCheckoutSession({
   email,
   locale = "en",
   promoCodeId,
+  datafastAttribution,
 }: {
   productName: string;
   paymentCents: number;
@@ -52,6 +54,7 @@ export async function createBidCheckoutSession({
   email: string;
   locale?: string;
   promoCodeId?: string;
+  datafastAttribution?: DataFastAttribution | null;
 }): Promise<string> {
   const stripe = getStripe();
   const siteUrl = getSiteUrl();
@@ -81,6 +84,7 @@ export async function createBidCheckoutSession({
       bidAmount: bidCreditCents.toString(),
       amountPaid: paymentCents.toString(),
       ...(promoCodeId ? { promoCodeId } : {}),
+      ...datafastStripeMetadata(datafastAttribution),
     },
     success_url: checkoutSuccessUrl,
     cancel_url: `${siteUrl}/${locale}/product/${productSlug}`,

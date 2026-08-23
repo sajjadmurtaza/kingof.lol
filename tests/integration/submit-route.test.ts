@@ -49,7 +49,16 @@ vi.mock("@/domains/promo/seed-default", () => ({
   ensureDefaultLaunchPromo: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("@/lib/datafast-attribution", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/datafast-attribution")>();
+  return {
+    ...actual,
+    parseDataFastAttributionFromRequest: vi.fn(actual.parseDataFastAttributionFromRequest),
+  };
+});
+
 import { createBidCheckoutSession } from "@/domains/payments/stripe";
+import { parseDataFastAttributionFromRequest } from "@/lib/datafast-attribution";
 import { getProductRanks } from "@/domains/leaderboard/queries";
 import { resolveBidPayment } from "@/domains/promo/resolve-bid-payment";
 import {
@@ -382,6 +391,44 @@ describe("POST /api/submit", () => {
         paymentCents: 2500,
         bidCreditCents: 5000,
         promoCodeId: "promo-1",
+      }),
+    );
+  });
+
+  it("forwards DataFast attribution cookies to Stripe checkout metadata", async () => {
+    vi.mocked(createBidCheckoutSession).mockResolvedValue("https://checkout.stripe.com/promo");
+    vi.mocked(resolveBidPayment).mockResolvedValue({
+      ok: true,
+      paymentCents: 2500,
+      bidCreditCents: 2500,
+      promoCodeId: null,
+    });
+    vi.mocked(parseDataFastAttributionFromRequest).mockReturnValue({
+      visitorId: "visitor-1",
+      sessionId: "session-1",
+    });
+
+    mock.enqueue([]);
+    mock.enqueue([{ id: sampleCategory.id }]);
+    mock.enqueue([]);
+    mock.enqueue([{ id: "prod-new", slug: "kingof" }]);
+    mock.enqueue([{ id: "bid-1" }]);
+
+    const res = await submitPost(
+      new Request("https://kingof.lol/api/submit", {
+        method: "POST",
+        body: JSON.stringify(submitBody({ bid: 2500 })),
+      }),
+    );
+
+    expect(res.status).toBe(200);
+    expect(parseDataFastAttributionFromRequest).toHaveBeenCalled();
+    expect(createBidCheckoutSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        datafastAttribution: {
+          visitorId: "visitor-1",
+          sessionId: "session-1",
+        },
       }),
     );
   });
