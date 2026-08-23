@@ -42,6 +42,9 @@ export function createMockDb() {
     insert: vi.fn(() => ({
       values: vi.fn(() => ({
         returning: vi.fn(() => buildChain()),
+        onConflictDoNothing: vi.fn(() => ({
+          returning: vi.fn(() => buildChain()),
+        })),
         onConflictDoUpdate: vi.fn(() => Promise.resolve()),
         then: (
           onFulfilled: (value: unknown) => unknown,

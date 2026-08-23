@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseHtmlMetadata, pickDisplayIcon } from "./metadata-parser";
+import { parseHtmlMetadata, pickDisplayIcon, googleFaviconUrl } from "./metadata-parser";
 
 const FIXTURE_OG = `<!DOCTYPE html>
 <html>
@@ -173,6 +173,34 @@ describe("pickDisplayIcon", () => {
   });
 
   it("falls back to domain favicon", () => {
-    expect(pickDisplayIcon({ domain: "stripe.com" })).toBe("https://stripe.com/favicon.ico");
+    expect(pickDisplayIcon({ domain: "stripe.com" })).toBe(googleFaviconUrl("stripe.com"));
+  });
+
+  it("prefers apple-touch-icon over stored icon url", () => {
+    expect(
+      pickDisplayIcon({
+        iconUrl: "https://github.com/favicon.ico",
+        appleTouchIconUrl: "https://github.com/apple-touch-icon.png",
+        domain: "github.com",
+      }),
+    ).toBe("https://github.com/apple-touch-icon.png");
+  });
+
+  it("uses a sharper google favicon instead of low-res .ico when domain is known", () => {
+    expect(
+      pickDisplayIcon({
+        iconUrl: "https://github.com/favicon.ico",
+        domain: "github.com",
+      }),
+    ).toBe(googleFaviconUrl("github.com"));
+  });
+
+  it("detects favicon-like malformed urls without throwing", () => {
+    expect(
+      pickDisplayIcon({
+        iconUrl: ":::favicon.ico",
+        domain: "example.com",
+      }),
+    ).toBe(googleFaviconUrl("example.com"));
   });
 });

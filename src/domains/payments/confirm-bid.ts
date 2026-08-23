@@ -5,6 +5,7 @@ import * as Sentry from "@sentry/nextjs";
 import { getDb } from "@/db";
 import { bids, products, webhookEvents } from "@/db/schema";
 import { getStripe } from "@/domains/payments/stripe";
+import { recordPromoRedemption, resolveBidCreditOnConfirm } from "@/domains/promo/validate-promo";
 import { getSiteUrl } from "@/lib/site-url";
 import { logger } from "@/lib/logger";
 
@@ -23,20 +24,29 @@ export type ConfirmBidResult =
 function parseSessionMetadata(session: Stripe.Checkout.Session): {
   productId: string;
   bidId: string;
-  bidAmountCents: number;
+  bidCreditCents: number;
+  amountPaidCents: number;
   productSlug: string;
+  promoCodeId: string | null;
 } | null {
-  const { productId, bidId, bidAmount, productSlug } = session.metadata ?? {};
+  const { productId, bidId, bidAmount, amountPaid, productSlug, promoCodeId } =
+    session.metadata ?? {};
   if (!productId || !bidId || !bidAmount) return null;
 
-  const bidAmountCents = parseInt(bidAmount, 10);
-  if (!Number.isFinite(bidAmountCents) || bidAmountCents < 1) return null;
+  const bidCreditCents = parseInt(bidAmount, 10);
+  if (!Number.isFinite(bidCreditCents) || bidCreditCents < 1) return null;
+
+  const parsedAmountPaid = amountPaid ? parseInt(amountPaid, 10) : bidCreditCents;
+  const amountPaidCents =
+    Number.isFinite(parsedAmountPaid) && parsedAmountPaid >= 1 ? parsedAmountPaid : bidCreditCents;
 
   return {
     productId,
     bidId,
-    bidAmountCents,
+    bidCreditCents,
+    amountPaidCents,
     productSlug: productSlug ?? "",
+    promoCodeId: promoCodeId?.trim() ? promoCodeId : null,
   };
 }
 
@@ -88,6 +98,7 @@ export async function confirmBidFromCheckoutSession(
       slug: products.slug,
       name: products.name,
       totalBid: products.totalBid,
+      email: products.email,
     })
     .from(products)
     .where(eq(products.id, meta.productId))
@@ -104,10 +115,18 @@ export async function confirmBidFromCheckoutSession(
       productSlug: product.slug,
       productId: meta.productId,
       productName: product.name,
-      bidAmountCents: meta.bidAmountCents,
+      bidAmountCents: meta.bidCreditCents,
       totalBidCents: product.totalBid,
     };
   }
+
+  const appliedBidCreditCents = await resolveBidCreditOnConfirm({
+    db,
+    promoCodeId: meta.promoCodeId,
+    email: product.email,
+    amountPaidCents: meta.amountPaidCents,
+    metadataBidCreditCents: meta.bidCreditCents,
+  });
 
   await db
     .update(bids)
@@ -115,17 +134,30 @@ export async function confirmBidFromCheckoutSession(
       status: "confirmed",
       stripeSession: session.id,
       stripeEventId: idempotencyKey,
+      bidCreditCents: appliedBidCreditCents,
     })
     .where(eq(bids.id, meta.bidId));
 
   await db
     .update(products)
     .set({
-      totalBid: sql`${products.totalBid} + ${meta.bidAmountCents}`,
+      totalBid: sql`${products.totalBid} + ${appliedBidCreditCents}`,
       status: "approved",
       updatedAt: new Date(),
     })
     .where(eq(products.id, meta.productId));
+
+  if (meta.promoCodeId && appliedBidCreditCents > meta.amountPaidCents) {
+    await recordPromoRedemption({
+      db,
+      promoCodeId: meta.promoCodeId,
+      email: product.email,
+      productId: meta.productId,
+      bidId: meta.bidId,
+      amountPaidCents: meta.amountPaidCents,
+      bidCreditCents: appliedBidCreditCents,
+    });
+  }
 
   await db.insert(webhookEvents).values({
     stripeEventId: idempotencyKey,
@@ -152,7 +184,8 @@ export async function confirmBidFromCheckoutSession(
   logger.info("Bid confirmed", {
     productId: meta.productId,
     bidId: meta.bidId,
-    bidAmountCents: meta.bidAmountCents,
+    bidAmountCents: appliedBidCreditCents,
+    amountPaidCents: meta.amountPaidCents,
     idempotencyKey,
   });
 
@@ -162,8 +195,8 @@ export async function confirmBidFromCheckoutSession(
     productSlug: updated?.slug ?? product.slug,
     productId: meta.productId,
     productName: updated?.name ?? product.name,
-    bidAmountCents: meta.bidAmountCents,
-    totalBidCents: updated?.totalBid ?? product.totalBid + meta.bidAmountCents,
+    bidAmountCents: appliedBidCreditCents,
+    totalBidCents: updated?.totalBid ?? product.totalBid + appliedBidCreditCents,
   };
 }
 

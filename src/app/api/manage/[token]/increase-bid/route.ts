@@ -13,9 +13,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ tok
   const body = await request.json();
   const amount = body.amount;
   const locale = typeof body.locale === "string" ? body.locale : "en";
+  const promoCode = body.promoCode;
 
   if (typeof amount !== "number" || amount < 500) {
     return NextResponse.json({ error: "Minimum increase is $5" }, { status: 400 });
+  }
+
+  if (typeof promoCode === "string" && promoCode.trim()) {
+    return NextResponse.json({ error: "PROMO_INCREASE_NOT_ELIGIBLE" }, { status: 400 });
   }
 
   const db = getDb();
@@ -41,6 +46,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ tok
     .values({
       productId: product.id,
       amount,
+      bidCreditCents: amount,
       status: "pending",
     })
     .returning({ id: bids.id });
@@ -48,7 +54,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ tok
   try {
     const checkoutUrl = await createBidCheckoutSession({
       productName: product.name,
-      bidAmountCents: amount,
+      paymentCents: amount,
+      bidCreditCents: amount,
       productSlug: product.slug,
       productId: product.id,
       bidId: pendingBid.id,

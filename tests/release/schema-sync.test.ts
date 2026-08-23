@@ -6,6 +6,7 @@ import {
   freeListingClaims,
   hiddenGemPicks,
   products,
+  promoRedemptions,
   randomPicks,
   rankingSnapshots,
   sponsors,
@@ -15,6 +16,7 @@ import { PRODUCT_CLEAR_TABLES } from "@/db/clear-tables";
 const SCHEMA_PRODUCT_TABLES = [
   products,
   bids,
+  promoRedemptions,
   clicks,
   randomPicks,
   sponsors,

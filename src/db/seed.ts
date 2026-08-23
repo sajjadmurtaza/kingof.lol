@@ -2,6 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import * as schema from "./schema";
+import { ensureDefaultLaunchPromo } from "@/domains/promo/seed-default";
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {
@@ -308,6 +309,7 @@ async function seed() {
   console.log("(Run npm run db:push first if tables are missing.)\n");
 
   await seedCategories();
+  await ensureDefaultLaunchPromo(db);
 
   if (categoriesOnly) {
     console.log("✓ Categories seed complete!");

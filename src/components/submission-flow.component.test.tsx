@@ -32,10 +32,25 @@ vi.mock("./bid-selector", () => ({
 }));
 
 vi.mock("./email-step", () => ({
-  EmailStep: ({ onSubmit }: { onSubmit: (email: string) => void }) => (
-    <button type="button" onClick={() => onSubmit("founder@kingof.lol")}>
-      send-email
-    </button>
+  EmailStep: ({
+    onSubmit,
+    promoCode,
+    onPromoCodeChange,
+  }: {
+    onSubmit: (email: string) => void;
+    promoCode: string;
+    onPromoCodeChange: (code: string) => void;
+  }) => (
+    <div>
+      <input
+        aria-label="promo"
+        value={promoCode}
+        onChange={(e) => onPromoCodeChange(e.target.value)}
+      />
+      <button type="button" onClick={() => onSubmit("founder@kingof.lol")}>
+        send-email
+      </button>
+    </div>
   ),
 }));
 

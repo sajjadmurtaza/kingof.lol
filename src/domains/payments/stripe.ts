@@ -32,15 +32,18 @@ export function formatStripeError(err: unknown): string {
 
 export async function createBidCheckoutSession({
   productName,
-  bidAmountCents,
+  paymentCents,
+  bidCreditCents,
   productSlug,
   productId,
   bidId,
   email,
   locale = "en",
+  promoCodeId,
 }: {
   productName: string;
-  bidAmountCents: number;
+  paymentCents: number;
+  bidCreditCents: number;
   productSlug: string;
   productId: string;
   bidId: string;
@@ -48,6 +51,7 @@ export async function createBidCheckoutSession({
   successUrl?: string;
   email: string;
   locale?: string;
+  promoCodeId?: string;
 }): Promise<string> {
   const stripe = getStripe();
   const siteUrl = getSiteUrl();
@@ -61,7 +65,7 @@ export async function createBidCheckoutSession({
       {
         price_data: {
           currency: "usd",
-          unit_amount: bidAmountCents,
+          unit_amount: paymentCents,
           product_data: {
             name: `KINGOF Bid: ${productName}`,
             description: `Bid for "${productName}" on KINGOF leaderboard`,
@@ -74,7 +78,9 @@ export async function createBidCheckoutSession({
       productId,
       productSlug,
       bidId,
-      bidAmount: bidAmountCents.toString(),
+      bidAmount: bidCreditCents.toString(),
+      amountPaid: paymentCents.toString(),
+      ...(promoCodeId ? { promoCodeId } : {}),
     },
     success_url: checkoutSuccessUrl,
     cancel_url: `${siteUrl}/${locale}/product/${productSlug}`,

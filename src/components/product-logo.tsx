@@ -63,7 +63,7 @@ export function ProductLogo({
       loading="lazy"
       referrerPolicy="no-referrer"
       onError={() => setFailed(true)}
-      className={`shrink-0 bg-surface object-contain ${radius} ${className}`}
+      className={`shrink-0 object-contain ${radius} ${className}`}
       style={{ width: size, height: size }}
     />
   );

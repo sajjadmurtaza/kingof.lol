@@ -44,13 +44,15 @@ describe("stripe payments", () => {
 
     const url = await createBidCheckoutSession({
       productName: "Acme",
-      bidAmountCents: 2500,
+      paymentCents: 2500,
+      bidCreditCents: 5000,
       productSlug: "acme",
       productId: "prod-1",
       bidId: "bid-1",
       manageToken: "token-1",
       email: "owner@example.com",
       locale: "de",
+      promoCodeId: "promo-1",
     });
 
     expect(url).toBe("https://checkout.stripe.com/pay/cs_test");
@@ -60,6 +62,9 @@ describe("stripe payments", () => {
         metadata: expect.objectContaining({
           productId: "prod-1",
           bidId: "bid-1",
+          bidAmount: "5000",
+          amountPaid: "2500",
+          promoCodeId: "promo-1",
         }),
         cancel_url: "https://kingof.lol/de/product/acme",
       }),
@@ -74,7 +79,8 @@ describe("stripe payments", () => {
 
     await createBidCheckoutSession({
       productName: "Acme",
-      bidAmountCents: 2500,
+      paymentCents: 2500,
+      bidCreditCents: 2500,
       productSlug: "acme",
       productId: "prod-1",
       bidId: "bid-1",
@@ -96,7 +102,8 @@ describe("stripe payments", () => {
     await expect(
       createBidCheckoutSession({
         productName: "Acme",
-        bidAmountCents: 2500,
+        paymentCents: 2500,
+        bidCreditCents: 2500,
         productSlug: "acme",
         productId: "prod-1",
         bidId: "bid-1",

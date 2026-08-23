@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import Script from "next/script";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
-import { THEME_INIT_SCRIPT } from "@/lib/theme";
+import { DEFAULT_THEME, THEME_INIT_SCRIPT } from "@/lib/theme";
 import enApp from "@/i18n/locales/en/app.json";
 import "./globals.css";
 
@@ -66,14 +65,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html
       lang="en"
       suppressHydrationWarning
+      data-theme={DEFAULT_THEME}
       className={`${inter.variable} ${display.variable} h-full antialiased`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className="min-h-full bg-bg font-sans text-text">
-        <Script
-          id="theme-init"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }}
-        />
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

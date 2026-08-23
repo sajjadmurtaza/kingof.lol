@@ -10,22 +10,28 @@ export async function createPaidBidCheckout({
   db,
   product,
   paymentCents,
+  bidCreditCents,
   email,
   locale,
   manageToken,
+  promoCodeId,
 }: {
   db: Db;
   product: { id: string; slug: string; name: string };
   paymentCents: number;
+  bidCreditCents: number;
   email: string;
   locale: string;
   manageToken?: string;
+  promoCodeId?: string;
 }): Promise<{ checkoutUrl: string } | { error: string; reason?: string }> {
   const [pendingBid] = await db
     .insert(bids)
     .values({
       productId: product.id,
       amount: paymentCents,
+      bidCreditCents,
+      promoCodeId: promoCodeId ?? null,
       status: "pending",
     })
     .returning({ id: bids.id });
@@ -33,13 +39,15 @@ export async function createPaidBidCheckout({
   try {
     const checkoutUrl = await createBidCheckoutSession({
       productName: product.name,
-      bidAmountCents: paymentCents,
+      paymentCents,
+      bidCreditCents,
       productSlug: product.slug,
       productId: product.id,
       bidId: pendingBid.id,
       email,
       locale,
       manageToken,
+      promoCodeId,
     });
 
     return { checkoutUrl };

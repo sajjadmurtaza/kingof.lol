@@ -1,5 +1,6 @@
 /** Product-related tables wiped by db:clear — keep in sync with schema.ts. */
 export const PRODUCT_CLEAR_TABLES = [
+  "promo_redemptions",
   "bids",
   "clicks",
   "random_picks",

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 import type { ProductPreview } from "@/lib/metadata";
 import { extractNameFromDomain } from "@/lib/metadata";
-import { parseHtmlMetadata } from "@/lib/metadata-parser";
+import { parseHtmlMetadata, googleFaviconUrl } from "@/lib/metadata-parser";
 import { getCachedMetadata, setCachedMetadata } from "@/lib/metadata-cache";
 import { normalizeUrl, validateFetchUrl } from "@/lib/url";
 import { tryGetDb } from "@/db";
@@ -164,9 +164,9 @@ export async function POST(request: Request) {
         title: fallbackName,
         description: null,
         siteName: null,
-        faviconUrl: `https://${norm.domain}/favicon.ico`,
+        faviconUrl: googleFaviconUrl(norm.domain),
         appleTouchIconUrl: null,
-        logoUrl: `https://${norm.domain}/favicon.ico`,
+        logoUrl: googleFaviconUrl(norm.domain),
         ogImageUrl: null,
         suggestedCategory: "saas",
         categoryConfidence: "low" as const,

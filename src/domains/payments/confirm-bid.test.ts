@@ -16,11 +16,16 @@ vi.mock("@/domains/payments/stripe", () => ({
   }),
 }));
 vi.mock("@/domains/email/resend", () => ({ sendDethronedEmail: vi.fn() }));
+vi.mock("@/domains/promo/validate-promo", () => ({
+  resolveBidCreditOnConfirm: vi.fn(async ({ metadataBidCreditCents }) => metadataBidCreditCents),
+  recordPromoRedemption: vi.fn(async () => true),
+}));
 
 import { confirmBidFromCheckoutSession, confirmBidFromCheckoutSessionId } from "./confirm-bid";
 import * as Sentry from "@sentry/nextjs";
 import { revalidatePath } from "next/cache";
 import { sendDethronedEmail } from "@/domains/email/resend";
+import { recordPromoRedemption, resolveBidCreditOnConfirm } from "@/domains/promo/validate-promo";
 
 function paidSession(overrides: Partial<Stripe.Checkout.Session> = {}): Stripe.Checkout.Session {
   return {
@@ -30,6 +35,7 @@ function paidSession(overrides: Partial<Stripe.Checkout.Session> = {}): Stripe.C
       productId: "prod-1",
       bidId: "bid-1",
       bidAmount: "2500",
+      amountPaid: "2500",
       productSlug: "acme",
     },
     ...overrides,
@@ -97,7 +103,7 @@ describe("confirmBidFromCheckoutSession", () => {
   it("accepts metadata without productSlug", async () => {
     mock.enqueue([]);
     mock.enqueue([{ id: "bid-1", status: "confirmed", productId: "prod-1" }]);
-    mock.enqueue([{ slug: "acme", name: "Acme", totalBid: 2500 }]);
+    mock.enqueue([{ slug: "acme", name: "Acme", totalBid: 2500, email: "owner@example.com" }]);
 
     const result = await confirmBidFromCheckoutSession(
       paidSession({
@@ -110,6 +116,25 @@ describe("confirmBidFromCheckoutSession", () => {
       "evt-1",
     );
     expect(result).toMatchObject({ ok: true, productSlug: "acme" });
+  });
+
+  it("falls back to bid credit when amountPaid metadata is invalid", async () => {
+    mock.enqueue([]);
+    mock.enqueue([{ id: "bid-1", status: "confirmed", productId: "prod-1" }]);
+    mock.enqueue([{ slug: "acme", name: "Acme", totalBid: 2500, email: "owner@example.com" }]);
+
+    const result = await confirmBidFromCheckoutSession(
+      paidSession({
+        metadata: {
+          productId: "prod-1",
+          bidId: "bid-1",
+          bidAmount: "2500",
+          amountPaid: "not-a-number",
+        },
+      }),
+      "evt-invalid-amount-paid",
+    );
+    expect(result).toMatchObject({ ok: true, bidAmountCents: 2500 });
   });
 
   it("returns error when bid is missing", async () => {
@@ -132,7 +157,7 @@ describe("confirmBidFromCheckoutSession", () => {
   it("returns already confirmed when bid is confirmed", async () => {
     mock.enqueue([]);
     mock.enqueue([{ id: "bid-1", status: "confirmed", productId: "prod-1" }]);
-    mock.enqueue([{ slug: "acme", name: "Acme", totalBid: 2500 }]);
+    mock.enqueue([{ slug: "acme", name: "Acme", totalBid: 2500, email: "owner@example.com" }]);
 
     const result = await confirmBidFromCheckoutSession(paidSession(), "evt-1");
     expect(result).toEqual({
@@ -149,7 +174,7 @@ describe("confirmBidFromCheckoutSession", () => {
   it("returns already confirmed when idempotency event exists", async () => {
     mock.enqueue([{ id: "evt-row" }]);
     mock.enqueue([{ id: "bid-1", status: "pending", productId: "prod-1" }]);
-    mock.enqueue([{ slug: "acme", name: "Acme", totalBid: 2500 }]);
+    mock.enqueue([{ slug: "acme", name: "Acme", totalBid: 2500, email: "owner@example.com" }]);
 
     const result = await confirmBidFromCheckoutSession(paidSession(), "evt-1");
     expect(result).toMatchObject({ ok: true, alreadyConfirmed: true });
@@ -158,7 +183,7 @@ describe("confirmBidFromCheckoutSession", () => {
   it("confirms a pending bid and notifies dethroned kings", async () => {
     mock.enqueue([]);
     mock.enqueue([{ id: "bid-1", status: "pending", productId: "prod-1" }]);
-    mock.enqueue([{ slug: "acme", name: "Acme", totalBid: 0 }]);
+    mock.enqueue([{ slug: "acme", name: "Acme", totalBid: 0, email: "owner@example.com" }]);
     mock.enqueue([{ totalBid: 2500, name: "Acme", slug: "acme" }]);
     mock.enqueue([
       {
@@ -197,7 +222,7 @@ describe("confirmBidFromCheckoutSession", () => {
   it("falls back to original product fields when refresh select is empty", async () => {
     mock.enqueue([]);
     mock.enqueue([{ id: "bid-1", status: "pending", productId: "prod-1" }]);
-    mock.enqueue([{ slug: "acme", name: "Acme", totalBid: 1000 }]);
+    mock.enqueue([{ slug: "acme", name: "Acme", totalBid: 1000, email: "owner@example.com" }]);
     mock.enqueue([]);
     mock.enqueue([]);
 
@@ -217,7 +242,7 @@ describe("confirmBidFromCheckoutSession", () => {
     retrieveSession.mockResolvedValue(paidSession());
     mock.enqueue([]);
     mock.enqueue([{ id: "bid-1", status: "confirmed", productId: "prod-1" }]);
-    mock.enqueue([{ slug: "acme", name: "Acme", totalBid: 2500 }]);
+    mock.enqueue([{ slug: "acme", name: "Acme", totalBid: 2500, email: "owner@example.com" }]);
 
     const result = await confirmBidFromCheckoutSessionId("cs_test");
     expect(retrieveSession).toHaveBeenCalledWith("cs_test");
@@ -228,7 +253,7 @@ describe("confirmBidFromCheckoutSession", () => {
     vi.mocked(sendDethronedEmail).mockRejectedValue(new Error("email down"));
     mock.enqueue([]);
     mock.enqueue([{ id: "bid-1", status: "pending", productId: "prod-1" }]);
-    mock.enqueue([{ slug: "acme", name: "Acme", totalBid: 0 }]);
+    mock.enqueue([{ slug: "acme", name: "Acme", totalBid: 0, email: "owner@example.com" }]);
     mock.enqueue([{ totalBid: 2500, name: "Acme", slug: "acme" }]);
     mock.enqueue([
       {
@@ -257,7 +282,7 @@ describe("confirmBidFromCheckoutSession", () => {
   it("captures dethroned lookup failures without failing confirmation", async () => {
     mock.enqueue([]);
     mock.enqueue([{ id: "bid-1", status: "pending", productId: "prod-1" }]);
-    mock.enqueue([{ slug: "acme", name: "Acme", totalBid: 0 }]);
+    mock.enqueue([{ slug: "acme", name: "Acme", totalBid: 0, email: "owner@example.com" }]);
     mock.enqueue([{ totalBid: 2500, name: "Acme", slug: "acme" }]);
     mock.enqueue([
       {
@@ -284,7 +309,7 @@ describe("confirmBidFromCheckoutSession", () => {
   it("skips dethroned emails when product lookup returns empty", async () => {
     mock.enqueue([]);
     mock.enqueue([{ id: "bid-1", status: "pending", productId: "prod-1" }]);
-    mock.enqueue([{ slug: "acme", name: "Acme", totalBid: 0 }]);
+    mock.enqueue([{ slug: "acme", name: "Acme", totalBid: 0, email: "owner@example.com" }]);
     mock.enqueue([{ totalBid: 2500, name: "Acme", slug: "acme" }]);
     mock.enqueue([]);
 
@@ -298,7 +323,7 @@ describe("confirmBidFromCheckoutSession", () => {
   it("skips dethroned emails when category lookup returns empty", async () => {
     mock.enqueue([]);
     mock.enqueue([{ id: "bid-1", status: "pending", productId: "prod-1" }]);
-    mock.enqueue([{ slug: "acme", name: "Acme", totalBid: 0 }]);
+    mock.enqueue([{ slug: "acme", name: "Acme", totalBid: 0, email: "owner@example.com" }]);
     mock.enqueue([{ totalBid: 2500, name: "Acme", slug: "acme" }]);
     mock.enqueue([
       {
@@ -315,5 +340,58 @@ describe("confirmBidFromCheckoutSession", () => {
     await vi.waitFor(() => {
       expect(sendDethronedEmail).not.toHaveBeenCalled();
     });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+
+  it("ignores blank promoCodeId metadata", async () => {
+    mock.enqueue([]);
+    mock.enqueue([{ id: "bid-1", status: "confirmed", productId: "prod-1" }]);
+    mock.enqueue([{ slug: "acme", name: "Acme", totalBid: 2500, email: "owner@example.com" }]);
+
+    const result = await confirmBidFromCheckoutSession(
+      paidSession({
+        metadata: {
+          productId: "prod-1",
+          bidId: "bid-1",
+          bidAmount: "2500",
+          promoCodeId: "   ",
+        },
+      }),
+      "evt-blank-promo",
+    );
+    expect(result).toMatchObject({ ok: true, alreadyConfirmed: true });
+    expect(recordPromoRedemption).not.toHaveBeenCalled();
+  });
+
+  it("records promo redemption when doubled credit is applied", async () => {
+    vi.mocked(resolveBidCreditOnConfirm).mockResolvedValue(5000);
+    mock.enqueue([]);
+    mock.enqueue([{ id: "bid-1", status: "pending", productId: "prod-1" }]);
+    mock.enqueue([{ slug: "acme", name: "Acme", totalBid: 0, email: "owner@example.com" }]);
+    mock.enqueue([{ totalBid: 5000, name: "Acme", slug: "acme" }]);
+    mock.enqueue([]);
+
+    const result = await confirmBidFromCheckoutSession(
+      paidSession({
+        metadata: {
+          productId: "prod-1",
+          bidId: "bid-1",
+          bidAmount: "5000",
+          amountPaid: "2500",
+          promoCodeId: "promo-1",
+          productSlug: "acme",
+        },
+      }),
+      "evt-promo",
+    );
+
+    expect(result).toMatchObject({ ok: true, bidAmountCents: 5000 });
+    expect(recordPromoRedemption).toHaveBeenCalledWith(
+      expect.objectContaining({
+        promoCodeId: "promo-1",
+        amountPaidCents: 2500,
+        bidCreditCents: 5000,
+      }),
+    );
   });
 });

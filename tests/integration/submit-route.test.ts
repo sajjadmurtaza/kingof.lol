@@ -41,8 +41,17 @@ vi.mock("@/domains/submissions/free-listing-limit", async (importOriginal) => {
   };
 });
 
+vi.mock("@/domains/promo/resolve-bid-payment", () => ({
+  resolveBidPayment: vi.fn(),
+}));
+
+vi.mock("@/domains/promo/seed-default", () => ({
+  ensureDefaultLaunchPromo: vi.fn().mockResolvedValue(undefined),
+}));
+
 import { createBidCheckoutSession } from "@/domains/payments/stripe";
 import { getProductRanks } from "@/domains/leaderboard/queries";
+import { resolveBidPayment } from "@/domains/promo/resolve-bid-payment";
 import {
   hasFreeListingFromIp,
   recordFreeListingClaim,
@@ -78,6 +87,11 @@ describe("POST /api/submit", () => {
     );
     vi.mocked(hasFreeListingFromIp).mockImplementation(actual.hasFreeListingFromIp);
     vi.mocked(recordFreeListingClaim).mockImplementation(actual.recordFreeListingClaim);
+    vi.mocked(resolveBidPayment).mockImplementation(async ({ paymentCents }) => ({
+      ok: true,
+      paymentCents,
+      bidCreditCents: paymentCents,
+    }));
   });
 
   it("creates a free listing and returns real ranks (not hardcoded UI placeholders)", async () => {
@@ -308,5 +322,67 @@ describe("POST /api/submit", () => {
     );
 
     expect(res.status).toBe(400);
+  });
+
+  it("rejects invalid promo codes before creating checkout", async () => {
+    vi.mocked(resolveBidPayment).mockResolvedValue({
+      ok: false,
+      error: "PROMO_ALREADY_USED",
+    });
+
+    mock.enqueue([]);
+    mock.enqueue([{ id: sampleCategory.id }]);
+    mock.enqueue([]);
+    mock.enqueue([{ id: "prod-new", slug: "kingof" }]);
+
+    const res = await submitPost(
+      new Request("https://kingof.lol/api/submit", {
+        method: "POST",
+        body: JSON.stringify(submitBody({ bid: 2500, promoCode: "PH2X" })),
+      }),
+    );
+
+    expect(res.status).toBe(400);
+    await expect(res.json()).resolves.toEqual({ error: "PROMO_ALREADY_USED" });
+    expect(mock.db.delete).toHaveBeenCalled();
+  });
+
+  it("passes doubled bid credit to checkout when promo applies", async () => {
+    vi.mocked(createBidCheckoutSession).mockResolvedValue("https://checkout.stripe.com/promo");
+    vi.mocked(resolveBidPayment).mockResolvedValue({
+      ok: true,
+      paymentCents: 2500,
+      bidCreditCents: 5000,
+      promoCodeId: "promo-1",
+    });
+
+    mock.enqueue([]);
+    mock.enqueue([{ id: sampleCategory.id }]);
+    mock.enqueue([]);
+    mock.enqueue([{ id: "prod-new", slug: "kingof" }]);
+    mock.enqueue([{ id: "bid-1" }]);
+
+    const res = await submitPost(
+      new Request("https://kingof.lol/api/submit", {
+        method: "POST",
+        body: JSON.stringify(submitBody({ bid: 2500, promoCode: "PH2X" })),
+      }),
+    );
+
+    expect(res.status).toBe(200);
+    expect(resolveBidPayment).toHaveBeenCalledWith(
+      expect.objectContaining({
+        paymentCents: 2500,
+        promoCode: "PH2X",
+        context: "new_listing",
+      }),
+    );
+    expect(createBidCheckoutSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        paymentCents: 2500,
+        bidCreditCents: 5000,
+        promoCodeId: "promo-1",
+      }),
+    );
   });
 });

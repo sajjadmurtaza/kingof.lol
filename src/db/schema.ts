@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import {
+  boolean,
   index,
   integer,
   pgEnum,
@@ -11,6 +12,8 @@ import {
 } from "drizzle-orm/pg-core";
 
 export const productStatusEnum = pgEnum("product_status", ["pending", "approved", "disabled"]);
+
+export const promoCodeTypeEnum = pgEnum("promo_code_type", ["bid_multiplier"]);
 
 export const categories = pgTable("categories", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -51,6 +54,19 @@ export const products = pgTable(
   ],
 );
 
+export const promoCodes = pgTable("promo_codes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  code: text("code").notNull().unique(),
+  type: promoCodeTypeEnum("type").notNull(),
+  /** Basis points multiplier — 200 = 2.00× bid credit. */
+  multiplier: integer("multiplier").notNull(),
+  maxRedemptions: integer("max_redemptions"),
+  redeemedCount: integer("redeemed_count").notNull().default(0),
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const bids = pgTable(
   "bids",
   {
@@ -59,12 +75,35 @@ export const bids = pgTable(
       .notNull()
       .references(() => products.id),
     amount: integer("amount").notNull(),
+    bidCreditCents: integer("bid_credit_cents"),
+    promoCodeId: uuid("promo_code_id").references(() => promoCodes.id),
     status: text("status").notNull().default("pending"),
     stripeSession: text("stripe_session"),
     stripeEventId: text("stripe_event_id"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index("bids_product_id_status_idx").on(table.productId, table.status)],
+);
+
+export const promoRedemptions = pgTable(
+  "promo_redemptions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    promoCodeId: uuid("promo_code_id")
+      .notNull()
+      .references(() => promoCodes.id),
+    email: text("email").notNull(),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => products.id),
+    bidId: uuid("bid_id")
+      .notNull()
+      .references(() => bids.id),
+    amountPaidCents: integer("amount_paid_cents").notNull(),
+    bidCreditCents: integer("bid_credit_cents").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex("promo_redemptions_code_email_idx").on(table.promoCodeId, table.email)],
 );
 
 export const clicks = pgTable(

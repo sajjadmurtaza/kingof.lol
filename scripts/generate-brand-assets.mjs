@@ -12,6 +12,8 @@ const root = join(__dirname, "..");
 const svgDir = join(root, "public/brand/svg");
 const pngDir = join(root, "public/brand/png");
 
+const TRANSPARENT = { r: 0, g: 0, b: 0, alpha: 0 };
+
 /** @type {{ svg: string; outputs: { file: string; width: number; height?: number }[] }[]} */
 const MANIFEST = [
   {
@@ -21,6 +23,18 @@ const MANIFEST = [
   {
     svg: "logo-square.svg",
     outputs: [{ file: "logo-square.png", width: 1080 }],
+  },
+];
+
+/** Site favicons — transparent PNGs from favicon.svg */
+const SITE_ICON_MANIFEST = [
+  {
+    svg: "favicon.svg",
+    outputs: [
+      { file: "apple-icon.png", width: 180 },
+      { file: "icon-192.png", width: 192 },
+      { file: "icon-512.png", width: 512 },
+    ],
   },
 ];
 
@@ -35,24 +49,26 @@ async function main() {
 
   await mkdir(pngDir, { recursive: true });
 
-  const expectedFiles = new Set(MANIFEST.flatMap((entry) => entry.outputs.map((out) => out.file)));
+  const expectedBrandFiles = new Set(
+    MANIFEST.flatMap((entry) => entry.outputs.map((out) => out.file)),
+  );
   for (const file of await readdir(pngDir)) {
-    if (!expectedFiles.has(file)) {
+    if (!expectedBrandFiles.has(file)) {
       await unlink(join(pngDir, file));
       console.log(`✗ removed stale ${file}`);
     }
   }
 
-  for (const entry of MANIFEST) {
-    const inputPath = join(svgDir, entry.svg);
-    const svg = await readFile(inputPath);
+  async function exportSvg(svgPath, outputs, outputDir, transparent = true) {
+    const svg = await readFile(svgPath);
 
-    for (const out of entry.outputs) {
+    for (const out of outputs) {
       const height = out.height ?? out.width;
-      const outputPath = join(pngDir, out.file);
+      const outputPath = join(outputDir, out.file);
+      const background = transparent ? TRANSPARENT : { r: 10, g: 10, b: 10, alpha: 1 };
 
       await sharp(svg, { density: 300 })
-        .resize(out.width, height, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+        .resize(out.width, height, { fit: "contain", background })
         .png()
         .toFile(outputPath);
 
@@ -60,7 +76,26 @@ async function main() {
     }
   }
 
-  console.log(`\nDone — PNGs written to public/brand/png/`);
+  for (const entry of MANIFEST) {
+    await exportSvg(join(svgDir, entry.svg), entry.outputs, pngDir);
+  }
+
+  const publicDir = join(root, "public");
+  const appDir = join(root, "src/app");
+  for (const entry of SITE_ICON_MANIFEST) {
+    await exportSvg(join(svgDir, entry.svg), entry.outputs, publicDir);
+    const appleIcon = entry.outputs.find((out) => out.file === "apple-icon.png");
+    if (appleIcon) {
+      const source = join(publicDir, appleIcon.file);
+      const target = join(appDir, appleIcon.file);
+      await sharp(await readFile(source))
+        .png()
+        .toFile(target);
+      console.log(`✓ src/app/${appleIcon.file} (from ${appleIcon.file})`);
+    }
+  }
+
+  console.log(`\nDone — brand PNGs in public/brand/png/, site icons in public/ + src/app/`);
 }
 
 main().catch((err) => {

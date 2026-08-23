@@ -226,7 +226,21 @@
     "productNamePlaceholder": "मेरा उत्पाद",
     "taglineLabel": "टैगलाइन",
     "taglinePlaceholder": "अपने उत्पाद का संक्षिप्त विवरण",
-    "categoryLabel": "श्रेणी"
+    "categoryLabel": "श्रेणी",
+    "promoLabel": "Promo code (optional)",
+    "promoPlaceholder": "PH2X",
+    "promoChecking": "Checking promo code…",
+    "promoApplied": "Pay {pay} · climb as {credit}",
+    "promoInvalid": "That promo code is not valid.",
+    "promoExpired": "This promo code has expired.",
+    "promoMaxRedemptions": "This promo code has reached its limit.",
+    "promoAlreadyUsed": "You have already used this promo code.",
+    "promoNotFirstPaid": "Promo codes apply to your first paid listing only.",
+    "promoIncreaseNotEligible": "Promo codes cannot be used on bid increases.",
+    "promoCheckFailed": "Could not verify promo code. Try again.",
+    "promoSetupRequired": "Promo codes are not set up yet. Run npm run db:push, then try again.",
+    "promoToggle": "Have a promo code?",
+    "promoHide": "Hide"
   },
   "outbidAlt": {
     "title": "KINGOF बनाम Outbid: उत्पाद लीडरबोर्ड का एक अलग नज़रिया",

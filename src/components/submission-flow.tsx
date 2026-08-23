@@ -44,6 +44,7 @@ export function SubmissionFlow({
   const [category, setCategory] = useState("");
   const [bidCents, setBidCents] = useState(0);
   const [bidIsIncrement, setBidIsIncrement] = useState(false);
+  const [promoCode, setPromoCode] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [manualData, setManualData] = useState<{
@@ -177,6 +178,7 @@ export function SubmissionFlow({
           iconUrl: preview?.logoUrl ?? preview?.icon,
           ogImageUrl: preview?.ogImage,
           locale,
+          ...(promoCode.trim() ? { promoCode: promoCode.trim() } : {}),
         }),
       });
 
@@ -254,7 +256,14 @@ export function SubmissionFlow({
     return (
       <div className="space-y-4">
         <BackButton onClick={handleBack} />
-        <EmailStep onSubmit={handleEmailSubmit} loading={submitting} />
+        <EmailStep
+          onSubmit={handleEmailSubmit}
+          loading={submitting}
+          bidCents={bidCents}
+          promoCode={promoCode}
+          onPromoCodeChange={setPromoCode}
+          promoContext={bidIsIncrement ? "bid_increase" : "new_listing"}
+        />
         {submitError ? (
           <p className="text-center text-sm text-red-400" role="alert">
             {submitError}

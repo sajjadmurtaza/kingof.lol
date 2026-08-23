@@ -30,12 +30,21 @@ describe("createPaidBidCheckout", () => {
       db: mock.db as never,
       product: { id: "prod-1", slug: "acme", name: "Acme" },
       paymentCents: 2500,
+      bidCreditCents: 5000,
       email: "owner@example.com",
       locale: "en",
       manageToken: "token-1",
+      promoCodeId: "promo-1",
     });
 
     expect(result).toEqual({ checkoutUrl: "https://checkout.stripe.com/pay/cs_test" });
+    expect(checkoutCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        paymentCents: 2500,
+        bidCreditCents: 5000,
+        promoCodeId: "promo-1",
+      }),
+    );
   });
 
   it("cleans up bid and returns error when checkout fails", async () => {
@@ -46,6 +55,7 @@ describe("createPaidBidCheckout", () => {
       db: mock.db as never,
       product: { id: "prod-1", slug: "acme", name: "Acme" },
       paymentCents: 2500,
+      bidCreditCents: 2500,
       email: "owner@example.com",
       locale: "en",
     });
@@ -67,6 +77,7 @@ describe("createPaidBidCheckout", () => {
       db: mock.db as never,
       product: { id: "prod-1", slug: "acme", name: "Acme" },
       paymentCents: 2500,
+      bidCreditCents: 2500,
       email: "owner@example.com",
       locale: "en",
     });

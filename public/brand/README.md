@@ -12,6 +12,7 @@ npm run brand:export
 | ----------------- | ----------------- | --------- | ------------------------------------------ |
 | `cover.svg`       | `cover.png`       | 1200×630  | Wide banner — LinkedIn cover, X header, OG |
 | `logo-square.svg` | `logo-square.png` | 1080×1080 | Square logo — profile pics, LinkedIn logo  |
+| `favicon.svg`     | —                 | —         | Crown-only, transparent — site favicons    |
 
 Crop or resize in the platform UI if a site asks for a different dimension (e.g. LinkedIn logo 300×300).
 
@@ -35,15 +36,21 @@ Crop or resize in the platform UI if a site asks for a different dimension (e.g.
 
 ## Site assets (separate from this folder)
 
-| Path                          | Purpose                        |
-| ----------------------------- | ------------------------------ |
-| `public/icon.svg`             | Browser favicon / PWA          |
-| `src/app/opengraph-image.tsx` | Dynamic OG image at build time |
+| Path                           | Purpose                        |
+| ------------------------------ | ------------------------------ |
+| `public/brand/svg/favicon.svg` | Transparent crown source       |
+| `public/icon.svg`              | Browser favicon / PWA (SVG)    |
+| `public/apple-icon.png`        | Apple touch icon (180×180)     |
+| `public/icon-192.png`          | PWA icon                       |
+| `public/icon-512.png`          | PWA icon                       |
+| `src/app/opengraph-image.tsx`  | Dynamic OG image at build time |
+
+Run `npm run brand:export` after editing `favicon.svg` to regenerate the PNG icons.
 
 ---
 
 ## Editing
 
-1. Edit `svg/cover.svg` or `svg/logo-square.svg`.
+1. Edit `svg/cover.svg`, `svg/logo-square.svg`, or `svg/favicon.svg`.
 2. Run `npm run brand:export`.
 3. Upload the matching PNG from `png/`.

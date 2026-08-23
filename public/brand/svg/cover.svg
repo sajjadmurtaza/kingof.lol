@@ -26,7 +26,7 @@
   <rect width="1200" height="630" fill="url(#glow)"/>
   <rect y="0" width="1200" height="4" fill="url(#bar)"/>
   <rect y="626" width="1200" height="4" fill="url(#bar)"/>
-  <g transform="translate(520, 120) scale(1.35)">
+  <g transform="translate(408, 48) scale(1.15)">
     <path d="M60 230 L80 100 L122.5 160 L160 80 L197.5 160 L240 100 L260 230 Z" fill="url(#gold)"/>
     <rect x="60" y="220" width="200" height="25" rx="5" fill="url(#gold)"/>
     <circle cx="160" cy="195" r="11" fill="#ef4444"/>
@@ -36,7 +36,7 @@
     <circle cx="160" cy="75" r="15" fill="url(#gold)"/>
     <circle cx="240" cy="95" r="12.5" fill="url(#gold)"/>
   </g>
-  <text x="600" y="430" text-anchor="middle" fill="url(#gold)" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="88" font-weight="900" letter-spacing="-2">KINGOF</text>
-  <text x="600" y="490" text-anchor="middle" fill="#a3a3a3" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="28" font-weight="500" letter-spacing="2">Products Compete for the Crown</text>
-  <text x="600" y="560" text-anchor="middle" fill="#525252" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="22" font-weight="600" letter-spacing="6">kingof.lol</text>
+  <text x="600" y="455" text-anchor="middle" fill="url(#gold)" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="84" font-weight="900" letter-spacing="-2">KINGOF</text>
+  <text x="600" y="515" text-anchor="middle" fill="#a3a3a3" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="28" font-weight="500" letter-spacing="2">Products Compete for the Crown</text>
+  <text x="600" y="575" text-anchor="middle" fill="#525252" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="22" font-weight="600" letter-spacing="6">kingof.lol</text>
 </svg>

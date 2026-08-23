@@ -67,10 +67,17 @@ describe.skipIf(!hasBuild)("SEO rules — built HTML verification", () => {
       expect(html).toMatch(/property="og:type"\s+content="website"/);
     });
 
+    it("has Open Graph preview image for social shares", () => {
+      expect(html).toMatch(/property="og:image"\s+content="[^"]+\/en\/opengraph-image/);
+      expect(html).toMatch(/property="og:image:width"\s+content="1200"/);
+      expect(html).toMatch(/property="og:image:height"\s+content="630"/);
+    });
+
     it("has Twitter card metadata", () => {
       expect(html).toMatch(/name="twitter:card"\s+content="summary_large_image"/);
       expect(html).toMatch(/name="twitter:title"/);
       expect(html).toMatch(/name="twitter:description"/);
+      expect(html).toMatch(/name="twitter:image"\s+content="[^"]+\/en\/twitter-image/);
     });
 
     it("has favicon link", () => {

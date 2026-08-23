@@ -135,6 +135,20 @@ export function parseHtmlMetadata(html: string, pageUrl: string, domain: string)
   };
 }
 
+export function googleFaviconUrl(domain: string, size = 128): string {
+  const host = domain.replace(/^www\./i, "");
+  return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=${size}`;
+}
+
+function isLikelyFavicon(url: string): boolean {
+  try {
+    const path = new URL(url).pathname.toLowerCase();
+    return path.endsWith(".ico") || path.includes("favicon");
+  } catch {
+    return /favicon|\.ico(\?|$)/i.test(url);
+  }
+}
+
 export function pickDisplayIcon(input: {
   iconUrl?: string | null;
   logoUrl?: string | null;
@@ -143,12 +157,14 @@ export function pickDisplayIcon(input: {
   ogImageUrl?: string | null;
   domain?: string | null;
 }): string | null {
+  const direct = input.iconUrl || input.logoUrl || input.faviconUrl;
+  const highResDirect = direct && !isLikelyFavicon(direct) ? direct : null;
+
   return (
-    input.iconUrl ||
-    input.logoUrl ||
     input.appleTouchIconUrl ||
-    input.faviconUrl ||
-    (input.domain ? `https://${input.domain}/favicon.ico` : null) ||
+    highResDirect ||
+    (input.domain ? googleFaviconUrl(input.domain) : null) ||
+    direct ||
     input.ogImageUrl ||
     null
   );

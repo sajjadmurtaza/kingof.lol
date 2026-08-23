@@ -8,6 +8,8 @@ import { normalizeUrl } from "@/lib/url";
 import { createPaidBidCheckout } from "@/domains/payments/create-paid-bid-checkout";
 import { sendManagementLinkEmail } from "@/domains/email/resend";
 import { getProductRanks } from "@/domains/leaderboard/queries";
+import { resolveBidPayment } from "@/domains/promo/resolve-bid-payment";
+import { ensureDefaultLaunchPromo } from "@/domains/promo/seed-default";
 import { getClientIp, hashIp } from "@/domains/clicks/tracking";
 import {
   FREE_LISTING_LIMIT_ERROR,
@@ -45,6 +47,7 @@ export async function POST(request: Request) {
       ogImageUrl,
       locale,
       bidIsIncrement,
+      promoCode,
     } = body;
 
     if (!name || !url || !category || !email) {
@@ -67,6 +70,8 @@ export async function POST(request: Request) {
     }
 
     const db = getDb();
+
+    await ensureDefaultLaunchPromo(db);
 
     const [existing] = await db
       .select({
@@ -109,12 +114,26 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Minimum bid increase is $5" }, { status: 400 });
       }
 
+      const resolvedPayment = await resolveBidPayment({
+        db,
+        paymentCents,
+        email: existing.email,
+        promoCode: typeof promoCode === "string" ? promoCode : null,
+        context: treatBidAsIncrement ? "bid_increase" : "new_listing",
+      });
+
+      if (!resolvedPayment.ok) {
+        return NextResponse.json({ error: resolvedPayment.error }, { status: 400 });
+      }
+
       const checkout = await createPaidBidCheckout({
         db,
         product: existing,
-        paymentCents,
+        paymentCents: resolvedPayment.paymentCents,
+        bidCreditCents: resolvedPayment.bidCreditCents,
         email: existing.email,
         locale: resolvedLocale,
+        promoCodeId: resolvedPayment.promoCodeId,
       });
 
       if ("error" in checkout) {
@@ -204,13 +223,35 @@ export async function POST(request: Request) {
       .returning({ id: products.id, slug: products.slug });
 
     if (!isFree) {
+      const resolvedPayment = await resolveBidPayment({
+        db,
+        paymentCents: bidCents,
+        email: normalizedEmail,
+        promoCode: typeof promoCode === "string" ? promoCode : null,
+        context: "new_listing",
+      });
+
+      if (!resolvedPayment.ok) {
+        try {
+          await db.delete(products).where(eq(products.id, product.id));
+        } catch (cleanupErr) {
+          Sentry.captureException(cleanupErr, {
+            tags: { route: "api/submit", failure: "promo_validation_cleanup_failed" },
+            extra: { productId: product.id, slug },
+          });
+        }
+        return NextResponse.json({ error: resolvedPayment.error }, { status: 400 });
+      }
+
       const checkout = await createPaidBidCheckout({
         db,
         product: { id: product.id, slug: product.slug, name },
-        paymentCents: bidCents,
+        paymentCents: resolvedPayment.paymentCents,
+        bidCreditCents: resolvedPayment.bidCreditCents,
         email: normalizedEmail,
         locale: resolvedLocale,
         manageToken: rawToken,
+        promoCodeId: resolvedPayment.promoCodeId,
       });
 
       if ("error" in checkout) {
